@@ -1,18 +1,45 @@
-// ========================================
-// FICHIER 1: frontend/utils/api.js (VERSION CORRIGÉE)
-// ========================================
+// frontend/utils/api.js - VERSION JWT
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
+// ============================================
+// GESTION DU TOKEN JWT
+// ============================================
 
+const TOKEN_KEY = 'auth_token';
+
+const getToken = () => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
+};
+
+const setToken = (token) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(TOKEN_KEY, token);
+};
+
+const removeToken = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(TOKEN_KEY);
+};
+
+// ============================================
+// FONCTION FETCH API
+// ============================================
 
 const fetchAPI = async (endpoint, options = {}) => {
+  const token = getToken();
+  
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
   };
+
+  // Ajouter le token si disponible
+  if (token) {
+    defaultOptions.headers['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const response = await fetch(`${API_URL}${endpoint}`, {
@@ -26,6 +53,14 @@ const fetchAPI = async (endpoint, options = {}) => {
 
     const data = await response.json();
 
+    // Si le token est expiré, déconnecter
+    if (response.status === 401 && data.error?.includes('Token')) {
+      removeToken();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+
     if (!response.ok) {
       throw new Error(data.error || 'Une erreur est survenue');
     }
@@ -38,31 +73,60 @@ const fetchAPI = async (endpoint, options = {}) => {
 };
 
 // ============================================
-// AUTH API - CORRIGÉ
+// AUTH API - VERSION JWT
 // ============================================
 
 export const login = async (credentials) => {
-  return fetchAPI('/auth/login', {
+  const data = await fetchAPI('/auth/login', {
     method: 'POST',
     body: JSON.stringify(credentials),
   });
+  
+  // Sauvegarder le token
+  if (data.token) {
+    setToken(data.token);
+  }
+  
+  return data;
 };
 
 export const register = async (userData) => {
-  return fetchAPI('/auth/register', {
+  const data = await fetchAPI('/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   });
+  
+  // Sauvegarder le token
+  if (data.token) {
+    setToken(data.token);
+  }
+  
+  return data;
 };
 
 export const logout = async () => {
-  return fetchAPI('/auth/logout', {
-    method: 'POST',
-  });
+  try {
+    await fetchAPI('/auth/logout', {
+      method: 'POST',
+    });
+  } catch (error) {
+    console.error('Erreur logout:', error);
+  } finally {
+    // Toujours supprimer le token
+    removeToken();
+  }
 };
 
-// ✅ CORRECTION: Fonction unifiée qui renvoie toujours le même format
 export const checkAuth = async () => {
+  const token = getToken();
+  
+  if (!token) {
+    return { 
+      authenticated: false,
+      user: null 
+    };
+  }
+  
   try {
     const response = await fetchAPI('/auth/me');
     return {
@@ -70,6 +134,7 @@ export const checkAuth = async () => {
       user: response.user
     };
   } catch (error) {
+    removeToken();
     return { 
       authenticated: false,
       user: null 
@@ -77,9 +142,21 @@ export const checkAuth = async () => {
   }
 };
 
-// Cette fonction n'est plus nécessaire mais on la garde pour compatibilité
-export const checkAuthStatus = async () => {
-  return checkAuth();
+export const refreshToken = async () => {
+  try {
+    const data = await fetchAPI('/auth/refresh', {
+      method: 'POST',
+    });
+    
+    if (data.token) {
+      setToken(data.token);
+    }
+    
+    return data;
+  } catch (error) {
+    removeToken();
+    throw error;
+  }
 };
 
 // ============================================
@@ -305,7 +382,6 @@ export const updateReservation = async (id, reservationData) => {
   });
 };
 
-
 export const deleteReservation = async (id) => {
   return fetchAPI(`/reservations/${id}`, {
     method: 'DELETE',
@@ -316,11 +392,8 @@ export const deleteReservation = async (id) => {
 // FAVORITES API
 // ============================================
 
-
-
 export const fetchFavorites = async () => {
   const response = await fetchAPI('/favorites');
-  // Response structure: { success: true, favorites: [...], count: X }
   return response;
 };
 
