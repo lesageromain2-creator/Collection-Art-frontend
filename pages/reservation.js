@@ -445,10 +445,7 @@ export default function Reservation() {
             </div>
           </div>
           <div className={`hero-content ${mounted ? 'mounted' : ''}`}>
-            <span className="hero-badge">
-              <span className="badge-dot"></span>
-              Réservation instantanée
-            </span>
+            
             <h1>Réservez votre table</h1>
             <p>Une expérience gastronomique qui vous attend</p>
           </div>
