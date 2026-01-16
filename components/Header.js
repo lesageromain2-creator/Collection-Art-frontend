@@ -57,7 +57,7 @@ export default function Header({ settings = {} }) {
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: menuOpen ? 998 : 1000, // Passer derrière le menu mobile quand ouvert
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         background: scrolled ? 'rgba(255, 255, 255, 0.98)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px)' : 'none',
@@ -76,7 +76,7 @@ export default function Header({ settings = {} }) {
             textDecoration: 'none',
             display: 'flex',
             alignItems: 'center',
-            zIndex: 1001,
+            zIndex: menuOpen ? 998 : 1001, // Passer derrière le menu mobile quand ouvert
             transition: 'transform 0.3s ease'
           }}>
             <div style={{
@@ -233,7 +233,7 @@ export default function Header({ settings = {} }) {
               width: '100vw',
               height: '100vh',
               background: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999,
+              zIndex: 1001, // Au-dessus du header
               animation: 'fadeIn 0.3s ease'
             }} />
           )}
@@ -249,7 +249,7 @@ export default function Header({ settings = {} }) {
               height: '100vh',
               background: 'white',
               transition: 'right 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              zIndex: 1000,
+              zIndex: 1002, // Au-dessus de tout (overlay + header)
               display: 'flex',
               flexDirection: 'column',
               padding: '30px',
@@ -556,7 +556,7 @@ export default function Header({ settings = {} }) {
                 border: 'none',
                 cursor: 'pointer',
                 padding: '10px',
-                zIndex: 1001
+                zIndex: 1003 // Au-dessus du menu pour rester cliquable
               }}>
                 <span style={{
                   width: '28px',
