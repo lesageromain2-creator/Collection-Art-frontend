@@ -1,12 +1,16 @@
 // frontend/components/Header.js
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 export default function Header({ settings = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
 
-  const siteName = settings.site_name || 'Restaurant';
+  const siteName = settings.site_name || 'Le Gourmet Parisien';
   const restaurantStatus = settings.restaurant_status || 'open';
 
   useEffect(() => {
@@ -15,200 +19,585 @@ export default function Header({ settings = {} }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  useEffect(() => {
+    // Détecter la taille d'écran côté client uniquement
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    handleResize(); // Initialiser
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    // Empêcher le scroll quand le menu est ouvert
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [menuOpen]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    setIsLoggedIn(false);
+    setMenuOpen(false);
+    router.push('/');
+  };
+
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <>
-      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-        <div className="header-container">
-          <Link href="/" className="logo">
-            {settings.site_logo ? (
-              <img 
-                src={`/uploads/logos/${settings.site_logo}`} 
-                alt={siteName}
-                className="logo-img"
-              />
-            ) : (
-              <div className="logo-content">
-                <span className="logo-icon">🍽️</span>
-                <span className="logo-text">{siteName}</span>
+      <header style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        background: scrolled ? 'rgba(255, 255, 255, 0.98)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        boxShadow: scrolled ? '0 8px 32px rgba(0, 0, 0, 0.08)' : 'none'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: '20px 30px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          {/* Logo */}
+          <Link href="/" onClick={closeMenu} style={{
+            textDecoration: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            zIndex: 1001,
+            transition: 'transform 0.3s ease'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '50px',
+                height: '50px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: scrolled ? 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)' : 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '12px',
+                color: 'white',
+                fontSize: '1.8em',
+                boxShadow: scrolled ? '0 4px 12px rgba(231, 76, 60, 0.3)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+                backdropFilter: !scrolled ? 'blur(10px)' : 'none',
+                transition: 'all 0.3s ease'
+              }}>
+                🍽️
               </div>
-            )}
+              <span style={{
+                fontSize: '1.5em',
+                fontWeight: 800,
+                color: scrolled ? '#e74c3c' : 'white',
+                letterSpacing: '-0.5px',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none',
+                transition: 'all 0.3s ease'
+              }}>
+                {siteName}
+              </span>
+            </div>
           </Link>
 
-          <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
-            <Link href="/" className="nav-link">Accueil</Link>
-            <Link href="/categories" className="nav-link">Carte</Link>
-            <Link href="/menus" className="nav-link">Menus</Link>
-            <Link href="/reservation" className="nav-link">Réserver</Link>
-             <Link href="/favorites" className="nav-link"> Mes favoris</Link>
-            <Link href="/contact" className="nav-link">Contact</Link>
-            <Link href="/dashboard" className="nav-link">Dashboard</Link>
-          </nav>
+          {/* Navigation Desktop */}
+          {!isMobile && (
+            <nav style={{
+              display: 'flex',
+              gap: '8px'
+            }}>
+              <Link href="/" style={{
+                textDecoration: 'none',
+                color: scrolled ? '#2c3e50' : 'white',
+                fontWeight: 600,
+                padding: '10px 20px',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95em',
+                background: router.pathname === '/' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                borderBottom: router.pathname === '/' ? '2px solid #e74c3c' : '2px solid transparent',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+              }}>
+                Accueil
+              </Link>
+              <Link href="/categories" style={{
+                textDecoration: 'none',
+                color: scrolled ? '#2c3e50' : 'white',
+                fontWeight: 600,
+                padding: '10px 20px',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95em',
+                background: router.pathname === '/categories' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                borderBottom: router.pathname === '/categories' ? '2px solid #e74c3c' : '2px solid transparent',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+              }}>
+                Carte
+              </Link>
+              <Link href="/menus" style={{
+                textDecoration: 'none',
+                color: scrolled ? '#2c3e50' : 'white',
+                fontWeight: 600,
+                padding: '10px 20px',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95em',
+                background: router.pathname === '/menus' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                borderBottom: router.pathname === '/menus' ? '2px solid #e74c3c' : '2px solid transparent',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+              }}>
+                Menus
+              </Link>
+              <Link href="/reservation" style={{
+                textDecoration: 'none',
+                color: scrolled ? '#2c3e50' : 'white',
+                fontWeight: 600,
+                padding: '10px 20px',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95em',
+                background: router.pathname === '/reservation' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                borderBottom: router.pathname === '/reservation' ? '2px solid #e74c3c' : '2px solid transparent',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+              }}>
+                Réserver
+              </Link>
+              {isLoggedIn && (
+                <Link href="/favorites" style={{
+                  textDecoration: 'none',
+                  color: scrolled ? '#2c3e50' : 'white',
+                  fontWeight: 600,
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.95em',
+                  background: router.pathname === '/favorites' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                  borderBottom: router.pathname === '/favorites' ? '2px solid #e74c3c' : '2px solid transparent',
+                  textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+                }}>
+                  Favoris
+                </Link>
+              )}
+              <Link href="/contact" style={{
+                textDecoration: 'none',
+                color: scrolled ? '#2c3e50' : 'white',
+                fontWeight: 600,
+                padding: '10px 20px',
+                borderRadius: '12px',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95em',
+                background: router.pathname === '/contact' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                borderBottom: router.pathname === '/contact' ? '2px solid #e74c3c' : '2px solid transparent',
+                textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+              }}>
+                Contact
+              </Link>
+              {isLoggedIn && (
+                <Link href="/dashboard" style={{
+                  textDecoration: 'none',
+                  color: scrolled ? '#2c3e50' : 'white',
+                  fontWeight: 600,
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.95em',
+                  background: router.pathname === '/dashboard' ? (scrolled ? 'rgba(231, 76, 60, 0.1)' : 'rgba(255, 255, 255, 0.2)') : 'transparent',
+                  borderBottom: router.pathname === '/dashboard' ? '2px solid #e74c3c' : '2px solid transparent',
+                  textShadow: !scrolled ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
+                }}>
+                  Dashboard
+                </Link>
+              )}
+            </nav>
+          )}
 
-          <div className="header-actions">
-            <span className={`status-badge ${restaurantStatus}`}>
-              {restaurantStatus === 'open' ? '🟢 Ouvert' : '🔴 Fermé'}
-            </span>
-            <button 
-              className="menu-toggle"
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? '✕' : '☰'}
-            </button>
+          {/* Menu Mobile Overlay */}
+          {menuOpen && (
+            <div onClick={closeMenu} style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+              animation: 'fadeIn 0.3s ease'
+            }} />
+          )}
+
+          {/* Menu Mobile Sidebar */}
+          {isMobile && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              right: menuOpen ? 0 : '-100%',
+              width: '100%',
+              maxWidth: '400px',
+              height: '100vh',
+              background: 'white',
+              transition: 'right 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+              zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '30px',
+              overflowY: 'auto',
+              boxShadow: '-5px 0 25px rgba(0, 0, 0, 0.1)'
+            }}>
+              {/* Header Mobile Menu */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
+                paddingBottom: '20px',
+                borderBottom: '2px solid #f0f0f0'
+              }}>
+                <span style={{
+                  fontSize: '1.5em',
+                  fontWeight: 800,
+                  color: '#e74c3c'
+                }}>
+                  Menu
+                </span>
+                <button onClick={closeMenu} style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: '#f8f9fa',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.5em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease'
+                }}>
+                  ✕
+                </button>
+              </div>
+
+              {/* Links Mobile */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link href="/" onClick={closeMenu} style={{
+                  textDecoration: 'none',
+                  padding: '16px 20px',
+                  color: '#2c3e50',
+                  fontSize: '1.1em',
+                  borderRadius: '12px',
+                  background: router.pathname === '/' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <span style={{ fontSize: '1.3em' }}>🏠</span>
+                  Accueil
+                </Link>
+                <Link href="/categories" onClick={closeMenu} style={{
+                  textDecoration: 'none',
+                  padding: '16px 20px',
+                  color: '#2c3e50',
+                  fontSize: '1.1em',
+                  borderRadius: '12px',
+                  background: router.pathname === '/categories' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <span style={{ fontSize: '1.3em' }}>📋</span>
+                  Carte
+                </Link>
+                <Link href="/menus" onClick={closeMenu} style={{
+                  textDecoration: 'none',
+                  padding: '16px 20px',
+                  color: '#2c3e50',
+                  fontSize: '1.1em',
+                  borderRadius: '12px',
+                  background: router.pathname === '/menus' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <span style={{ fontSize: '1.3em' }}>🍽️</span>
+                  Menus
+                </Link>
+                <Link href="/reservation" onClick={closeMenu} style={{
+                  textDecoration: 'none',
+                  padding: '16px 20px',
+                  color: '#2c3e50',
+                  fontSize: '1.1em',
+                  borderRadius: '12px',
+                  background: router.pathname === '/reservation' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <span style={{ fontSize: '1.3em' }}>📅</span>
+                  Réserver
+                </Link>
+                {isLoggedIn && (
+                  <Link href="/favorites" onClick={closeMenu} style={{
+                    textDecoration: 'none',
+                    padding: '16px 20px',
+                    color: '#2c3e50',
+                    fontSize: '1.1em',
+                    borderRadius: '12px',
+                    background: router.pathname === '/favorites' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <span style={{ fontSize: '1.3em' }}>❤️</span>
+                    Favoris
+                  </Link>
+                )}
+                <Link href="/contact" onClick={closeMenu} style={{
+                  textDecoration: 'none',
+                  padding: '16px 20px',
+                  color: '#2c3e50',
+                  fontSize: '1.1em',
+                  borderRadius: '12px',
+                  background: router.pathname === '/contact' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <span style={{ fontSize: '1.3em' }}>📞</span>
+                  Contact
+                </Link>
+                {isLoggedIn && (
+                  <Link href="/dashboard" onClick={closeMenu} style={{
+                    textDecoration: 'none',
+                    padding: '16px 20px',
+                    color: '#2c3e50',
+                    fontSize: '1.1em',
+                    borderRadius: '12px',
+                    background: router.pathname === '/dashboard' ? 'rgba(231, 76, 60, 0.1)' : 'transparent',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <span style={{ fontSize: '1.3em' }}>📊</span>
+                    Dashboard
+                  </Link>
+                )}
+              </div>
+
+              {/* Footer Mobile */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                paddingTop: '20px',
+                borderTop: '2px solid #f0f0f0',
+                marginTop: 'auto'
+              }}>
+                <div style={{
+                  padding: '12px 20px',
+                  borderRadius: '24px',
+                  background: restaurantStatus === 'open' ? 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)' : 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)',
+                  color: restaurantStatus === 'open' ? '#155724' : '#721c24',
+                  fontWeight: 600,
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}>
+                  <span style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: restaurantStatus === 'open' ? '#28a745' : '#dc3545',
+                    animation: 'pulse 2s infinite'
+                  }}></span>
+                  {restaurantStatus === 'open' ? 'Ouvert' : 'Fermé'}
+                </div>
+                {isLoggedIn ? (
+                  <button onClick={handleLogout} style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: '1em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                  }}>
+                    <span>🚪</span> Déconnexion
+                  </button>
+                ) : (
+                  <Link href="/login" onClick={closeMenu} style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    fontSize: '1em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                  }}>
+                    <span>👤</span> Connexion
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions Desktop */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            {!isMobile && (
+              <div style={{
+                padding: '10px 20px',
+                borderRadius: '24px',
+                fontWeight: 600,
+                fontSize: '0.9em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: restaurantStatus === 'open' ? 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)' : 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)',
+                color: restaurantStatus === 'open' ? '#155724' : '#721c24',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+              }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: restaurantStatus === 'open' ? '#28a745' : '#dc3545',
+                  animation: 'pulse 2s infinite'
+                }}></span>
+                {restaurantStatus === 'open' ? 'Ouvert' : 'Fermé'}
+              </div>
+            )}
+
+            {!isMobile && isLoggedIn && (
+              <button onClick={handleLogout} style={{
+                width: '45px',
+                height: '45px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                border: 'none',
+                fontSize: '1.3em',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+                transition: 'all 0.3s ease'
+              }}>
+                🚪
+              </button>
+            )}
+
+            {!isMobile && !isLoggedIn && (
+              <Link href="/login" style={{
+                width: '45px',
+                height: '45px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+                fontSize: '1.3em',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
+                textDecoration: 'none',
+                transition: 'all 0.3s ease'
+              }}>
+                👤
+              </Link>
+            )}
+
+            {/* Hamburger Menu (Mobile Only) */}
+            {isMobile && (
+              <button onClick={() => setMenuOpen(!menuOpen)} style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '10px',
+                zIndex: 1001
+              }}>
+                <span style={{
+                  width: '28px',
+                  height: '3px',
+                  background: scrolled ? '#2c3e50' : 'white',
+                  borderRadius: '3px',
+                  transition: 'all 0.3s ease',
+                  transform: menuOpen ? 'rotate(45deg) translate(9px, 9px)' : 'none'
+                }}></span>
+                <span style={{
+                  width: '28px',
+                  height: '3px',
+                  background: scrolled ? '#2c3e50' : 'white',
+                  borderRadius: '3px',
+                  transition: 'all 0.3s ease',
+                  opacity: menuOpen ? 0 : 1,
+                  transform: menuOpen ? 'translateX(20px)' : 'none'
+                }}></span>
+                <span style={{
+                  width: '28px',
+                  height: '3px',
+                  background: scrolled ? '#2c3e50' : 'white',
+                  borderRadius: '3px',
+                  transition: 'all 0.3s ease',
+                  transform: menuOpen ? 'rotate(-45deg) translate(9px, -9px)' : 'none'
+                }}></span>
+              </button>
+            )}
           </div>
         </div>
       </header>
 
-      <style jsx>{`
-        .header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 1000;
-          transition: all 0.3s ease;
-          background: transparent;
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
-
-        .header.scrolled {
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(16px);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-container {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .logo {
-          text-decoration: none;
-          display: flex;
-          align-items: center;
-        }
-
-        .logo-img {
-          height: 50px;
-          object-fit: contain;
-          transition: all 0.3s ease;
-        }
-
-        .logo-content {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .logo-icon {
-          font-size: 2em;
-          transition: all 0.3s ease;
-        }
-
-        .logo-text {
-          font-size: 1.5em;
-          font-weight: bold;
-          color: #e74c3c;
-          transition: all 0.3s ease;
-        }
-
-        .header:not(.scrolled) .logo-text {
-          color: white;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .nav {
-          display: flex;
-          gap: 30px;
-        }
-
-        .nav-link {
-          text-decoration: none;
-          color: #2c3e50;
-          font-weight: 600;
-          transition: all 0.3s ease;
-          font-size: 1.1em;
-        }
-
-        .header:not(.scrolled) .nav-link {
-          color: white;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .nav-link:hover {
-          color: #e74c3c;
-        }
-
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-
-        .status-badge {
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-weight: 600;
-          font-size: 0.9em;
-          transition: all 0.3s ease;
-        }
-
-        .status-badge.open {
-          background: #d4edda;
-          color: #155724;
-        }
-
-        .status-badge.closed {
-          background: #f8d7da;
-          color: #721c24;
-        }
-
-        .menu-toggle {
-          display: none;
-          background: none;
-          border: none;
-          font-size: 2em;
-          cursor: pointer;
-          color: #2c3e50;
-          transition: color 0.3s ease;
-        }
-
-        .header:not(.scrolled) .menu-toggle {
-          color: white;
-        }
-
-        @media (max-width: 768px) {
-          .nav {
-            display: none;
-            position: absolute;
-            top: 80px;
-            left: 0;
-            right: 0;
-            background: white;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-          }
-
-          .nav-link {
-            color: #2c3e50 !important;
-            text-shadow: none !important;
-          }
-
-          .nav-open {
-            display: flex;
-          }
-
-          .menu-toggle {
-            display: block;
-          }
-
-          .status-badge {
-            display: none;
-          }
+        
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
         }
       `}</style>
     </>
