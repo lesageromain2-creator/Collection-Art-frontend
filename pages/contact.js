@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { fetchSettings } from '../utils/api';
+import { fetchSettings, sendContactMessage} from '../utils/api';
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle, XCircle } from 'lucide-react';
+
 
 export default function Contact() {
   const [settings, setSettings] = useState({});
@@ -42,16 +43,45 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    try {
-      // Ici, appeler l'API pour envoyer le message
-      // await sendContactMessage(formData);
-      
-      setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-      
+    // Validation basique
+    if (!formData.name || !formData.email || !formData.message || !formData.subject) {
+      setSubmitStatus('error');
       setTimeout(() => setSubmitStatus(null), 5000);
+      return;
+    }
+    
+    try {
+      console.log('📨 Envoi du formulaire de contact...');
+      
+      // Appel API
+      const response = await sendContactMessage({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        subject: formData.subject,
+        message: formData.message,
+        company: null, // Optionnel
+        project_type: null, // Optionnel
+        budget_range: null, // Optionnel
+      });
+      
+      console.log('✅ Message envoyé:', response);
+      setSubmitStatus('success');
+      
+      // Réinitialiser le formulaire
+      setFormData({ 
+        name: '', 
+        email: '', 
+        phone: '', 
+        subject: '', 
+        message: '' 
+      });
+      
+      // Masquer le message de succès après 5s
+      setTimeout(() => setSubmitStatus(null), 5000);
+      
     } catch (error) {
-      console.error('Erreur envoi message:', error);
+      console.error('❌ Erreur envoi message:', error);
       setSubmitStatus('error');
       setTimeout(() => setSubmitStatus(null), 5000);
     }

@@ -9,6 +9,7 @@ const navItems = [
   { href: '/offres', label: 'Offres' },
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/about', label: 'Présentation' },
+  { href: '/mes-messages', label: 'Messagerie' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -16,6 +17,7 @@ export default function Header({ settings = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const router = useRouter();
 
   const siteName = settings.site_name || 'LE SAGE';
@@ -30,7 +32,24 @@ export default function Header({ settings = {} }) {
     if (typeof window === 'undefined') return;
     const token = localStorage.getItem('authToken');
     setIsLoggedIn(!!token);
+    
+    // Récupérer le rôle de l'utilisateur si connecté
+    if (token) {
+      checkUserRole();
+    }
   }, []);
+
+  const checkUserRole = async () => {
+    try {
+      const { checkAuth } = await import('../utils/api');
+      const authData = await checkAuth();
+      if (authData.authenticated && authData.user) {
+        setUserRole(authData.user.role);
+      }
+    } catch (error) {
+      console.error('Erreur vérification rôle:', error);
+    }
+  };
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -95,6 +114,14 @@ export default function Header({ settings = {} }) {
           <div className="ml-4 flex items-center gap-2">
             {isLoggedIn ? (
               <>
+                {userRole === 'admin' && (
+                  <Link 
+                    href="/admin"
+                    className="rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1.5 text-xs font-semibold text-orange-400 hover:bg-orange-500/20"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link 
                   href="/dashboard"
                   className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-100 hover:bg-white/10"
@@ -192,6 +219,15 @@ export default function Header({ settings = {} }) {
         <div className="mt-6 border-t border-white/10 pt-4 text-sm">
           {isLoggedIn ? (
             <div className="space-y-3">
+              {userRole === 'admin' && (
+                <Link 
+                  href="/admin"
+                  onClick={() => setMenuOpen(false)}
+                  className="block rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-2 text-center font-semibold text-orange-400 hover:bg-orange-500/20"
+                >
+                  Espace Admin
+                </Link>
+              )}
               <Link 
                 href="/dashboard"
                 onClick={() => setMenuOpen(false)}
