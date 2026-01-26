@@ -9,7 +9,7 @@ import { login, fetchSettings } from '../utils/api';
 
 export default function Login() {
   const router = useRouter();
-  const { redirect } = router.query;
+  const { redirect, message } = router.query; // 🔥 Ajout de 'message'
   const [settings, setSettings] = useState({
     site_name: 'LE SAGE' // Valeur par défaut
   });
@@ -24,11 +24,17 @@ export default function Login() {
   const [shake, setShake] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [backendError, setBackendError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(''); // 🔥 Ajout
 
   useEffect(() => {
     loadSettings();
     setTimeout(() => setMounted(true), 50);
-  }, []);
+
+    // 🔥 Afficher message de succès si présent dans l'URL
+    if (message === 'password-reset-success') {
+      setSuccessMessage('✅ Mot de passe réinitialisé ! Vous pouvez maintenant vous connecter.');
+    }
+  }, [message]);
 
   const loadSettings = async () => {
     try {
@@ -49,6 +55,7 @@ export default function Login() {
       [e.target.name]: e.target.value
     });
     if (errors.length > 0) setErrors([]);
+    if (successMessage) setSuccessMessage(''); // 🔥 Réinitialiser le message de succès
   };
 
   const validateForm = () => {
@@ -77,6 +84,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors([]);
+    setSuccessMessage(''); // 🔥 Réinitialiser le message de succès
 
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
@@ -155,6 +163,22 @@ export default function Login() {
               <h1>Bon retour !</h1>
               <p>Connectez-vous pour accéder à votre espace</p>
             </div>
+
+            {/* 🔥 Success Message */}
+            {successMessage && (
+              <div className="success-box">
+                <div className="success-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                </div>
+                <div>
+                  <strong>Succès</strong>
+                  <p>{successMessage}</p>
+                </div>
+              </div>
+            )}
 
             {/* Errors */}
             {errors.length > 0 && (
@@ -520,6 +544,42 @@ export default function Login() {
           font-size: 1.1em;
         }
 
+        /* 🔥 SUCCESS BOX STYLES */
+        .success-box {
+          display: flex;
+          align-items: flex-start;
+          gap: 15px;
+          background: rgba(52, 199, 89, 0.15);
+          border: 2px solid rgba(52, 199, 89, 0.3);
+          border-radius: 15px;
+          padding: 20px;
+          margin-bottom: 30px;
+          animation: slideDown 0.4s ease;
+        }
+
+        .success-icon {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+        }
+
+        .success-icon svg {
+          stroke: #34C759;
+        }
+
+        .success-box strong {
+          display: block;
+          color: white;
+          font-size: 1.05em;
+          margin-bottom: 5px;
+        }
+
+        .success-box p {
+          color: rgba(255, 255, 255, 0.95);
+          font-weight: 500;
+          margin: 0;
+        }
+
         .error-box {
           display: flex;
           align-items: flex-start;
@@ -736,246 +796,246 @@ export default function Login() {
 
         .btn-submit:hover:not(:disabled) {
           transform: translateY(-3px);
-          box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
-        }
+          box-shadow: 0 15px 40px rgba(
+          102, 126, 234, 0.6);
+}
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
 
-        .btn-submit:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none;
-        }
+    .btn-submit svg {
+      width: 22px;
+      height: 22px;
+      position: relative;
+      z-index: 1;
+    }
 
-        .btn-submit svg {
-          width: 22px;
-          height: 22px;
-          position: relative;
-          z-index: 1;
-        }
+    .btn-submit span:not(.spinner) {
+      position: relative;
+      z-index: 1;
+    }
 
-        .btn-submit span:not(.spinner) {
-          position: relative;
-          z-index: 1;
-        }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
 
-        .spinner {
-          width: 22px;
-          height: 22px;
-          border: 3px solid rgba(255, 255, 255, 0.3);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+    .divider {
+      position: relative;
+      text-align: center;
+      margin: 35px 0;
+    }
 
-        .divider {
-          position: relative;
-          text-align: center;
-          margin: 35px 0;
-        }
+    .divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
 
-        .divider::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: 50%;
-          height: 1px;
-          background: rgba(255, 255, 255, 0.1);
-        }
+    .divider span {
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0 20px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9em;
+    }
 
-        .divider span {
-          position: relative;
-          background: rgba(255, 255, 255, 0.05);
-          padding: 0 20px;
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.9em;
-        }
+    .social-login {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 35px;
+    }
 
-        .social-login {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-          margin-bottom: 35px;
-        }
+    .social-btn {
+      padding: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
 
-        .social-btn {
-          padding: 14px;
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.03);
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-        }
+    .social-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
 
-        .social-btn:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.2);
-          transform: translateY(-2px);
-        }
+    .social-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
 
-        .social-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
+    .social-btn svg {
+      width: 20px;
+      height: 20px;
+    }
 
-        .social-btn svg {
-          width: 20px;
-          height: 20px;
-        }
+    .auth-footer {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .auth-footer {
-          text-align: center;
-          padding-top: 30px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .auth-footer p {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 15px;
+    }
 
-        .auth-footer p {
-          color: rgba(255, 255, 255, 0.7);
-          margin-bottom: 15px;
-        }
+    .register-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05em;
+      transition: all 0.3s ease;
+    }
 
-        .register-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          color: #667eea;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 1.05em;
-          transition: all 0.3s ease;
-        }
+    .register-link:hover {
+      color: #764ba2;
+      gap: 12px;
+    }
 
-        .register-link:hover {
-          color: #764ba2;
-          gap: 12px;
-        }
+    .register-link svg {
+      width: 18px;
+      height: 18px;
+    }
 
-        .register-link svg {
-          width: 18px;
-          height: 18px;
-        }
+    .auth-side {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 30px;
+      padding: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
 
-        .auth-side {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-radius: 30px;
-          padding: 60px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          overflow: hidden;
-        }
+    .auth-side::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+      background-size: 100px 100px;
+      opacity: 0.3;
+    }
 
-        .auth-side::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
-          background-size: 100px 100px;
-          opacity: 0.3;
-        }
+    .side-content {
+      position: relative;
+      z-index: 1;
+      color: white;
+    }
 
-        .side-content {
-          position: relative;
-          z-index: 1;
-          color: white;
-        }
+    .side-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 30px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: float 6s ease-in-out infinite;
+    }
 
-        .side-icon {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto 30px;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          animation: float 6s ease-in-out infinite;
-        }
+    .side-icon svg {
+      width: 40px;
+      height: 40px;
+    }
 
-        .side-icon svg {
-          width: 40px;
-          height: 40px;
-        }
+    .side-content h2 {
+      font-size: 2.2em;
+      margin-bottom: 30px;
+      font-weight: 800;
+      text-align: center;
+    }
 
-        .side-content h2 {
-          font-size: 2.2em;
-          margin-bottom: 30px;
-          font-weight: 800;
-          text-align: center;
-        }
+    .side-content ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-        .side-content ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        }
+    .side-content li {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 0;
+      font-size: 1.1em;
+      font-weight: 500;
+    }
 
-        .side-content li {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          padding: 15px 0;
-          font-size: 1.1em;
-          font-weight: 500;
-        }
+    .side-content li svg {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
 
-        .side-content li svg {
-          width: 24px;
-          height: 24px;
-          flex-shrink: 0;
-        }
+    @media (max-width: 1024px) {
+      .auth-container {
+        grid-template-columns: 1fr;
+      }
 
-        @media (max-width: 1024px) {
-          .auth-container {
-            grid-template-columns: 1fr;
-          }
+      .auth-side {
+        display: none;
+      }
+    }
 
-          .auth-side {
-            display: none;
-          }
-        }
+    @media (max-width: 768px) {
+      .auth-page {
+        padding: 20px 15px;
+      }
 
-        @media (max-width: 768px) {
-          .auth-page {
-            padding: 20px 15px;
-          }
+      .auth-card {
+        padding: 35px 25px;
+      }
 
-          .auth-card {
-            padding: 35px 25px;
-          }
+      .auth-header h1 {
+        font-size: 2em;
+      }
 
-          .auth-header h1 {
-            font-size: 2em;
-          }
+      .social-login {
+        grid-template-columns: 1fr;
+      }
 
-          .social-login {
-            grid-template-columns: 1fr;
-          }
+      .form-options {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
 
-          .form-options {
-            flex-direction: column;
-            gap: 15px;
-            align-items: flex-start;
-          }
-
-          .backend-warning {
-            font-size: 0.9em;
-            padding: 12px 20px;
-            top: 10px;
-          }
-        }
-      `}</style>
-    </>
-  );
+      .backend-warning {
+        font-size: 0.9em;
+        padding: 12px 20px;
+        top: 10px;
+      }
+    }
+  `}</style>
+</>
+);
 }
