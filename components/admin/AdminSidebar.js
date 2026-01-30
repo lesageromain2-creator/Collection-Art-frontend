@@ -5,6 +5,7 @@ import {
   FolderOpen, 
   Calendar, 
   MessageSquare, 
+  MessagesSquare,
   Users, 
   LogOut,
   Settings
@@ -17,7 +18,8 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
     { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard, path: '/admin' },
     { id: 'projects', label: 'Projets', icon: FolderOpen, path: '/admin/projects', badge: notifications.projects },
     { id: 'reservations', label: 'Rendez-vous', icon: Calendar, path: '/admin/reservations', badge: notifications.reservations },
-    { id: 'messages', label: 'Messages', icon: MessageSquare, path: '/admin/messages', badge: notifications.messages },
+    { id: 'chat', label: 'Chat', icon: MessagesSquare, path: '/admin/chat', badge: notifications.chat },
+    { id: 'messages', label: 'Contact', icon: MessageSquare, path: '/admin/messages', badge: notifications.messages },
     { id: 'clients', label: 'Clients', icon: Users, path: '/admin/clients', badge: notifications.clients },
   ];
 

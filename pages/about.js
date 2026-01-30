@@ -1,42 +1,56 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { CheckCircle2, Sparkles, Target, Users } from 'lucide-react';
+import { Mail, Linkedin } from 'lucide-react';
 
 const demoSettings = {
-  site_name: 'LE SAGE',
-  site_description:
-    'Création de sites web professionnels sur-mesure — design moderne, performance et maintenance continue.',
-  email: 'lesage.pro.dev@gmail.com',
-  phone_number: '+33 07 86 18 18 40',
-  city: 'Lyon',
-  website: 'www.LeSageDev.com',
+  site_name: 'Collection Aur\'art',
+  site_description: 'L\'Association de passionnés qui s\'engage à valoriser le patrimoine artistique sous toutes ses formes',
+  email: 'collection.aurart@gmail.com',
 };
 
-const values = [
+// Données de l'équipe - dans l'ordre demandé
+const teamMembers = [
   {
-    title: 'Clarté & pédagogie',
-    description:
-      'Un projet web ne devrait pas être opaque. On explique, on documente, on avance avec vous.',
-    icon: Sparkles,
+    name: 'Prénom Nom',
+    role: 'Président',
+    description: 'Description du président de l\'association et de son rôle.',
+    image: '/team/president.jpg',
+    email: 'president@collection.aurart.com',
+    linkedin: null,
   },
   {
-    title: 'Performance & SEO',
-    description:
-      'Vitesse, accessibilité, structure SEO : on vise des bases solides et mesurables (Lighthouse).',
-    icon: Target,
+    name: 'Prénom Nom',
+    role: 'Vice-Président',
+    description: 'Description du vice-président et de ses missions au sein de l\'association.',
+    image: '/team/vice-president.jpg',
+    email: 'vicepresident@collection.aurart.com',
+    linkedin: null,
   },
   {
-    title: 'Fiabilité',
-    description:
-      'Architecture clean, sécurité, bonnes pratiques. Un site doit tenir sur la durée.',
-    icon: CheckCircle2,
+    name: 'Prénom Nom',
+    role: 'Rédactrice en Chef',
+    description: 'Description de la rédactrice en chef et de son travail éditorial.',
+    image: '/team/redactrice.jpg',
+    email: 'redaction@collection.aurart.com',
+    linkedin: null,
   },
   {
-    title: 'Partenariat',
-    description:
-      'On travaille en transparence, avec des jalons clairs et une communication simple.',
-    icon: Users,
+    name: 'Prénom Nom',
+    role: 'Secrétaire',
+    description: 'Description du secrétaire et de ses responsabilités administratives.',
+    image: '/team/secretaire.jpg',
+    email: 'secretaire@collection.aurart.com',
+    linkedin: null,
+  },
+  {
+    name: 'Prénom Nom',
+    role: 'Développeur Web',
+    description: 'Description du développeur web et de son travail technique pour l\'association.',
+    image: '/team/dev.jpg',
+    email: 'dev@collection.aurart.com',
+    linkedin: null,
   },
 ];
 
@@ -44,124 +58,160 @@ export default function AboutPage() {
   return (
     <>
       <Head>
-        <title>Présentation – LE SAGE | Studio & agence web</title>
+        <title>Notre équipe – Collection Aur'art</title>
         <meta
           name="description"
-          content="Découvrez LE SAGE : une agence web moderne qui conçoit des sites vitrines, e-commerce et applications web performantes."
+          content="Découvrez l'équipe de Collection Aur'art : des passionnés engagés pour la valorisation du patrimoine artistique."
         />
       </Head>
 
-      <div className="min-h-screen bg-dark text-light">
+      <div className="min-h-screen bg-creme">
         <Header settings={demoSettings} />
 
-        <main className="px-6 py-16 md:py-20 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900">
-          <section className="mx-auto max-w-5xl">
-            <div className="text-center">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
-                Présentation
-              </p>
-              <h1 className="mt-2 font-heading text-3xl font-black text-white md:text-4xl">
-                LE SAGE
-                <span className="block bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
-                  Studio & agence web moderne
-                </span>
-              </h1>
-              <p className="mt-4 text-sm text-slate-300 md:text-base">
-                Nous créons des sites web professionnels sur-mesure, pensés
-                pour être beaux, rapides, sécurisés et orientés résultats.
-                Notre approche : design moderne, base technique solide, et un
-                accompagnement clair.
-              </p>
+        <main className="px-6 py-20 md:py-32">
+          {/* Hero Section */}
+          <section className="mx-auto max-w-4xl text-center mb-20">
+            <div className="mb-8 flex justify-center">
+              <div className="h-16 w-16 rounded-full bg-primary-gradient flex items-center justify-center shadow-lg">
+                <span className="text-2xl font-bold text-white font-serif">A</span>
+              </div>
             </div>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-              <div className="rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-xl backdrop-blur-xl">
-                <h2 className="font-heading text-lg font-semibold text-white md:text-xl">
-                  Notre mission
-                </h2>
-                <p className="mt-3 text-sm text-slate-200 md:text-base">
-                  Aider les professionnels (restaurant, commerce, service) à
-                  obtenir une présence en ligne crédible, moderne et efficace —
-                  avec une base technique qui évolue dans le temps.
-                </p>
-                <ul className="mt-5 space-y-2 text-sm text-slate-200">
-                  {[
-                    'Design UI/UX sur-mesure',
-                    'Performance & SEO',
-                    'Sécurité & base de données',
-                    'Hébergement & domaine',
-                    'Maintenance continue',
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-secondary" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <h1 className="font-heading text-4xl md:text-6xl font-bold text-anthracite mb-6">
+              Notre équipe
+            </h1>
+            
+            <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full mb-8"></div>
 
-              <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-primary/10 via-slate-950/60 to-secondary/10 p-6 shadow-xl">
-                <h2 className="font-heading text-lg font-semibold text-white md:text-xl">
-                  Notre promesse
-                </h2>
-                <p className="mt-3 text-sm text-slate-200 md:text-base">
-                  Un site livré proprement, documenté, et prêt à performer :
-                  vitesse, accessibilité, SEO, sécurité. Et surtout : une
-                  expérience fluide pour vous.
+            <p className="text-lg md:text-xl text-gris leading-relaxed max-w-3xl mx-auto text-justify">
+              Notre association se donne pour mission de questionner, valoriser et transmettre l'histoire de l'art dans toute sa complexité. À travers nos articles, nous explorons les œuvres, les courants artistiques, les procès, les dynamiques du marché de l'art et les enjeux contemporains de la protection patrimoniale.
+            </p>
+          </section>
+
+          {/* Présentation détaillée */}
+          <section className="mx-auto max-w-4xl mb-24">
+            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-anthracite/5">
+              <div className="space-y-6 text-justify">
+                <p className="text-base md:text-lg text-gris leading-relaxed">
+                  Nous refusons une approche élitiste de l'art qui le cantonne aux cercles initiés. Notre conviction est que la compréhension des œuvres, leur contexte historique et leur circulation actuelle constituent un enjeu culturel fondamental. L'art n'est pas un luxe réservé à quelques-uns : c'est un patrimoine commun qui façonne notre regard sur le monde et notre rapport à l'histoire.
                 </p>
-                <div className="mt-6 grid grid-cols-2 gap-3 text-xs text-slate-200">
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                      Délais
-                    </p>
-                    <p className="mt-2 text-lg font-black text-white">
-                      3–8 semaines
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-400">
-                      selon le type de projet
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-                    <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                      Objectif
-                    </p>
-                    <p className="mt-2 text-lg font-black text-white">
-                      Lighthouse 90+
-                    </p>
-                    <p className="mt-1 text-[11px] text-slate-400">
-                      perfs & accessibilité
-                    </p>
+
+                <p className="text-base md:text-lg text-gris leading-relaxed">
+                  Nos rubriques interrogent aussi bien la beauté formelle des créations que les questions juridiques, économiques et éthiques qui traversent le marché de l'art. Nous analysons les ventes aux enchères, les procès, décryptons les tendances, documentons les débats.
+                </p>
+
+                <p className="text-base md:text-lg text-gris leading-relaxed">
+                  Écrire sur l'art, c'est aussi prendre position : face aux inégalités d'accès à la culture, face à la marchandisation croissante des œuvres, face à l'urgence de préserver et transmettre notre héritage artistique. C'est notre façon de contribuer à une culture vivante, critique et partagée.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Section Équipe */}
+          <section className="mx-auto max-w-6xl">
+            <div className="text-center mb-16">
+              <h2 className="font-heading text-3xl md:text-5xl font-bold text-anthracite mb-4">
+                Les membres de l'association
+              </h2>
+              <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full"></div>
+            </div>
+
+            <div className="space-y-8">
+              {teamMembers.map((member, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-anthracite/5 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="grid md:grid-cols-[200px_1fr] gap-8 p-8">
+                    {/* Photo */}
+                    <div className="flex justify-center md:justify-start">
+                      <div className="relative">
+                        {member.image ? (
+                          <img
+                            src={member.image}
+                            alt={member.name}
+                            className="w-48 h-48 rounded-full object-cover border-4 border-anthracite/5"
+                          />
+                        ) : (
+                          <div className="w-48 h-48 rounded-full bg-primary-gradient flex items-center justify-center shadow-md">
+                            <span className="text-5xl font-bold text-white font-serif">
+                              {member.name.split(' ').map(n => n[0]).join('')}
+                            </span>
+                          </div>
+                        )}
+                        {/* Badge du rôle */}
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-4 py-1.5 rounded-full shadow-md border border-anthracite/10">
+                          <span className="text-sm font-semibold text-framboise">
+                            {member.role}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Informations */}
+                    <div className="flex flex-col justify-center">
+                      <h3 className="font-heading text-2xl md:text-3xl font-semibold text-anthracite mb-3">
+                        {member.name}
+                      </h3>
+                      
+                      <p className="text-gris leading-relaxed mb-4">
+                        {member.description}
+                      </p>
+
+                      {/* Contact */}
+                      <div className="flex flex-wrap gap-3">
+                        {member.email && (
+                          <a
+                            href={`mailto:${member.email}`}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                          >
+                            <Mail className="h-4 w-4" />
+                            <span>Contact</span>
+                          </a>
+                        )}
+                        {member.linkedin && (
+                          <a
+                            href={member.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                          >
+                            <Linkedin className="h-4 w-4" />
+                            <span>LinkedIn</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="mx-auto max-w-4xl mt-24">
+            <div className="bg-white rounded-2xl p-8 md:p-12 text-center shadow-sm border border-anthracite/5">
+              <h2 className="font-heading text-2xl md:text-3xl font-bold text-anthracite mb-4">
+                Rejoignez notre communauté
+              </h2>
+              <p className="text-gris mb-6 max-w-2xl mx-auto leading-relaxed">
+                Découvrez nos articles, analyses et réflexions sur l'art, son histoire et son marché. Une culture artistique vivante, critique et partagée.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  href="/articles"
+                  className="inline-flex items-center justify-center gap-2 bg-primary-gradient text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                >
+                  Lire nos articles
+                </Link>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center justify-center gap-2 border-2 border-anthracite/20 text-anthracite px-8 py-3 rounded-full font-medium hover:border-framboise hover:text-framboise transition-all"
+                >
+                  Nous contacter
+                </Link>
               </div>
             </div>
-
-            <section className="mt-12">
-              <h2 className="text-center font-heading text-2xl font-bold text-white md:text-3xl">
-                Nos valeurs
-              </h2>
-              <div className="mt-6 grid gap-5 md:grid-cols-4">
-                {values.map((v) => {
-                  const Icon = v.icon;
-                  return (
-                    <div
-                      key={v.title}
-                      className="rounded-2xl border border-white/10 bg-slate-950/80 p-5 shadow-lg transition hover:-translate-y-1 hover:border-secondary/70 hover:shadow-2xl"
-                    >
-                      <div className="inline-flex rounded-2xl bg-primary/10 p-3 text-primary">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="mt-4 font-heading text-base font-semibold text-white">
-                        {v.title}
-                      </h3>
-                      <p className="mt-2 text-xs text-slate-300">
-                        {v.description}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
           </section>
         </main>
 
@@ -170,4 +220,3 @@ export default function AboutPage() {
     </>
   );
 }
-

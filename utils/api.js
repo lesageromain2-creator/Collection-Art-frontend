@@ -397,6 +397,15 @@ export const getReservationById = async (id) => {
   }
 };
 
+export const getMyProjects = async () => {
+  try {
+    const data = await fetchAPI('/dashboard/projects');
+    return data.projects || data || [];
+  } catch (e) {
+    return [];
+  }
+};
+
 export const cancelReservation = async (id) => {
   try {
     const data = await fetchAPI(`/reservations/${id}/cancel`, {
@@ -595,6 +604,24 @@ export const updateAdminProject = async (id, data) => {
   });
 };
 
+export const createAdminProject = async (projectData) => {
+  return fetchAPI('/admin/projects', {
+    method: 'POST',
+    body: JSON.stringify(projectData),
+  });
+};
+
+export const deleteAdminProject = async (id) => {
+  return fetchAPI(`/admin/projects/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getAdminClients = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/dashboard/users${queryString ? `?${queryString}` : ''}`);
+};
+
 export const createProjectTask = async (projectId, taskData) => {
   return fetchAPI(`/admin/projects/${projectId}/tasks`, {
     method: 'POST',
@@ -732,6 +759,59 @@ export const deleteProjectFile = async (fileId) => {
   });
 };
 
+/** GET /projects/:projectId/files — liste des fichiers (projectFiles API) */
+export const getProjectFiles = async (projectId) => {
+  return fetchAPI(`/projects/${projectId}/files`);
+};
+
+/** POST multipart /projects/:projectId/files — upload avec progression */
+export const uploadProjectFiles = (projectId, files, { onProgress } = {}) => {
+  return new Promise((resolve, reject) => {
+    const token = getToken();
+    const url = `${API_URL}/projects/${projectId}/files`;
+    const xhr = new XMLHttpRequest();
+    const fd = new FormData();
+    files.forEach((f) => fd.append('files', f));
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && typeof onProgress === 'function') {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    });
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch {
+          resolve({});
+        }
+      } else {
+        try {
+          const d = JSON.parse(xhr.responseText);
+          reject(new Error(d.error || d.message || `Upload failed ${xhr.status}`));
+        } catch {
+          reject(new Error(`Upload failed ${xhr.status}`));
+        }
+      }
+    });
+    xhr.addEventListener('error', () => reject(new Error('Erreur réseau')));
+    xhr.open('POST', url);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.send(fd);
+  });
+};
+
+/** GET /projects/:projectId/files/:fileId/download — URL de téléchargement */
+export const getProjectFileDownload = async (projectId, fileId) => {
+  const data = await fetchAPI(`/projects/${projectId}/files/${fileId}/download`);
+  return data.downloadUrl || data.url;
+};
+
+/** DELETE /projects/:projectId/files/:fileId */
+export const deleteProjectFileByProject = async (projectId, fileId) => {
+  return fetchAPI(`/projects/${projectId}/files/${fileId}`, { method: 'DELETE' });
+};
+
 export const sendProjectUpdate = async (projectId, updateData) => {
   return fetchAPI(`/admin/projects/${projectId}/update-message`, {
     method: 'POST',
@@ -743,5 +823,359 @@ export const deleteProjectMilestone = async (milestoneId) => {
   return fetchAPI(`/admin/projects/milestones/${milestoneId}`, {
     method: 'DELETE',
   });
+};
+
+// ============================================
+// BLOG API
+// ============================================
+
+export const getAllBlogPosts = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/api/blog${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getBlogPostBySlug = async (slug) => {
+  return fetchAPI(`/api/blog/${slug}`);
+};
+
+export const getBlogCategories = async () => {
+  return fetchAPI('/api/blog/categories');
+};
+
+export const getBlogTags = async () => {
+  return fetchAPI('/api/blog/tags');
+};
+
+// Admin Blog
+export const createBlogPost = async (postData) => {
+  return fetchAPI('/api/blog', {
+    method: 'POST',
+    body: JSON.stringify(postData),
+  });
+};
+
+export const updateBlogPost = async (id, postData) => {
+  return fetchAPI(`/api/blog/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(postData),
+  });
+};
+
+export const deleteBlogPost = async (id) => {
+  return fetchAPI(`/api/blog/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getAdminBlogPosts = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/blog${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getBlogStats = async () => {
+  return fetchAPI('/admin/blog/stats');
+};
+
+// ============================================
+// OFFERS API
+// ============================================
+
+export const getAllOffers = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/api/offers${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getOfferBySlug = async (slug) => {
+  return fetchAPI(`/api/offers/${slug}`);
+};
+
+// Admin Offers
+export const createOffer = async (offerData) => {
+  return fetchAPI('/api/offers', {
+    method: 'POST',
+    body: JSON.stringify(offerData),
+  });
+};
+
+export const updateOffer = async (id, offerData) => {
+  return fetchAPI(`/api/offers/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(offerData),
+  });
+};
+
+export const deleteOffer = async (id) => {
+  return fetchAPI(`/api/offers/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getAdminOffers = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/offers${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getOffersStats = async () => {
+  return fetchAPI('/admin/offers/stats');
+};
+
+// ============================================
+// TESTIMONIALS API
+// ============================================
+
+export const getAllTestimonials = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/api/testimonials${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getTestimonialById = async (id) => {
+  return fetchAPI(`/api/testimonials/${id}`);
+};
+
+// Admin Testimonials
+export const createTestimonial = async (testimonialData) => {
+  return fetchAPI('/api/testimonials', {
+    method: 'POST',
+    body: JSON.stringify(testimonialData),
+  });
+};
+
+export const updateTestimonial = async (id, testimonialData) => {
+  return fetchAPI(`/api/testimonials/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(testimonialData),
+  });
+};
+
+export const deleteTestimonial = async (id) => {
+  return fetchAPI(`/api/testimonials/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+export const getAdminTestimonials = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/testimonials${queryString ? `?${queryString}` : ''}`);
+};
+
+export const approveTestimonial = async (id) => {
+  return fetchAPI(`/admin/testimonials/${id}/approve`, {
+    method: 'PUT',
+  });
+};
+
+export const getTestimonialsStats = async () => {
+  return fetchAPI('/admin/testimonials/stats');
+};
+
+// ============================================
+// NEWSLETTER API
+// ============================================
+
+export const subscribeNewsletter = async (email, name = null) => {
+  return fetchAPI('/api/newsletter/subscribe', {
+    method: 'POST',
+    body: JSON.stringify({ email, name }),
+  });
+};
+
+export const unsubscribeNewsletter = async (email) => {
+  return fetchAPI('/api/newsletter/unsubscribe', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+};
+
+// Admin Newsletter
+export const getNewsletterSubscribers = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/newsletter/subscribers${queryString ? `?${queryString}` : ''}`);
+};
+
+export const sendNewsletterEmail = async (emailData) => {
+  return fetchAPI('/admin/newsletter/send', {
+    method: 'POST',
+    body: JSON.stringify(emailData),
+  });
+};
+
+export const getNewsletterStats = async () => {
+  return fetchAPI('/admin/newsletter/stats');
+};
+
+export const exportNewsletterSubscribers = async () => {
+  return fetchAPI('/admin/newsletter/export');
+};
+
+// ============================================
+// ADMIN LOGS API
+// ============================================
+
+export const getAdminActivityLogs = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/logs/activity${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getAdminAlerts = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/admin/logs/alerts${queryString ? `?${queryString}` : ''}`);
+};
+
+export const resolveAlert = async (id) => {
+  return fetchAPI(`/admin/logs/alerts/${id}/resolve`, {
+    method: 'PUT',
+  });
+};
+
+export const getLogsStats = async () => {
+  return fetchAPI('/admin/logs/stats');
+};
+
+// ============================================
+// MESSAGES / CHAT API (Pour chat admin-client)
+// ============================================
+
+export const getConversations = async () => {
+  return fetchAPI('/admin/messages/conversations');
+};
+
+// Récupérer tous les messages d'un utilisateur spécifique (Admin)
+export const getAdminUserMessages = async (userId) => {
+  return fetchAPI(`/admin/messages/user/${userId}`);
+};
+
+// Récupérer les détails d'une conversation spécifique (par message ID)
+export const getConversationMessages = async (messageId) => {
+  return fetchAPI(`/admin/messages/conversations/${messageId}`);
+};
+
+// Envoyer un message à un utilisateur (Admin → Client notification)
+export const sendMessageToUser = async (userId, message, title = null) => {
+  return fetchAPI(`/admin/messages/user/${userId}/send`, {
+    method: 'POST',
+    body: JSON.stringify({ message, title }),
+  });
+};
+
+export const getUserConversation = async () => {
+  return fetchAPI('/messages/conversation');
+};
+
+export const sendMessageToAdmin = async (message) => {
+  return fetchAPI('/messages/send', {
+    method: 'POST',
+    body: JSON.stringify({ message }),
+  });
+};
+
+export const markMessagesAsRead = async (conversationId) => {
+  return fetchAPI(`/messages/${conversationId}/mark-read`, {
+    method: 'PUT',
+  });
+};
+
+// ============================================
+// CHAT API (Système de chat temps réel)
+// ============================================
+
+export const getChatConversations = async () => {
+  return fetchAPI('/chat/conversations');
+};
+
+export const createChatConversation = async (data) => {
+  return fetchAPI('/chat/conversations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+};
+
+export const getChatMessages = async (conversationId, params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/chat/conversations/${conversationId}/messages${queryString ? `?${queryString}` : ''}`);
+};
+
+export const sendChatMessage = async (conversationId, message, messageType = 'text', fileUrl = null, fileName = null) => {
+  return fetchAPI(`/chat/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ message, message_type: messageType, file_url: fileUrl, file_name: fileName }),
+  });
+};
+
+export const markChatAsRead = async (conversationId) => {
+  return fetchAPI(`/chat/conversations/${conversationId}/read`, {
+    method: 'PUT',
+  });
+};
+
+export const closeChatConversation = async (conversationId) => {
+  return fetchAPI(`/chat/conversations/${conversationId}/close`, {
+    method: 'PUT',
+  });
+};
+
+export const getChatUnreadCount = async () => {
+  return fetchAPI('/chat/unread-count');
+};
+
+export const getAdminChatConversations = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/chat/admin/all${queryString ? `?${queryString}` : ''}`);
+};
+
+export const getChatStats = async () => {
+  return fetchAPI('/chat/admin/stats');
+};
+
+// ============================================
+// USER NOTIFICATIONS API
+// ============================================
+
+export const getUserNotifications = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  return fetchAPI(`/users/notifications${queryString ? `?${queryString}` : ''}`);
+};
+
+export const markNotificationAsRead = async (id) => {
+  return fetchAPI(`/users/notifications/${id}/read`, {
+    method: 'PUT',
+  });
+};
+
+export const markAllNotificationsAsRead = async () => {
+  return fetchAPI('/users/notifications/read-all', {
+    method: 'PUT',
+  });
+};
+
+export const deleteNotification = async (id) => {
+  return fetchAPI(`/users/notifications/${id}`, {
+    method: 'DELETE',
+  });
+};
+
+// ============================================
+// PAYMENTS / STRIPE API
+// ============================================
+
+export const createPaymentIntent = async (paymentData) => {
+  return fetchAPI('/api/payments/create-payment-intent', {
+    method: 'POST',
+    body: JSON.stringify(paymentData),
+  });
+};
+
+export const createCheckoutSession = async (sessionData) => {
+  return fetchAPI('/api/payments/create-checkout-session', {
+    method: 'POST',
+    body: JSON.stringify(sessionData),
+  });
+};
+
+export const getPaymentHistory = async () => {
+  return fetchAPI('/api/payments/history');
+};
+
+export const getInvoice = async (invoiceId) => {
+  return fetchAPI(`/api/payments/invoices/${invoiceId}`);
 };
 

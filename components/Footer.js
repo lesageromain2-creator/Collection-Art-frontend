@@ -1,82 +1,80 @@
 import Link from 'next/link';
-import { Globe, Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, Instagram, Linkedin } from 'lucide-react';
+
+// Icône TikTok personnalisée
+const TikTokIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 export default function Footer({ settings = {} }) {
   const currentYear = new Date().getFullYear();
 
-  const siteName = settings.site_name || 'LE SAGE';
+  const siteName = settings.site_name || 'Collection Aur\'art';
   const siteDescription =
     settings.site_description ||
-    'Création de sites web professionnels sur-mesure — design moderne, performance et maintenance continue.';
+    'L\'Association de passionnés qui s\'engage à valoriser le patrimoine artistique sous toutes ses formes.';
 
-  const email = settings.email || 'lesage.pro.dev@gmail.com';
-  const phone = settings.phone_number || '+33 07 86 18 18 40';
-  const city = settings.city || 'Lyon';
-  const website = settings.website || 'www.LeSageDev.com';
+  const email = settings.email || 'collection.aurart@gmail.com';
 
   return (
-    <footer className="border-t border-white/10 bg-slate-950/80">
+    <footer className="border-t border-anthracite/10 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-secondary shadow-lg shadow-primary/30">
-                <span className="font-heading text-sm font-black text-white">
-                  LS
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-gradient shadow-md">
+                <span className="font-heading text-lg font-bold text-white">
+                  A
                 </span>
               </div>
               <div>
-                <p className="font-heading text-lg font-semibold text-white">
+                <p className="font-heading text-lg font-semibold text-anthracite">
                   {siteName}
                 </p>
-                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">
-                  Studio & agence web
+                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gris">
+                  Esquisses de l'Art & son marché
                 </p>
               </div>
             </div>
 
-            <p className="mt-4 max-w-xl text-sm text-slate-300">
+            <p className="mt-4 max-w-xl text-sm text-gris leading-relaxed">
               {siteDescription}
             </p>
 
-            <p className="mt-4 text-xs text-slate-400">
-              Design moderne • Base de données sécurisée • Hébergement & domaine
-              • Maintenance continue
+            <p className="mt-4 text-xs text-gris italic">
+              « L'art n'est pas un luxe réservé à quelques-uns : c'est un patrimoine commun qui façonne notre regard sur le monde. »
             </p>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-anthracite">
               Navigation
             </p>
-            <ul className="mt-4 space-y-2 text-sm text-slate-200">
+            <ul className="mt-4 space-y-2 text-sm text-gris">
               <li>
-                <Link href="/" className="hover:text-white">
+                <Link href="/" className="hover:text-framboise transition-colors">
                   Accueil
                 </Link>
               </li>
               <li>
-                <Link href="/services" className="hover:text-white">
-                  Services
+                <Link href="/rubriques" className="hover:text-framboise transition-colors">
+                  Rubriques
                 </Link>
               </li>
               <li>
-                <Link href="/offres" className="hover:text-white">
-                  Offres
+                <Link href="/articles" className="hover:text-framboise transition-colors">
+                  Articles
                 </Link>
               </li>
               <li>
-                <Link href="/portfolio" className="hover:text-white">
-                  Portfolio
+                <Link href="/about" className="hover:text-framboise transition-colors">
+                  Notre équipe
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-white">
-                  Présentation
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-white">
+                <Link href="/contact" className="hover:text-framboise transition-colors">
                   Contact
                 </Link>
               </li>
@@ -84,48 +82,59 @@ export default function Footer({ settings = {} }) {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
-              Contact
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-anthracite">
+              Contact & Réseaux
             </p>
-            <ul className="mt-4 space-y-3 text-sm text-slate-200">
+            <ul className="mt-4 space-y-3">
               <li className="flex items-start gap-2">
-                <Mail className="mt-0.5 h-4 w-4 text-secondary" />
-                <a className="hover:text-white" href={`mailto:${email}`}>
+                <Mail className="mt-0.5 h-4 w-4 text-framboise flex-shrink-0" />
+                <a className="text-sm text-gris hover:text-framboise transition-colors break-all" href={`mailto:${email}`}>
                   {email}
                 </a>
               </li>
-              <li className="flex items-start gap-2">
-                <Phone className="mt-0.5 h-4 w-4 text-secondary" />
-                <a className="hover:text-white" href={`tel:${phone}`}>
-                  {phone}
-                </a>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 text-secondary" />
-                <span>{city}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Globe className="mt-0.5 h-4 w-4 text-secondary" />
-                <a
-                  className="hover:text-white"
-                  href={`https://${website.replace(/^https?:\/\//, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {website}
-                </a>
+              
+              <li className="pt-2">
+                <p className="text-xs text-gris mb-3">Suivez-nous</p>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://www.tiktok.com/@collection.aurart"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-anthracite/5 text-anthracite hover:bg-framboise hover:text-white transition-all"
+                    aria-label="TikTok"
+                  >
+                    <TikTokIcon className="h-4 w-4" />
+                  </a>
+                  <a
+                    href="https://www.instagram.com/collection.aurart"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-anthracite/5 text-anthracite hover:bg-framboise hover:text-white transition-all"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/company/collection-aurart"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-anthracite/5 text-anthracite hover:bg-framboise hover:text-white transition-all"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                </div>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-anthracite/10 pt-6 text-xs text-gris md:flex-row">
           <p>
             © {currentYear} {siteName}. Tous droits réservés.
           </p>
-          <p className="text-slate-500">
-            Création de sites web professionnels sur-mesure — Restaurant •
-            Commerce • Service
+          <p className="text-center md:text-right">
+            Association de valorisation du patrimoine artistique
           </p>
         </div>
       </div>

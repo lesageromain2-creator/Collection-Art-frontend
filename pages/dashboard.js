@@ -2,17 +2,25 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Calendar, FolderOpen, FileText, User, Settings, LogOut, Briefcase, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, FolderOpen, FileText, User, Settings, LogOut, Briefcase, Clock, CheckCircle, XCircle, Plus } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CreateProjectModal from '../components/CreateProjectModal';
 import { 
   checkAuth, 
   logout, 
   fetchSettings, 
   getMyReservations,
   cancelReservation,
-  deleteReservation
+  deleteReservation,
+  getMyProjects
 } from '../utils/api';
+import { createProject, getClients } from '../utils/projectApi';
+import { toast } from 'react-toastify';
+import FileDropzone from '../components/FileUpload/FileDropzone';
+import FileGallery from '../components/FileUpload/FileGallery';
+import { useFileUpload } from '../hooks/useFileUpload';
+import { useProjectFiles } from '../hooks/useProjectFiles';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -33,6 +41,18 @@ export default function Dashboard() {
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState(null);
 
+  // Fichiers / projets
+  const [myProjects, setMyProjects] = useState([]);
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [filesInProgress, setFilesInProgress] = useState([]);
+  const { uploadFiles, uploading, progress, error: uploadError } = useFileUpload(selectedProjectId);
+  const { files, loading: filesLoading, error: filesError, refreshFiles, downloadFile, deleteFile } = useProjectFiles(selectedProjectId);
+
+  // Modal création projet
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+  const [clients, setClients] = useState([]);
+  const [clientsLoading, setClientsLoading] = useState(false);
+
   useEffect(() => {
     loadUserData();
     setTimeout(() => setMounted(true), 50);
@@ -42,6 +62,13 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeTab === 'reservations' && user) {
       loadReservations();
+    }
+  }, [activeTab, user]);
+
+  // Charger mes projets quand onglet Fichiers ou Projects
+  useEffect(() => {
+    if ((activeTab === 'files' || activeTab === 'projects') && user) {
+      getMyProjects().then(setMyProjects);
     }
   }, [activeTab, user]);
 
@@ -559,18 +586,59 @@ export default function Dashboard() {
               <div className="content-section">
                 <div className="section-card">
                   <h2>Mes Projets</h2>
-                  <div className="empty-state">
-                    <FolderOpen size={80} />
-                    <h3>Aucun projet</h3>
-                    <p>Vos projets en cours apparaîtront ici</p>
-                    <button 
-                      className="btn-primary"
-                      onClick={() => router.push('/offres')}
-                      style={{ marginTop: '20px' }}
-                    >
-                      Découvrir nos offres
-                    </button>
-                  </div>
+                  {myProjects.length === 0 ? (
+                    <div className="empty-state">
+                      <FolderOpen size={80} />
+                      <h3>Aucun projet</h3>
+                      <p>Vos projets en cours apparaîtront ici</p>
+                      <button 
+                        className="btn-primary"
+                        onClick={() => router.push('/offres')}
+                        style={{ marginTop: '20px' }}
+                      >
+                        Découvrir nos offres
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="projects-list">
+                      {myProjects.map((project) => (
+                        <div key={project.id} className="project-card" onClick={() => router.push(`/mes-projets/${project.id}`)}>
+                          <div className="project-header-card">
+                            <h3>{project.title || project.name || 'Projet'}</h3>
+                            <span className={`status-badge status-${project.status}`}>
+                              {project.status === 'discovery' && 'Découverte'}
+                              {project.status === 'design' && 'Design'}
+                              {project.status === 'development' && 'Développement'}
+                              {project.status === 'testing' && 'Tests'}
+                              {project.status === 'launched' && 'Lancé'}
+                              {project.status === 'completed' && 'Terminé'}
+                              {project.status === 'on_hold' && 'En pause'}
+                            </span>
+                          </div>
+                          <p className="project-description">{project.description || 'Aucune description'}</p>
+                          {project.progress !== undefined && (
+                            <div className="progress-container">
+                              <div className="progress-label">
+                                <span>Progression</span>
+                                <span>{project.progress}%</span>
+                              </div>
+                              <div className="progress-bar-small">
+                                <div className="progress-fill-small" style={{ width: `${project.progress}%` }}></div>
+                              </div>
+                            </div>
+                          )}
+                          <div className="project-footer">
+                            {project.estimated_delivery && (
+                              <span className="project-date">
+                                <Calendar size={14} />
+                                Livraison: {new Date(project.estimated_delivery).toLocaleDateString('fr-FR')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -580,11 +648,85 @@ export default function Dashboard() {
               <div className="content-section">
                 <div className="section-card">
                   <h2>Mes Fichiers</h2>
-                  <div className="empty-state">
-                    <FileText size={80} />
-                    <h3>Aucun fichier</h3>
-                    <p>Les fichiers partagés avec vous apparaîtront ici</p>
-                  </div>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '6px', marginBottom: '20px' }}>
+                    Téléversez et consultez les fichiers de vos projets
+                  </p>
+                  {myProjects.length === 0 ? (
+                    <div className="empty-state">
+                      <FileText size={80} />
+                      <h3>Aucun projet</h3>
+                      <p>Vos projets en cours apparaîtront ici. Les fichiers partagés avec vous seront accessibles par projet.</p>
+                      <button
+                        className="btn-primary"
+                        onClick={() => router.push('/offres')}
+                        style={{ marginTop: '20px' }}
+                      >
+                        Découvrir nos offres
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', color: 'rgba(255,255,255,0.8)' }}>Projet</label>
+                        <select
+                          value={selectedProjectId || ''}
+                          onChange={(e) => setSelectedProjectId(e.target.value || null)}
+                          style={{
+                            width: '100%',
+                            maxWidth: '400px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            background: 'rgba(255,255,255,0.08)',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#fff',
+                          }}
+                        >
+                          <option value="">Sélectionner un projet</option>
+                          {myProjects.map((p) => (
+                            <option key={p.id} value={p.id}>{p.title || p.name || p.id}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {selectedProjectId && (
+                        <>
+                          <FileDropzone
+                            onFilesSelected={async (f) => {
+                              setFilesInProgress(f);
+                              try {
+                                await uploadFiles(f);
+                                toast.success('Fichier(s) envoyé(s) avec succès');
+                                setFilesInProgress([]);
+                                refreshFiles();
+                              } catch (e) {
+                                toast.error(e.message || "Échec de l'upload");
+                                setFilesInProgress([]);
+                              }
+                            }}
+                            maxFiles={10}
+                            maxSize={50 * 1024 * 1024}
+                            multiple
+                            uploading={uploading}
+                            progress={progress}
+                            filesInProgress={filesInProgress}
+                            uploadError={uploadError}
+                          />
+                          <div style={{ marginTop: '28px' }}>
+                            <FileGallery
+                              files={files}
+                              loading={filesLoading}
+                              error={filesError}
+                              onDownload={downloadFile}
+                              onDelete={deleteFile}
+                              onBulkDelete={async (ids) => {
+                                for (const id of ids) await deleteFile(id);
+                                refreshFiles();
+                              }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -1294,6 +1436,110 @@ export default function Dashboard() {
           }
         }
 
+        .projects-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 24px;
+        }
+
+        .project-card {
+          padding: 24px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .project-card:hover {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(0, 102, 255, 0.5);
+          transform: translateY(-4px);
+        }
+
+        .project-header-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+
+        .project-header-card h3 {
+          color: white;
+          font-size: 1.2em;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        .status-badge {
+          padding: 6px 12px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          white-space: nowrap;
+        }
+
+        .status-discovery { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
+        .status-design { background: rgba(0, 217, 255, 0.2); color: #00D9FF; }
+        .status-development { background: rgba(0, 102, 255, 0.2); color: #0066FF; }
+        .status-testing { background: rgba(255, 140, 66, 0.2); color: #FF8C42; }
+        .status-launched { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-completed { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+        .status-on_hold { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .project-description {
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 0.95em;
+          line-height: 1.5;
+          margin-bottom: 16px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .progress-container {
+          margin-bottom: 16px;
+        }
+
+        .progress-label {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.85em;
+          color: rgba(255, 255, 255, 0.6);
+          margin-bottom: 8px;
+        }
+
+        .progress-bar-small {
+          width: 100%;
+          height: 8px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .progress-fill-small {
+          height: 100%;
+          background: linear-gradient(90deg, #0066FF, #00D9FF);
+          transition: width 0.5s ease;
+        }
+
+        .project-footer {
+          padding-top: 12px;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .project-date {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 0.85em;
+        }
+
         @media (max-width: 768px) {
           .dashboard-page {
             padding-top: 60px;
@@ -1314,6 +1560,10 @@ export default function Dashboard() {
           }
 
           .quick-actions {
+            grid-template-columns: 1fr;
+          }
+
+          .projects-list {
             grid-template-columns: 1fr;
           }
         }

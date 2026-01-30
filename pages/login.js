@@ -101,6 +101,8 @@ export default function Login() {
         password: formData.password
       });
 
+      console.log('✅ Login response:', loginResponse);
+
       // Rediriger les admins vers /admin, les autres vers /dashboard
       let redirectUrl = redirect;
       if (!redirectUrl) {
@@ -111,7 +113,12 @@ export default function Login() {
           redirectUrl = '/dashboard';
         }
       }
-      router.push(redirectUrl);
+      
+      console.log('🔄 Redirection vers:', redirectUrl);
+      
+      // Utiliser replace pour éviter de revenir sur login avec le bouton retour
+      await router.replace(redirectUrl);
+      
     } catch (error) {
       const errorMessage = error.message || 'Email ou mot de passe incorrect';
       

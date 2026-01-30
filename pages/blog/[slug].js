@@ -1,0 +1,391 @@
+// frontend/pages/blog/[slug].js
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Link from 'next/link';
+import { Calendar, User, Tag, ArrowLeft, Clock, Share2 } from 'lucide-react';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import { getBlogPostBySlug, fetchSettings } from '../../utils/api';
+
+export default function BlogPostPage() {
+  const router = useRouter();
+  const { slug } = router.query;
+  const [post, setPost] = useState(null);
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (slug) {
+      loadPost();
+    }
+  }, [slug]);
+
+  const loadPost = async () => {
+    try {
+      setLoading(true);
+      const [postData, settingsData] = await Promise.all([
+        getBlogPostBySlug(slug),
+        fetchSettings()
+      ]);
+      
+      setPost(postData.post || postData);
+      setSettings(settingsData);
+    } catch (error) {
+      console.error('Erreur chargement article:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const sharePost = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.excerpt,
+        url: window.location.href
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Head><title>Chargement... - Blog</title></Head>
+        <Header settings={settings} />
+        <div style={{ minHeight: '100vh', background: '#0A0E27', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="spinner"></div>
+        </div>
+        <style jsx>{`
+          .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0066FF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </>
+    );
+  }
+
+  if (!post) {
+    return (
+      <>
+        <Head><title>Article non trouvé - Blog</title></Head>
+        <Header settings={settings} />
+        <div style={{ minHeight: '100vh', background: '#0A0E27', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'white' }}>
+          <h1>Article non trouvé</h1>
+          <Link href="/blog" style={{ color: '#00D9FF', marginTop: '20px' }}>← Retour au blog</Link>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Head>
+        <title>{post.title} - Blog - {settings.site_name || 'LE SAGE DEV'}</title>
+        <meta name="description" content={post.excerpt || post.content?.substring(0, 160)} />
+      </Head>
+
+      <Header settings={settings} />
+
+      <div className="post-page">
+        <div className="post-container">
+          <Link href="/blog" className="back-link">
+            <ArrowLeft size={20} />
+            Retour au blog
+          </Link>
+
+          {post.featured_image && (
+            <div className="post-hero-image">
+              <img src={post.featured_image} alt={post.title} />
+            </div>
+          )}
+
+          <article className="post-article">
+            <header className="post-header">
+              {post.category && (
+                <span className="category-badge">{post.category}</span>
+              )}
+              
+              <h1>{post.title}</h1>
+              
+              {post.excerpt && (
+                <p className="post-lead">{post.excerpt}</p>
+              )}
+
+              <div className="post-meta">
+                <span className="meta-item">
+                  <Calendar size={16} />
+                  {formatDate(post.published_at || post.created_at)}
+                </span>
+                <span className="meta-item">
+                  <User size={16} />
+                  {post.author_name || 'Admin'}
+                </span>
+                <span className="meta-item">
+                  <Clock size={16} />
+                  {post.read_time || 5} min de lecture
+                </span>
+                <button onClick={sharePost} className="share-btn">
+                  <Share2 size={16} />
+                  Partager
+                </button>
+              </div>
+            </header>
+
+            <div 
+              className="post-body" 
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+
+            {post.tags && post.tags.length > 0 && (
+              <div className="post-tags">
+                <strong>Tags:</strong>
+                {post.tags.map((tag, idx) => (
+                  <span key={idx} className="tag">
+                    <Tag size={14} />
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </article>
+        </div>
+      </div>
+
+      <Footer settings={settings} />
+
+      <style jsx>{`
+        .post-page {
+          min-height: 100vh;
+          background: #0A0E27;
+          padding: 120px 20px 80px;
+        }
+
+        .post-container {
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        .back-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #00D9FF;
+          font-weight: 600;
+          text-decoration: none;
+          margin-bottom: 30px;
+          transition: gap 0.3s;
+        }
+
+        .back-link:hover {
+          gap: 12px;
+        }
+
+        .post-hero-image {
+          width: 100%;
+          height: 400px;
+          border-radius: 20px;
+          overflow: hidden;
+          margin-bottom: 40px;
+        }
+
+        .post-hero-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .post-article {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 50px;
+        }
+
+        .post-header {
+          margin-bottom: 40px;
+          padding-bottom: 30px;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .category-badge {
+          display: inline-block;
+          padding: 8px 16px;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          color: white;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 20px;
+        }
+
+        .post-header h1 {
+          color: white;
+          font-size: 2.5em;
+          font-weight: 900;
+          line-height: 1.2;
+          margin-bottom: 20px;
+        }
+
+        .post-lead {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 1.2em;
+          line-height: 1.6;
+          margin-bottom: 24px;
+        }
+
+        .post-meta {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+          align-items: center;
+        }
+
+        .meta-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 14px;
+        }
+
+        .share-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: rgba(0, 102, 255, 0.2);
+          border: 1px solid rgba(0, 102, 255, 0.3);
+          border-radius: 8px;
+          color: #00D9FF;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .share-btn:hover {
+          background: rgba(0, 102, 255, 0.3);
+        }
+
+        .post-body {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 1.1em;
+          line-height: 1.8;
+        }
+
+        .post-body :global(h2) {
+          color: white;
+          font-size: 1.8em;
+          font-weight: 700;
+          margin: 40px 0 20px;
+        }
+
+        .post-body :global(h3) {
+          color: white;
+          font-size: 1.4em;
+          font-weight: 600;
+          margin: 32px 0 16px;
+        }
+
+        .post-body :global(p) {
+          margin-bottom: 20px;
+        }
+
+        .post-body :global(a) {
+          color: #00D9FF;
+          text-decoration: underline;
+        }
+
+        .post-body :global(code) {
+          background: rgba(0, 102, 255, 0.15);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Courier New', monospace;
+        }
+
+        .post-body :global(pre) {
+          background: rgba(0, 0, 0, 0.3);
+          padding: 20px;
+          border-radius: 12px;
+          overflow-x: auto;
+          margin: 20px 0;
+        }
+
+        .post-body :global(img) {
+          max-width: 100%;
+          border-radius: 12px;
+          margin: 30px 0;
+        }
+
+        .post-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          align-items: center;
+          margin-top: 40px;
+          padding-top: 30px;
+          border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .post-tags strong {
+          color: white;
+          font-size: 16px;
+        }
+
+        .tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          background: rgba(0, 102, 255, 0.15);
+          color: #00D9FF;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+          .post-page {
+            padding: 100px 15px 60px;
+          }
+
+          .post-article {
+            padding: 30px 20px;
+          }
+
+          .post-header h1 {
+            font-size: 1.8em;
+          }
+
+          .post-hero-image {
+            height: 250px;
+          }
+
+          .post-body {
+            font-size: 1em;
+          }
+        }
+      `}</style>
+    </>
+  );
+}

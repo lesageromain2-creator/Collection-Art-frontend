@@ -1,307 +1,486 @@
+// frontend/pages/offres.js
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
-import {
-  ArrowRight,
-  CheckCircle2,
-  Monitor,
-  ShoppingBag,
-  AppWindow,
-  RefreshCcw,
-  HelpCircle,
-} from 'lucide-react';
+import Link from 'next/link';
+import { Check, Zap, Star, ArrowRight, Package } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { getAllOffers, fetchSettings } from '../utils/api';
 
-const demoSettings = {
-  site_name: 'LE SAGE',
-  site_description:
-    'Création de sites web professionnels sur-mesure — design moderne, performance et maintenance continue.',
-  email: 'lesage.pro.dev@gmail.com',
-  phone_number: '+33 07 86 18 18 40',
-  city: 'Lyon',
-  website: 'www.LeSageDev.com',
-};
+export default function OffersPage() {
+  const [offers, setOffers] = useState([]);
+  const [settings, setSettings] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState('all');
 
-const offers = [
-  {
-    id: 'vitrine',
-    title: 'Site vitrine premium',
-    subtitle: 'Idéal pour lancer ou repositionner votre activité',
-    icon: Monitor,
-    price: 'À partir de 1 900 € HT',
-    timeline: '3 à 5 semaines',
-    bestFor: ['Indépendants', 'TPE/PME', 'Artisans', 'Studios créatifs'],
-    features: [
-      'Design sur-mesure, pas de template',
-      'Jusqu’à 8 pages (Accueil, Services, À propos, Blog, Contact, etc.)',
-      'Optimisation SEO de base (balises, performances, structure)',
-      'Formulaire de contact avancé (anti-spam, tracking)',
-      'Intégration réseaux sociaux & Analytics',
-    ],
-    tech: ['Next.js', 'TailwindCSS', 'Vercel'],
-    highlight: 'Le point de départ idéal pour une présence professionnelle.',
-  },
-  {
-    id: 'ecommerce',
-    title: 'Boutique e-commerce',
-    subtitle: 'Pensée pour convertir vos visiteurs en clients',
-    icon: ShoppingBag,
-    price: 'À partir de 3 900 € HT',
-    timeline: '5 à 8 semaines',
-    bestFor: ['Marques DTC', 'Commerçants', 'Producteurs locaux'],
-    features: [
-      'Catalogue produits avec filtres et recherche',
-      'Tunnel de commande optimisé mobile-first',
-      'Paiements sécurisés (Stripe, autres sur demande)',
-      'Gestion des stocks & email de confirmation',
-      'Suivi des conversions (Pixel Meta, GA4, etc.)',
-    ],
-    tech: ['Next.js', 'Stripe', 'Supabase', 'Vercel'],
-    highlight:
-      'Une expérience d’achat fluide et rassurante, optimisée pour le mobile.',
-    isPopular: true,
-  },
-  {
-    id: 'webapp',
-    title: 'Application web sur-mesure',
-    subtitle: 'Créez l’outil métier qui n’existe pas encore',
-    icon: AppWindow,
-    price: 'Sur devis',
-    timeline: 'À définir selon la complexité',
-    bestFor: ['SaaS', 'Startups', 'Equipes internes'],
-    features: [
-      'Ateliers de cadrage fonctionnel',
-      'Architecture scalable (Node.js / Supabase)',
-      'Dashboard & espaces clients personnalisés',
-      'Gestion des rôles et permissions',
-      'Accompagnement UX continu',
-    ],
-    tech: ['React', 'Node.js', 'Supabase', 'Render'],
-    highlight:
-      'Une base technique solide pour construire un produit qui peut grandir.',
-  },
-  {
-    id: 'refonte',
-    title: 'Refonte & optimisation',
-    subtitle: 'Faites passer un cap à votre site actuel',
-    icon: RefreshCcw,
-    price: 'À partir de 1 200 € HT',
-    timeline: '2 à 4 semaines',
-    bestFor: ['Sites existants', 'Refonte partielle ou totale'],
-    features: [
-      'Audit UX, performance et SEO détaillé',
-      'Recommandations priorisées et plan d’action',
-      'Modernisation du design et de la structure',
-      'Optimisation des temps de chargement',
-      'Accompagnement à la migration / redirections',
-    ],
-    tech: ['Next.js', 'Audit Lighthouse', 'SEO'],
-    highlight:
-      'Idéal si vous souhaitez améliorer sans tout reconstruire from scratch.',
-  },
-];
+  useEffect(() => {
+    loadData();
+  }, [selectedType]);
 
-const faqs = [
-  {
-    question: 'Proposez-vous des abonnements ou de la maintenance ?',
-    answer:
-      'Oui. Nous pouvons mettre en place un forfait mensuel incluant mises à jour, petites évolutions, monitoring et support prioritaire.',
-  },
-  {
-    question: 'Les contenus (textes, photos) sont-ils inclus ?',
-    answer:
-      'Nous pouvons vous accompagner sur la structure éditoriale et vous recommander des partenaires (rédaction, photo, vidéo) si besoin.',
-  },
-  {
-    question: 'Pouvez-vous reprendre un projet déjà entamé ?',
-    answer:
-      'Nous réalisons d’abord un audit technique pour valider ce qui peut être conservé, puis nous vous proposons un plan de reprise clair.',
-  },
-];
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [offersData, settingsData] = await Promise.all([
+        getAllOffers({ type: selectedType !== 'all' ? selectedType : undefined }),
+        fetchSettings()
+      ]);
 
-export default function Offres() {
+      setOffers(offersData.offers || offersData || []);
+      setSettings(settingsData);
+    } catch (error) {
+      console.error('Erreur chargement offres:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getPriceDisplay = (offer) => {
+    if (offer.price === 0 || offer.price_type === 'custom') {
+      return 'Sur devis';
+    }
+    if (offer.price_type === 'starting') {
+      return `À partir de ${offer.price}€`;
+    }
+    return `${offer.price}€`;
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'website':
+        return '🌐';
+      case 'ecommerce':
+        return '🛒';
+      case 'mobile':
+        return '📱';
+      case 'design':
+        return '🎨';
+      case 'seo':
+        return '🚀';
+      default:
+        return '📦';
+    }
+  };
+
   return (
     <>
       <Head>
-        <title>
-          Offres & Tarifs – Studio Web Breizh | Sites vitrines, e-commerce,
-          applications web
-        </title>
-        <meta
-          name="description"
-          content="Découvrez nos offres pour la création de sites vitrines, boutiques e-commerce, applications web sur-mesure et refontes optimisées. Pensées pour accompagner chaque étape de votre croissance."
-        />
+        <title>Nos Offres - {settings.site_name || 'LE SAGE DEV'}</title>
+        <meta name="description" content="Découvrez nos offres de développement web, e-commerce, design et plus encore." />
       </Head>
 
-      <div className="min-h-screen bg-dark text-light">
-        <Header settings={demoSettings} />
+      <Header settings={settings} />
 
-        <main className="px-6 py-16 md:py-20 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900">
-          <section className="mx-auto max-w-5xl text-center">
-            <h1 className="font-heading text-3xl font-black text-white md:text-4xl">
-              Des offres claires,
-              <span className="block bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
-                pensées pour vos objectifs.
-              </span>
-            </h1>
-            <p className="mt-4 text-sm text-slate-300 md:text-base">
-              Nous construisons avec vous un cadre budgétaire réaliste, sans
-              surprise, avec un planning précis et des jalons clairement
-              définis.
-            </p>
-          </section>
+      <div className="offers-page">
+        {/* Hero Section */}
+        <section className="offers-hero">
+          <div className="hero-content">
+            <h1>💼 Nos Offres & Services</h1>
+            <p>Des solutions sur mesure pour transformer vos idées en réalité</p>
+          </div>
+        </section>
 
-          <section className="mx-auto mt-10 max-w-6xl">
-            <div className="grid gap-6 md:grid-cols-2">
-              {offers.map((offer) => {
-                const Icon = offer.icon;
-                return (
-                  <article
-                    key={offer.id}
-                    id={offer.id}
-                    className={`relative flex h-full flex-col rounded-3xl border border-white/10 bg-slate-950/80 p-6 shadow-xl backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-secondary/70 hover:shadow-2xl ${
-                      offer.isPopular ? 'ring-2 ring-secondary/60' : ''
-                    }`}
-                  >
-                    {offer.isPopular && (
-                      <div className="absolute -top-3 right-6 rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg">
-                        Offre la plus choisie
-                      </div>
+        <div className="container">
+          {/* Filter Tabs */}
+          <div className="filter-tabs">
+            <button
+              className={selectedType === 'all' ? 'active' : ''}
+              onClick={() => setSelectedType('all')}
+            >
+              Toutes les offres
+            </button>
+            <button
+              className={selectedType === 'website' ? 'active' : ''}
+              onClick={() => setSelectedType('website')}
+            >
+              🌐 Sites Web
+            </button>
+            <button
+              className={selectedType === 'ecommerce' ? 'active' : ''}
+              onClick={() => setSelectedType('ecommerce')}
+            >
+              🛒 E-commerce
+            </button>
+            <button
+              className={selectedType === 'mobile' ? 'active' : ''}
+              onClick={() => setSelectedType('mobile')}
+            >
+              📱 Applications
+            </button>
+            <button
+              className={selectedType === 'design' ? 'active' : ''}
+              onClick={() => setSelectedType('design')}
+            >
+              🎨 Design
+            </button>
+          </div>
+
+          {/* Offers Grid */}
+          {loading ? (
+            <div className="loading-container">
+              <div className="spinner"></div>
+              <p>Chargement des offres...</p>
+            </div>
+          ) : offers.length === 0 ? (
+            <div className="empty-state">
+              <Package size={80} />
+              <h3>Aucune offre disponible</h3>
+              <p>Revenez bientôt pour découvrir nos services.</p>
+            </div>
+          ) : (
+            <div className="offers-grid">
+              {offers.map((offer) => (
+                <div key={offer.id} className={`offer-card ${offer.is_featured ? 'featured' : ''}`}>
+                  {offer.is_featured && (
+                    <div className="featured-badge">
+                      <Star size={16} />
+                      Populaire
+                    </div>
+                  )}
+
+                  <div className="offer-icon">
+                    {getTypeIcon(offer.type)}
+                  </div>
+
+                  <h2>{offer.title}</h2>
+                  <p className="offer-description">{offer.description}</p>
+
+                  <div className="offer-price">
+                    {getPriceDisplay(offer)}
+                    {offer.duration && (
+                      <span className="duration">Délai: {offer.duration}</span>
                     )}
+                  </div>
 
-                    <header className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                          <Icon className="h-6 w-6" />
-                        </div>
-                        <div className="text-left">
-                          <h2 className="font-heading text-lg font-semibold text-white md:text-xl">
-                            {offer.title}
-                          </h2>
-                          <p className="mt-1 text-xs text-slate-300 md:text-sm">
-                            {offer.subtitle}
-                          </p>
-                        </div>
-                      </div>
-                    </header>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-200 md:text-sm">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                          Budget indicatif
-                        </p>
-                        <p className="mt-1 font-semibold text-white">
-                          {offer.price}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                          Durée moyenne
-                        </p>
-                        <p className="mt-1 text-slate-200">
-                          {offer.timeline}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
-                        Idéal pour
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-100">
-                        {offer.bestFor.map((item) => (
-                          <span
-                            key={item}
-                            className="rounded-full bg-white/5 px-3 py-1"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <ul className="mt-5 space-y-2 text-xs text-slate-200 md:text-sm">
-                      {offer.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 text-secondary" />
-                          <span>{feature}</span>
+                  {offer.features && offer.features.length > 0 && (
+                    <ul className="features-list">
+                      {offer.features.slice(0, 5).map((feature, idx) => (
+                        <li key={idx}>
+                          <Check size={18} />
+                          {feature}
                         </li>
                       ))}
+                      {offer.features.length > 5 && (
+                        <li className="more">+ {offer.features.length - 5} autres fonctionnalités</li>
+                      )}
                     </ul>
+                  )}
 
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                      {offer.tech.map((tech) => (
-                        <span
-                          key={tech}
-                          className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-
-                    <p className="mt-4 text-xs text-slate-300 md:text-sm">
-                      {offer.highlight}
-                    </p>
-
-                    <div className="mt-5 flex flex-col gap-3 text-sm sm:flex-row sm:items-center">
-                      <a
-                        href="/reservation"
-                        className="group inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary to-secondary px-5 py-2.5 text-xs font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-xl"
-                      >
-                        Planifier un appel projet
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-                      </a>
-                      <a
-                        href="/contact"
-                        className="inline-flex flex-1 items-center justify-center rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-xs font-semibold text-slate-100 backdrop-blur transition hover:bg-white/10"
-                      >
-                        Demander un devis détaillé
-                      </a>
-                    </div>
-                  </article>
-                );
-              })}
+                  <Link href={`/contact?offer=${offer.slug}`} className="offer-cta">
+                    Demander un devis
+                    <ArrowRight size={18} />
+                  </Link>
+                </div>
+              ))}
             </div>
-          </section>
+          )}
+        </div>
 
-          <section className="mx-auto mt-16 max-w-4xl border-t border-white/10 pt-10">
-            <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-              <div className="md:w-1/3">
-                <h2 className="font-heading text-xl font-semibold text-white md:text-2xl">
-                  Questions fréquentes.
-                </h2>
-                <p className="mt-2 text-xs text-slate-300 md:text-sm">
-                  Vous avez un cas particulier ou un besoin très spécifique ?
-                  Nous sommes là pour en discuter et proposer un cadre adapté.
-                </p>
-              </div>
-              <div className="md:w-2/3 space-y-4">
-                {faqs.map((faq) => (
-                  <div
-                    key={faq.question}
-                    className="flex gap-3 rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-left"
-                  >
-                    <div className="mt-1">
-                      <HelpCircle className="h-4 w-4 text-secondary" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-white md:text-sm">
-                        {faq.question}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-300 md:text-sm">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </main>
-
-        <Footer settings={demoSettings} />
+        {/* CTA Section */}
+        <section className="cta-section">
+          <div className="cta-content">
+            <Zap size={60} />
+            <h2>Une offre sur mesure ?</h2>
+            <p>Vous ne trouvez pas l'offre qui vous correspond ? Contactez-nous pour un projet personnalisé.</p>
+            <Link href="/contact" className="cta-button">
+              Discutons de votre projet
+            </Link>
+          </div>
+        </section>
       </div>
+
+      <Footer settings={settings} />
+
+      <style jsx>{`
+        .offers-page {
+          min-height: 100vh;
+          background: #0A0E27;
+          padding-top: 80px;
+        }
+
+        .offers-hero {
+          padding: 80px 20px;
+          text-align: center;
+          background: linear-gradient(135deg, rgba(0, 102, 255, 0.1), rgba(0, 217, 255, 0.1));
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-content h1 {
+          font-size: 3em;
+          color: white;
+          margin-bottom: 16px;
+          font-weight: 900;
+        }
+
+        .hero-content p {
+          font-size: 1.2em;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 60px 20px;
+        }
+
+        .filter-tabs {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 50px;
+          overflow-x: auto;
+          padding-bottom: 10px;
+        }
+
+        .filter-tabs button {
+          padding: 12px 24px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          white-space: nowrap;
+        }
+
+        .filter-tabs button:hover {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .filter-tabs button.active {
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          color: white;
+          border-color: transparent;
+        }
+
+        .offers-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+          gap: 30px;
+        }
+
+        .offer-card {
+          position: relative;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 40px 30px;
+          transition: all 0.4s;
+        }
+
+        .offer-card:hover {
+          transform: translateY(-10px);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+          border-color: rgba(0, 102, 255, 0.5);
+        }
+
+        .offer-card.featured {
+          border-color: rgba(0, 217, 255, 0.5);
+          background: rgba(0, 217, 255, 0.05);
+        }
+
+        .featured-badge {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: linear-gradient(135deg, #FF6B35, #FF8C42);
+          color: white;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+
+        .offer-icon {
+          font-size: 3em;
+          margin-bottom: 20px;
+        }
+
+        .offer-card h2 {
+          color: white;
+          font-size: 1.8em;
+          font-weight: 700;
+          margin-bottom: 16px;
+        }
+
+        .offer-description {
+          color: rgba(255, 255, 255, 0.7);
+          line-height: 1.6;
+          margin-bottom: 24px;
+        }
+
+        .offer-price {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding: 20px;
+          background: rgba(0, 102, 255, 0.1);
+          border-radius: 12px;
+          margin-bottom: 24px;
+          color: white;
+          font-size: 1.8em;
+          font-weight: 900;
+          text-align: center;
+        }
+
+        .duration {
+          font-size: 0.5em;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .features-list {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 30px 0;
+        }
+
+        .features-list li {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          color: rgba(255, 255, 255, 0.8);
+          padding: 10px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .features-list li:last-child {
+          border-bottom: none;
+        }
+
+        .features-list li.more {
+          color: #00D9FF;
+          font-style: italic;
+        }
+
+        .offer-cta {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          padding: 16px;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          color: white;
+          border-radius: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.3s;
+        }
+
+        .offer-cta:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(0, 102, 255, 0.5);
+        }
+
+        .cta-section {
+          margin-top: 80px;
+          padding: 80px 20px;
+          text-align: center;
+          background: linear-gradient(135deg, rgba(0, 102, 255, 0.15), rgba(0, 217, 255, 0.15));
+          border-radius: 30px;
+        }
+
+        .cta-content {
+          max-width: 600px;
+          margin: 0 auto;
+          color: white;
+        }
+
+        .cta-content h2 {
+          font-size: 2.5em;
+          font-weight: 900;
+          margin: 20px 0;
+        }
+
+        .cta-content p {
+          font-size: 1.1em;
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 30px;
+        }
+
+        .cta-button {
+          display: inline-block;
+          padding: 18px 40px;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          color: white;
+          border-radius: 12px;
+          font-size: 1.1em;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.3s;
+        }
+
+        .cta-button:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 15px 40px rgba(0, 102, 255, 0.6);
+        }
+
+        .loading-container,
+        .empty-state {
+          text-align: center;
+          padding: 80px 20px;
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .empty-state svg {
+          stroke: rgba(255, 255, 255, 0.3);
+          margin-bottom: 20px;
+        }
+
+        .spinner {
+          width: 50px;
+          height: 50px;
+          border: 4px solid rgba(255, 255, 255, 0.1);
+          border-top-color: #0066FF;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .empty-state h3 {
+          color: white;
+          font-size: 1.8em;
+          margin-bottom: 12px;
+        }
+
+        @media (max-width: 768px) {
+          .offers-hero {
+            padding: 60px 20px;
+          }
+
+          .hero-content h1 {
+            font-size: 2em;
+          }
+
+          .offers-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .filter-tabs {
+            justify-content: flex-start;
+          }
+
+          .cta-content h2 {
+            font-size: 1.8em;
+          }
+        }
+      `}</style>
     </>
   );
 }
-

@@ -10,7 +10,8 @@ import {
   Calendar, 
   MessageSquare, 
   Users,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import {
   checkAuth,
@@ -161,14 +162,34 @@ export default function AdminDashboard() {
                 onClick={() => router.push('/admin/messages')}
               />
               <StatsCard
-                title="Nouveaux clients"
-                value={stats.clients.new}
+                title="Total clients"
+                value={stats.clients.total}
                 icon={Users}
                 trend={8}
-                trendValue={2}
+                trendValue={stats.clients.new}
                 gradient="green"
                 onClick={() => router.push('/admin/clients')}
               />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="quick-actions-grid">
+              <button className="quick-action-card" onClick={() => router.push('/admin/projects')}>
+                <FolderOpen size={32} />
+                <span>Gérer les projets</span>
+              </button>
+              <button className="quick-action-card" onClick={() => router.push('/admin/clients')}>
+                <Users size={32} />
+                <span>Gérer les clients</span>
+              </button>
+              <button className="quick-action-card" onClick={() => router.push('/admin/blog')}>
+                <FileText size={32} />
+                <span>Gérer le blog</span>
+              </button>
+              <button className="quick-action-card" onClick={() => router.push('/admin/reservations')}>
+                <Calendar size={32} />
+                <span>Réservations</span>
+              </button>
             </div>
 
             {/* Projets nécessitant attention */}
@@ -476,6 +497,41 @@ export default function AdminDashboard() {
           font-size: 12px;
         }
 
+        .quick-actions-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+          margin-bottom: 32px;
+        }
+
+        .quick-action-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          padding: 32px 20px;
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          color: white;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .quick-action-card:hover {
+          transform: translateY(-5px);
+          border-color: rgba(0, 102, 255, 0.5);
+          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .quick-action-card span {
+          font-size: 15px;
+          font-weight: 600;
+        }
+
         @media (max-width: 1024px) {
           .admin-main {
             margin-left: 0;
@@ -486,6 +542,16 @@ export default function AdminDashboard() {
           }
 
           .stats-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .quick-actions-grid {
             grid-template-columns: 1fr;
           }
         }

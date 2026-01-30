@@ -1,37 +1,67 @@
-// frontend/pages/admin/clients.js - Gestion Clients
-import { useState, useEffect } from 'react';
+// frontend/pages/admin/clients.js
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import { 
+  Users, Search, Mail, Phone, Calendar, MessageSquare, 
+  Send, X, User as UserIcon 
+} from 'lucide-react';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
-import DataTable from '../../components/admin/DataTable';
-import Modal from '../../components/admin/Modal';
-import { Search, User, Mail, Phone, Briefcase, Calendar } from 'lucide-react';
-import { checkAuth, getAdminUsers, getAdminUserDetails } from '../../utils/api';
+import { 
+  checkAuth,
+  getAdminUsers,
+  getAdminUserMessages,
+  sendMessageToUser
+} from '../../utils/api';
 
-export default function AdminClients() {
+export default function AdminClientsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [clients, setClients] = useState([]);
   const [filteredClients, setFilteredClients] = useState([]);
-  const [filters, setFilters] = useState({
-    search: '',
-  });
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedClient, setSelectedClient] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [clientDetails, setClientDetails] = useState(null);
-  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    loadClients();
+    loadData();
   }, []);
 
   useEffect(() => {
-    filterClients();
-  }, [clients, filters]);
+    // Filtrer les clients selon la recherche
+    if (searchQuery.trim() === '') {
+      setFilteredClients(clients);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = clients.filter(client =>
+        client.firstname?.toLowerCase().includes(query) ||
+        client.lastname?.toLowerCase().includes(query) ||
+        client.email?.toLowerCase().includes(query) ||
+        client.company_name?.toLowerCase().includes(query)
+      );
+      setFilteredClients(filtered);
+    }
+  }, [searchQuery, clients]);
 
-  const loadClients = async () => {
+  useEffect(() => {
+    if (selectedClient) {
+      loadMessages(selectedClient.id);
+      // Polling toutes les 10 secondes
+      const interval = setInterval(() => loadMessages(selectedClient.id), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedClient]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const loadData = async () => {
     try {
       setLoading(true);
       const authData = await checkAuth();
@@ -39,12 +69,11 @@ export default function AdminClients() {
         router.push('/login?redirect=/admin/clients');
         return;
       }
-
       setUser(authData.user);
-      const data = await getAdminUsers();
-      // Filtrer seulement les clients (pas les admins)
-      const clientList = (data.users || []).filter(u => u.role !== 'admin');
-      setClients(clientList);
+
+      const clientsData = await getAdminUsers();
+      setClients(clientsData.users || clientsData || []);
+      setFilteredClients(clientsData.users || clientsData || []);
     } catch (error) {
       console.error('Erreur chargement clients:', error);
     } finally {
@@ -52,51 +81,96 @@ export default function AdminClients() {
     }
   };
 
-  const filterClients = () => {
-    let filtered = [...clients];
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(c => 
-        `${c.firstname} ${c.lastname}`.toLowerCase().includes(searchLower) ||
-        c.email?.toLowerCase().includes(searchLower) ||
-        c.company_name?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    setFilteredClients(filtered);
-  };
-
-  const loadClientDetails = async (clientId) => {
+  const loadMessages = async (userId) => {
     try {
-      setLoadingDetails(true);
-      const details = await getAdminUserDetails(clientId);
-      setClientDetails(details);
+      const messagesData = await getAdminUserMessages(userId);
+      setMessages(messagesData.messages || messagesData || []);
     } catch (error) {
-      console.error('Erreur chargement détails client:', error);
-    } finally {
-      setLoadingDetails(false);
+      console.error('Erreur chargement messages:', error);
+      setMessages([]); // Définir un tableau vide en cas d'erreur
     }
   };
 
-  const handleClientClick = async (client) => {
+  const handleSelectClient = (client) => {
     setSelectedClient(client);
-    setShowModal(true);
-    await loadClientDetails(client.id);
+    setMessages([]);
+    loadMessages(client.id);
   };
 
-  const tableColumns = [
-    { key: 'name', label: 'Nom', render: (_, row) => `${row.firstname} ${row.lastname}` },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'phone', label: 'Téléphone' },
-    { key: 'company_name', label: 'Entreprise' },
-    { key: 'created_at', label: 'Membre depuis', render: (val) => new Date(val).toLocaleDateString('fr-FR') },
-  ];
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedClient || sending) return;
+
+    try {
+      setSending(true);
+      await sendMessageToUser(selectedClient.id, newMessage);
+      setNewMessage('');
+      await loadMessages(selectedClient.id);
+    } catch (error) {
+      console.error('Erreur envoi message:', error);
+      alert('Erreur lors de l\'envoi du message');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const formatMessageDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 60) return `${diffMins} min`;
+    if (diffMs < 86400000) return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  };
+
+  const getInitials = (firstname, lastname) => {
+    return `${firstname?.charAt(0) || ''}${lastname?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner"></div>
+        <p>Chargement...</p>
+        <style jsx>{`
+          .loading-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0A0E27;
+            color: white;
+          }
+          .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0066FF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 20px;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <>
       <Head>
-        <title>Gestion Clients - Admin LE SAGE DEV</title>
+        <title>Gestion des Clients - Admin</title>
       </Head>
 
       <div className="admin-layout">
@@ -106,204 +180,143 @@ export default function AdminClients() {
           
           <main className="admin-content">
             <div className="content-header">
-              <div>
-                <h1>Gestion des Clients</h1>
-                <p>Consultez et gérez tous vos clients</p>
-              </div>
+              <h1>Gestion des Clients</h1>
+              <p>{filteredClients.length} client{filteredClients.length > 1 ? 's' : ''}</p>
             </div>
 
-            {/* Filtres */}
-            <div className="filters-section">
-              <div className="search-box">
-                <Search size={20} />
-                <input
-                  type="text"
-                  placeholder="Rechercher un client..."
-                  value={filters.search}
-                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                />
-              </div>
-            </div>
+            <div className="clients-container">
+              {/* Liste des clients */}
+              <div className="clients-list-panel">
+                <div className="search-box">
+                  <Search size={20} />
+                  <input
+                    type="text"
+                    placeholder="Rechercher un client..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
 
-            {/* Liste des clients */}
-            {loading ? (
-              <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <p>Chargement des clients...</p>
-              </div>
-            ) : filteredClients.length === 0 ? (
-              <div className="empty-state">
-                <User size={60} />
-                <p>Aucun client trouvé</p>
-              </div>
-            ) : (
-              <DataTable
-                columns={tableColumns}
-                data={filteredClients}
-                onRowClick={handleClientClick}
-                actions={(row) => (
-                  <button
-                    className="action-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClientClick(row);
-                    }}
-                    title="Voir détails"
-                  >
-                    <User size={16} />
-                  </button>
-                )}
-              />
-            )}
-          </main>
-        </div>
-      </div>
-
-      {/* Modal détails client */}
-      {showModal && selectedClient && (
-        <Modal
-          isOpen={showModal}
-          onClose={() => {
-            setShowModal(false);
-            setSelectedClient(null);
-            setClientDetails(null);
-          }}
-          title={`${selectedClient.firstname} ${selectedClient.lastname}`}
-          size="large"
-        >
-          {loadingDetails ? (
-            <div className="loading-details">
-              <div className="loading-spinner"></div>
-              <p>Chargement des détails...</p>
-            </div>
-          ) : (
-            <div className="client-details">
-              {/* Informations personnelles */}
-              <div className="detail-section">
-                <h3>
-                  <User size={18} />
-                  Informations personnelles
-                </h3>
-                <div className="info-grid">
-                  <div className="info-item">
-                    <span className="info-label">Nom complet</span>
-                    <span className="info-value">
-                      {selectedClient.firstname} {selectedClient.lastname}
-                    </span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Email</span>
-                    <span className="info-value">{selectedClient.email}</span>
-                  </div>
-                  {selectedClient.phone && (
-                    <div className="info-item">
-                      <span className="info-label">Téléphone</span>
-                      <span className="info-value">{selectedClient.phone}</span>
+                <div className="clients-list">
+                  {filteredClients.length === 0 ? (
+                    <div className="empty-state">
+                      <Users size={60} />
+                      <p>Aucun client trouvé</p>
                     </div>
+                  ) : (
+                    filteredClients.map((client) => (
+                      <div
+                        key={client.id}
+                        className={`client-item ${selectedClient?.id === client.id ? 'active' : ''}`}
+                        onClick={() => handleSelectClient(client)}
+                      >
+                        <div className="client-avatar">
+                          {client.avatar_url ? (
+                            <img src={client.avatar_url} alt={client.firstname} />
+                          ) : (
+                            <span>{getInitials(client.firstname, client.lastname)}</span>
+                          )}
+                        </div>
+                        <div className="client-info">
+                          <h4>{client.firstname} {client.lastname}</h4>
+                          <p>{client.email}</p>
+                          {client.company_name && (
+                            <span className="company">{client.company_name}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
                   )}
-                  {selectedClient.company_name && (
-                    <div className="info-item">
-                      <span className="info-label">Entreprise</span>
-                      <span className="info-value">{selectedClient.company_name}</span>
-                    </div>
-                  )}
-                  <div className="info-item">
-                    <span className="info-label">Membre depuis</span>
-                    <span className="info-value">
-                      {new Date(selectedClient.created_at).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </span>
-                  </div>
                 </div>
               </div>
 
-              {/* Statistiques */}
-              {clientDetails && (
-                <>
-                  <div className="detail-section">
-                    <h3>
-                      <Briefcase size={18} />
-                      Statistiques
-                    </h3>
-                    <div className="stats-grid">
-                      <div className="stat-item">
-                        <span className="stat-label">Projets</span>
-                        <span className="stat-value">
-                          {clientDetails.stats?.projects_count || 0}
-                        </span>
+              {/* Zone de chat */}
+              <div className="chat-panel">
+                {selectedClient ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="chat-header">
+                      <div className="client-details">
+                        <div className="client-avatar-large">
+                          {selectedClient.avatar_url ? (
+                            <img src={selectedClient.avatar_url} alt={selectedClient.firstname} />
+                          ) : (
+                            <span>{getInitials(selectedClient.firstname, selectedClient.lastname)}</span>
+                          )}
+                        </div>
+                        <div>
+                          <h3>{selectedClient.firstname} {selectedClient.lastname}</h3>
+                          <div className="client-meta">
+                            <span><Mail size={14} /> {selectedClient.email}</span>
+                            {selectedClient.phone && (
+                              <span><Phone size={14} /> {selectedClient.phone}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="stat-item">
-                        <span className="stat-label">Réservations</span>
-                        <span className="stat-value">
-                          {clientDetails.stats?.reservations_count || 0}
-                        </span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-label">CA Total</span>
-                        <span className="stat-value">
-                          {clientDetails.stats?.total_revenue 
-                            ? `${clientDetails.stats.total_revenue.toFixed(2)}€`
-                            : '0€'}
-                        </span>
-                      </div>
+                      <button className="close-chat" onClick={() => setSelectedClient(null)}>
+                        <X size={24} />
+                      </button>
                     </div>
+
+                    {/* Messages */}
+                    <div className="messages-area">
+                      {messages.length === 0 ? (
+                        <div className="empty-chat">
+                          <MessageSquare size={60} />
+                          <p>Aucun message avec ce client</p>
+                          <span>Envoyez le premier message ci-dessous</span>
+                        </div>
+                      ) : (
+                        <>
+                          {messages.map((msg) => (
+                            <div 
+                              key={msg.id} 
+                              className={`message-bubble ${msg.sender_id === user?.id ? 'sent' : 'received'}`}
+                            >
+                              <div className="message-content">
+                                <p>{msg.message || msg.content}</p>
+                                <span className="message-time">
+                                  {formatMessageDate(msg.created_at)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                          <div ref={messagesEndRef} />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Input */}
+                    <form onSubmit={handleSendMessage} className="message-input">
+                      <input
+                        type="text"
+                        placeholder="Écrivez votre message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        disabled={sending}
+                      />
+                      <button type="submit" disabled={!newMessage.trim() || sending}>
+                        {sending ? (
+                          <div className="spinner-small"></div>
+                        ) : (
+                          <Send size={20} />
+                        )}
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <div className="no-selection">
+                    <Users size={80} />
+                    <h3>Sélectionnez un client</h3>
+                    <p>Choisissez un client dans la liste pour commencer une conversation</p>
                   </div>
-
-                  {/* Projets récents */}
-                  {clientDetails.projects && clientDetails.projects.length > 0 && (
-                    <div className="detail-section">
-                      <h3>
-                        <Briefcase size={18} />
-                        Projets récents
-                      </h3>
-                      <div className="projects-list">
-                        {clientDetails.projects.slice(0, 5).map((project) => (
-                          <div
-                            key={project.id}
-                            className="project-item"
-                            onClick={() => router.push(`/admin/project/${project.id}`)}
-                          >
-                            <div>
-                              <strong>{project.title}</strong>
-                              <p>{project.status}</p>
-                            </div>
-                            <span className="project-progress">{project.progress || 0}%</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Réservations récentes */}
-                  {clientDetails.reservations && clientDetails.reservations.length > 0 && (
-                    <div className="detail-section">
-                      <h3>
-                        <Calendar size={18} />
-                        Réservations récentes
-                      </h3>
-                      <div className="reservations-list">
-                        {clientDetails.reservations.slice(0, 5).map((reservation) => (
-                          <div key={reservation.id} className="reservation-item">
-                            <div>
-                              <strong>
-                                {new Date(reservation.reservation_date).toLocaleDateString('fr-FR')}
-                              </strong>
-                              <p>{reservation.reservation_time?.substring(0, 5)} - {reservation.status}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+                )}
+              </div>
             </div>
-          )}
-        </Modal>
-      )}
+          </main>
+        </div>
+      </div>
 
       <style jsx>{`
         .admin-layout {
@@ -341,213 +354,394 @@ export default function AdminClients() {
           font-size: 16px;
         }
 
-        .filters-section {
-          margin-bottom: 24px;
+        .clients-container {
+          display: grid;
+          grid-template-columns: 380px 1fr;
+          gap: 24px;
+          height: calc(100vh - 260px);
+        }
+
+        .clients-list-panel,
+        .chat-panel {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
 
         .search-box {
-          position: relative;
+          padding: 20px;
           display: flex;
           align-items: center;
-          max-width: 500px;
-        }
-
-        .search-box svg {
-          position: absolute;
-          left: 16px;
-          color: rgba(255, 255, 255, 0.5);
+          gap: 12px;
+          background: rgba(255, 255, 255, 0.03);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .search-box input {
-          width: 100%;
-          padding: 12px 16px 12px 48px;
+          flex: 1;
+          background: none;
+          border: none;
+          color: white;
+          font-size: 15px;
+          outline: none;
+        }
+
+        .clients-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 12px;
+        }
+
+        .clients-list::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .clients-list::-webkit-scrollbar-track {
           background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .clients-list::-webkit-scrollbar-thumb {
+          background: rgba(0, 102, 255, 0.5);
+          border-radius: 3px;
+        }
+
+        .client-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          background: rgba(255, 255, 255, 0.03);
           border-radius: 12px;
+          margin-bottom: 8px;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .client-item:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .client-item.active {
+          background: rgba(0, 102, 255, 0.2);
+          border: 1px solid rgba(0, 102, 255, 0.5);
+        }
+
+        .client-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: 700;
+          font-size: 16px;
+          flex-shrink: 0;
+        }
+
+        .client-avatar img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .client-info {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .client-info h4 {
           color: white;
           font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 4px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .search-box input:focus {
-          outline: none;
-          border-color: #0066FF;
+        .client-info p {
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 13px;
+          margin: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .loading-state,
-        .empty-state {
+        .client-info .company {
+          display: block;
+          color: #00D9FF;
+          font-size: 12px;
+          margin-top: 4px;
+        }
+
+        .chat-header {
+          padding: 20px 24px;
+          background: rgba(255, 255, 255, 0.03);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           display: flex;
-          flex-direction: column;
+          justify-content: space-between;
           align-items: center;
-          justify-content: center;
-          padding: 60px 20px;
-          color: rgba(255, 255, 255, 0.6);
-        }
-
-        .empty-state svg {
-          margin-bottom: 16px;
-          opacity: 0.3;
-        }
-
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid rgba(255, 255, 255, 0.1);
-          border-top-color: #0066FF;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-          margin-bottom: 16px;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        .action-btn {
-          width: 32px;
-          height: 32px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 8px;
-          color: rgba(255, 255, 255, 0.7);
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .action-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-        }
-
-        .loading-details {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 40px;
-          color: rgba(255, 255, 255, 0.6);
         }
 
         .client-details {
           display: flex;
-          flex-direction: column;
-          gap: 32px;
-        }
-
-        .detail-section {
-          display: flex;
-          flex-direction: column;
+          align-items: center;
           gap: 16px;
         }
 
-        .detail-section h3 {
+        .client-avatar-large {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
           display: flex;
           align-items: center;
-          gap: 8px;
+          justify-content: center;
+          color: white;
+          font-weight: 700;
+          font-size: 20px;
+        }
+
+        .client-avatar-large img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+
+        .client-details h3 {
           color: white;
           font-size: 18px;
           font-weight: 700;
-          margin: 0;
+          margin-bottom: 6px;
         }
 
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 16px;
-        }
-
-        .info-item {
+        .client-meta {
           display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .info-label {
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .info-value {
-          color: white;
-          font-size: 14px;
-          font-weight: 600;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
           gap: 16px;
+          flex-wrap: wrap;
         }
 
-        .stat-item {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          padding: 16px;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-        }
-
-        .stat-label {
+        .client-meta span {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           color: rgba(255, 255, 255, 0.6);
-          font-size: 12px;
+          font-size: 13px;
         }
 
-        .stat-value {
+        .close-chat {
+          width: 40px;
+          height: 40px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+          color: rgba(255, 255, 255, 0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .close-chat:hover {
+          background: rgba(255, 255, 255, 0.1);
           color: white;
-          font-size: 24px;
-          font-weight: 800;
         }
 
-        .projects-list,
-        .reservations-list {
+        .messages-area {
+          flex: 1;
+          padding: 24px;
+          overflow-y: auto;
           display: flex;
           flex-direction: column;
           gap: 12px;
         }
 
-        .project-item,
-        .reservation-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 16px;
+        .messages-area::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .messages-area::-webkit-scrollbar-track {
           background: rgba(255, 255, 255, 0.05);
-          border-radius: 12px;
-          cursor: pointer;
-          transition: background 0.2s;
         }
 
-        .project-item:hover {
-          background: rgba(255, 255, 255, 0.08);
+        .messages-area::-webkit-scrollbar-thumb {
+          background: rgba(0, 102, 255, 0.5);
+          border-radius: 4px;
         }
 
-        .project-item strong,
-        .reservation-item strong {
+        .message-bubble {
+          max-width: 70%;
+          animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .message-bubble.sent {
+          align-self: flex-end;
+        }
+
+        .message-bubble.received {
+          align-self: flex-start;
+        }
+
+        .message-content {
+          padding: 12px 16px;
+          border-radius: 14px;
+        }
+
+        .message-bubble.sent .message-content {
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
           color: white;
-          font-size: 14px;
-          display: block;
-          margin-bottom: 4px;
+          border-bottom-right-radius: 4px;
         }
 
-        .project-item p,
-        .reservation-item p {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 12px;
+        .message-bubble.received .message-content {
+          background: rgba(255, 255, 255, 0.08);
+          color: white;
+          border-bottom-left-radius: 4px;
+        }
+
+        .message-content p {
           margin: 0;
+          line-height: 1.5;
+          word-wrap: break-word;
         }
 
-        .project-progress {
-          padding: 6px 12px;
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 700;
+        .message-time {
+          display: block;
+          font-size: 11px;
+          margin-top: 4px;
+          opacity: 0.7;
+        }
+
+        .message-input {
+          display: flex;
+          gap: 12px;
+          padding: 20px 24px;
+          background: rgba(255, 255, 255, 0.03);
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message-input input {
+          flex: 1;
+          padding: 14px 18px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          color: white;
+          font-size: 15px;
+          outline: none;
+          transition: all 0.3s;
+        }
+
+        .message-input input:focus {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(0, 102, 255, 0.5);
+        }
+
+        .message-input button {
+          width: 50px;
+          height: 50px;
+          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          border: none;
+          border-radius: 12px;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .message-input button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(0, 102, 255, 0.5);
+        }
+
+        .message-input button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .no-selection,
+        .empty-chat {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: rgba(255, 255, 255, 0.5);
+          text-align: center;
+        }
+
+        .no-selection svg,
+        .empty-chat svg {
+          stroke: rgba(255, 255, 255, 0.3);
+          margin-bottom: 20px;
+        }
+
+        .no-selection h3,
+        .empty-chat h3 {
+          color: white;
+          font-size: 1.6em;
+          margin-bottom: 12px;
+        }
+
+        .no-selection p,
+        .empty-chat p {
+          font-size: 1.05em;
+          max-width: 300px;
+        }
+
+        .empty-chat span {
+          font-size: 0.9em;
+          margin-top: 8px;
+        }
+
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 60px 20px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state svg {
+          stroke: rgba(255, 255, 255, 0.3);
+          margin-bottom: 16px;
+        }
+
+        .spinner-small {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
 
         @media (max-width: 1024px) {
@@ -555,8 +749,12 @@ export default function AdminClients() {
             margin-left: 0;
           }
 
-          .admin-content {
-            padding: 20px;
+          .clients-container {
+            grid-template-columns: 1fr;
+          }
+
+          .clients-list-panel {
+            height: 300px;
           }
         }
       `}</style>

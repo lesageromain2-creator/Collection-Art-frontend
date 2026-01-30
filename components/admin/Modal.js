@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function Modal({ 
-  isOpen, 
+  isOpen = true, // Par défaut true car on rend conditionnellement le composant
   onClose, 
   title, 
   children, 
@@ -11,17 +11,11 @@ export default function Modal({
   footer 
 }) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
+  }, []);
 
   const sizes = {
     small: '400px',
