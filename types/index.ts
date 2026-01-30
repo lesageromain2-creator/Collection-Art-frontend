@@ -8,7 +8,6 @@ export * from './project';
 export * from './reservation';
 export * from './blog';
 export * from './portfolio';
-export * from './payment';
 export * from './offer';
 export * from './testimonial';
 export * from './contact';
