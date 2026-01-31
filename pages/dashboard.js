@@ -1,231 +1,374 @@
-// frontend/pages/dashboard.js - Dashboard Agence Web LE SAGE
-import { useState, useEffect } from 'react';
+// frontend/pages/dashboard.js - Dashboard Association (Articles + Profil)
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Calendar, FolderOpen, FileText, User, Settings, LogOut, Briefcase, Clock, CheckCircle, XCircle, Plus } from 'lucide-react';
+import Image from 'next/image';
+import {
+  FileText,
+  User,
+  LogOut,
+  Plus,
+  Pencil,
+  Trash2,
+  Image as ImageIcon,
+  X,
+  Save,
+  Loader2,
+  ChevronUp,
+  ChevronDown,
+} from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import CreateProjectModal from '../components/CreateProjectModal';
-import { 
-  checkAuth, 
-  logout, 
-  fetchSettings, 
-  getMyReservations,
-  cancelReservation,
-  deleteReservation,
-  getMyProjects
+import {
+  checkAuth,
+  logout,
+  fetchSettings,
+  getMyArticles,
+  getArticleById,
+  createArticle,
+  updateArticle,
+  deleteArticle,
+  getRubriques,
+  uploadArticleImages,
+  uploadAvatar,
+  updateUserProfile,
+  getUserProfile,
 } from '../utils/api';
-import { createProject, getClients } from '../utils/projectApi';
-import { toast } from 'react-toastify';
-import FileDropzone from '../components/FileUpload/FileDropzone';
-import FileGallery from '../components/FileUpload/FileGallery';
-import { useFileUpload } from '../hooks/useFileUpload';
-import { useProjectFiles } from '../hooks/useProjectFiles';
+
+const slugify = (text) =>
+  text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+const blockId = () => `b-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+function parseContentBlocks(content) {
+  if (!content || typeof content !== 'string') return [{ id: blockId(), type: 'text', content: '' }];
+  const t = content.trim();
+  if (t.startsWith('[')) {
+    try {
+      const arr = JSON.parse(content);
+      if (Array.isArray(arr) && arr.length > 0)
+        return arr.map((b) => ({
+          id: b.id || blockId(),
+          type: b.type === 'image' ? 'image' : 'text',
+          content: b.content ?? '',
+          url: b.url ?? '',
+          alt: b.alt ?? '',
+        }));
+    } catch (_) {}
+  }
+  return [{ id: blockId(), type: 'text', content: content }];
+}
+
+function serializeContentBlocks(blocks) {
+  if (!blocks?.length) return '';
+  return JSON.stringify(
+    blocks.map((b) =>
+      b.type === 'image'
+        ? { type: 'image', url: b.url || '', alt: b.alt || '' }
+        : { type: 'text', content: b.content || '' }
+    )
+  );
+}
 
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState({
-    reservations: 0,
-    projects: 0,
-    files: 0
-  });
+  const [activeTab, setActiveTab] = useState('articles');
   const [mounted, setMounted] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(null);
 
-  // États pour les réservations
-  const [reservations, setReservations] = useState([]);
-  const [reservationsLoading, setReservationsLoading] = useState(false);
-  const [cancellingId, setCancellingId] = useState(null);
+  // Articles
+  const [articles, setArticles] = useState([]);
+  const [articlesLoading, setArticlesLoading] = useState(false);
+  const [showArticleForm, setShowArticleForm] = useState(false);
+  const [editingArticleId, setEditingArticleId] = useState(null);
+  const [articleForm, setArticleForm] = useState({
+    title: '',
+    slug: '',
+    excerpt: '',
+    content: '',
+    featured_image_url: '',
+    rubrique_id: '',
+    status: 'draft',
+    is_featured: false,
+  });
+  const [articleSubmitLoading, setArticleSubmitLoading] = useState(false);
+  const [contentBlocks, setContentBlocks] = useState([]);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [coverImageUrl, setCoverImageUrl] = useState('');
+  const fileInputRef = useRef(null);
+  const blockImageInputRef = useRef(null);
+  const [rubriques, setRubriques] = useState([]);
+  const [deleteArticleId, setDeleteArticleId] = useState(null);
 
-  // Fichiers / projets
-  const [myProjects, setMyProjects] = useState([]);
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
-  const [filesInProgress, setFilesInProgress] = useState([]);
-  const { uploadFiles, uploading, progress, error: uploadError } = useFileUpload(selectedProjectId);
-  const { files, loading: filesLoading, error: filesError, refreshFiles, downloadFile, deleteFile } = useProjectFiles(selectedProjectId);
-
-  // Modal création projet
-  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
-  const [clients, setClients] = useState([]);
-  const [clientsLoading, setClientsLoading] = useState(false);
+  // Profil
+  const [profileForm, setProfileForm] = useState({ firstname: '', lastname: '', phone: '' });
+  const [profileEditing, setProfileEditing] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   useEffect(() => {
     loadUserData();
     setTimeout(() => setMounted(true), 50);
   }, []);
 
-  // Charger les réservations quand l'onglet change
   useEffect(() => {
-    if (activeTab === 'reservations' && user) {
-      loadReservations();
-    }
-  }, [activeTab, user]);
-
-  // Charger mes projets quand onglet Fichiers ou Projects
-  useEffect(() => {
-    if ((activeTab === 'files' || activeTab === 'projects') && user) {
-      getMyProjects().then(setMyProjects);
+    if (activeTab === 'articles' && user) {
+      loadArticles();
+      getRubriques().then(setRubriques);
     }
   }, [activeTab, user]);
 
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
       const [authData, settingsData] = await Promise.all([
         checkAuth(),
-        fetchSettings()
+        fetchSettings().catch(() => ({})),
       ]);
-
       if (!authData.authenticated || !authData.user) {
         router.push('/login?redirect=/dashboard');
         return;
       }
-
       setUser(authData.user);
       setSettings(settingsData);
-
-      // Charger les stats
-      await loadReservationsForStats();
-
-    } catch (error) {
-      console.error('Erreur chargement données:', error);
+      setProfileForm({
+        firstname: authData.user.firstname || '',
+        lastname: authData.user.lastname || '',
+        phone: authData.user.phone || '',
+      });
+    } catch (e) {
+      console.error(e);
       router.push('/login?redirect=/dashboard');
     } finally {
       setLoading(false);
     }
   };
 
-  // Charger les réservations pour les stats
-  const loadReservationsForStats = async () => {
+  const loadArticles = async () => {
+    setArticlesLoading(true);
     try {
-      const data = await getMyReservations();
-      const activeReservations = data.filter(r => r.status !== 'cancelled' && r.status !== 'completed');
-      setStats(prev => ({ ...prev, reservations: activeReservations.length }));
-    } catch (error) {
-      console.error('Erreur stats réservations:', error);
+      const list = await getMyArticles();
+      setArticles(list);
+    } catch (e) {
+      console.error(e);
+      setArticles([]);
+    } finally {
+      setArticlesLoading(false);
     }
   };
 
-  // Charger la liste complète des réservations
-  const loadReservations = async () => {
+  const openNewArticle = () => {
+    setEditingArticleId(null);
+    setArticleForm({
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      featured_image_url: '',
+      rubrique_id: '',
+      status: 'draft',
+      is_featured: false,
+    });
+    setContentBlocks([{ id: blockId(), type: 'text', content: '' }]);
+    setUploadedImages([]);
+    setCoverImageUrl('');
+    setShowArticleForm(true);
+  };
+
+  const openEditArticle = async (id) => {
     try {
-      setReservationsLoading(true);
-      const data = await getMyReservations();
-      const sorted = data.sort((a, b) => {
-        const dateA = new Date(`${a.reservation_date}T${a.reservation_time}`);
-        const dateB = new Date(`${b.reservation_date}T${b.reservation_time}`);
-        return dateB - dateA;
+      const article = await getArticleById(id);
+      if (!article) return;
+      setEditingArticleId(id);
+      setArticleForm({
+        title: article.title || '',
+        slug: article.slug || '',
+        excerpt: article.excerpt || '',
+        content: article.content || '',
+        featured_image_url: article.featured_image_url || '',
+        rubrique_id: article.rubrique_id || '',
+        status: article.status || 'draft',
+        is_featured: article.is_featured || false,
       });
-      setReservations(sorted);
-    } catch (error) {
-      console.error('Erreur chargement réservations:', error);
-    } finally {
-      setReservationsLoading(false);
+      setContentBlocks(parseContentBlocks(article.content || ''));
+      setCoverImageUrl(article.featured_image_url || '');
+      setUploadedImages([]);
+      setShowArticleForm(true);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  // Supprimer une réservation
-  const handleDeleteReservation = async (reservationId) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
-      return;
+  const handleArticleFieldChange = (field, value) => {
+    setArticleForm((prev) => ({ ...prev, [field]: value }));
+    if (field === 'title' && !editingArticleId) {
+      setArticleForm((prev) => ({ ...prev, slug: slugify(value) }));
     }
+  };
 
-    setDeleteLoading(reservationId);
-    
+  const handleArticleImagesUpload = async (e) => {
+    const files = e.target.files;
+    if (!files?.length) return;
     try {
-      await deleteReservation(reservationId);
-      await loadReservations();
-      await loadReservationsForStats();
-      alert('Réservation supprimée avec succès');
-    } catch (error) {
-      console.error('Erreur suppression:', error);
-      alert('Erreur lors de la suppression de la réservation');
-    } finally {
-      setDeleteLoading(null);
+      const data = await uploadArticleImages(Array.from(files));
+      const urls = data.map((img) => img.urls?.featured || img.urls?.original || img.url).filter(Boolean);
+      setUploadedImages((prev) => [...prev, ...urls]);
+      if (!coverImageUrl && urls[0]) setCoverImageUrl(urls[0]);
+      if (!articleForm.featured_image_url && urls[0]) handleArticleFieldChange('featured_image_url', urls[0]);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Erreur upload');
     }
+    e.target.value = '';
   };
 
-  // Annuler une réservation
-  const handleCancelReservation = async (reservationId) => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) return;
-
-    try {
-      setCancellingId(reservationId);
-      await cancelReservation(reservationId);
-      await loadReservations();
-      await loadReservationsForStats();
-      alert('Réservation annulée avec succès');
-    } catch (error) {
-      console.error('Erreur annulation:', error);
-      alert(error.message || 'Impossible d\'annuler cette réservation');
-    } finally {
-      setCancellingId(null);
-    }
+  const addTextBlock = () => {
+    setContentBlocks((prev) => [...prev, { id: blockId(), type: 'text', content: '' }]);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+  const addImageBlock = (url, alt = '') => {
+    setContentBlocks((prev) => [...prev, { id: blockId(), type: 'image', url: url || '', alt }]);
+  };
+
+  const updateBlock = (id, updates) => {
+    setContentBlocks((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, ...updates } : b))
+    );
+  };
+
+  const removeBlock = (id) => {
+    setContentBlocks((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const moveBlock = (id, dir) => {
+    setContentBlocks((prev) => {
+      const i = prev.findIndex((b) => b.id === id);
+      if (i === -1 || (dir === -1 && i === 0) || (dir === 1 && i === prev.length - 1)) return prev;
+      const next = [...prev];
+      [next[i], next[i + dir]] = [next[i + dir], next[i]];
+      return next;
     });
   };
 
-  const formatTime = (timeString) => {
-    return timeString.substring(0, 5);
-  };
-
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: { text: 'En attente', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', icon: Clock },
-      confirmed: { text: 'Confirmée', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', icon: CheckCircle },
-      cancelled: { text: 'Annulée', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', icon: XCircle },
-      completed: { text: 'Terminée', color: '#6b7280', bg: 'rgba(107, 114, 128, 0.15)', icon: CheckCircle }
-    };
-    return badges[status] || badges.pending;
-  };
-
-  const canCancelReservation = (reservation) => {
-    if (reservation.status === 'cancelled' || reservation.status === 'completed') {
-      return false;
+  const handleBlockImageUpload = async (e) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    try {
+      const data = await uploadArticleImages(Array.from(files));
+      const urls = data.map((img) => img.urls?.featured || img.urls?.original || img.url).filter(Boolean);
+      urls.forEach((url) => addImageBlock(url));
+      if (!coverImageUrl && urls[0]) setCoverImageUrl(urls[0]);
+      if (!articleForm.featured_image_url && urls[0]) handleArticleFieldChange('featured_image_url', urls[0]);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Erreur upload');
     }
-    const reservationDateTime = new Date(`${reservation.reservation_date}T${reservation.reservation_time}`);
-    const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    return reservationDateTime > twoHoursFromNow;
+    e.target.value = '';
+  };
+
+  const handleArticleSubmit = async (e) => {
+    e.preventDefault();
+    setArticleSubmitLoading(true);
+    try {
+      const payload = {
+        title: articleForm.title,
+        slug: articleForm.slug || slugify(articleForm.title),
+        excerpt: articleForm.excerpt,
+        content: serializeContentBlocks(contentBlocks),
+        featured_image_url: coverImageUrl || articleForm.featured_image_url,
+        rubrique_id: articleForm.rubrique_id || null,
+        status: articleForm.status,
+        is_featured: articleForm.is_featured,
+      };
+      if (editingArticleId) {
+        await updateArticle(editingArticleId, payload);
+        alert('Article mis à jour.');
+      } else {
+        await createArticle(payload);
+        alert('Article créé.');
+      }
+      setShowArticleForm(false);
+      loadArticles();
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Erreur enregistrement');
+    } finally {
+      setArticleSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteArticle = async (id) => {
+    if (!confirm('Supprimer cet article ?')) return;
+    setDeleteArticleId(id);
+    try {
+      await deleteArticle(id);
+      loadArticles();
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Erreur suppression');
+    } finally {
+      setDeleteArticleId(null);
+    }
+  };
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    try {
+      await updateUserProfile(profileForm);
+      const authData = await checkAuth();
+      if (authData.user) setUser(authData.user);
+      setProfileEditing(false);
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Erreur sauvegarde');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      await uploadAvatar(file);
+      const authData = await checkAuth();
+      if (authData.user) setUser(authData.user);
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Erreur upload photo');
+    } finally {
+      setAvatarUploading(false);
+    }
+    e.target.value = '';
   };
 
   const handleLogout = async () => {
     try {
       await logout();
       router.push('/');
-    } catch (error) {
-      console.error('Erreur déconnexion:', error);
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  const getInitials = (firstname, lastname) => {
-    return `${firstname?.charAt(0) || ''}${lastname?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bonjour';
-    if (hour < 18) return 'Bon après-midi';
-    return 'Bonsoir';
-  };
+  const getInitials = (firstname, lastname) =>
+    `${(firstname || '').charAt(0)}${(lastname || '').charAt(0)}`.toUpperCase() || '?';
 
   if (loading) {
     return (
       <div className="loading-screen">
-        <div className="loading-spinner"></div>
-        <p>Chargement de votre espace...</p>
+        <div className="spinner" />
+        <p>Chargement...</p>
         <style jsx>{`
           .loading-screen {
             min-height: 100vh;
@@ -233,21 +376,19 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0A0E27;
-            color: white;
+            background: #212E50;
+            color: #F8F8F0;
           }
-          .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #0066FF;
+          .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(199,161,30,0.2);
+            border-top-color: #C7A11E;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
           }
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
+          @keyframes spin { to { transform: rotate(360deg); } }
         `}</style>
       </div>
     );
@@ -256,1316 +397,989 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Espace Client - {settings.site_name || 'LE SAGE'}</title>
+        <title>Espace membre - {settings.site_name || "Collection Aur'Art"}</title>
       </Head>
-
       <Header settings={settings} />
-
-      <div className="dashboard-page">
-        <div className="bg-effects">
-          <div className="gradient-orb orb-1"></div>
-          <div className="gradient-orb orb-2"></div>
-        </div>
-
-        <div className={`dashboard-container ${mounted ? 'mounted' : ''}`}>
-          {/* Sidebar */}
-          <aside className="dashboard-sidebar">
+      <div className={`dashboard-page ${mounted ? 'mounted' : ''}`}>
+        <div className="dashboard-bg" aria-hidden="true" />
+        <div className="dashboard-container">
+          <aside className="sidebar">
             <div className="sidebar-header">
-              <div className="user-avatar">
+              <button
+                className="avatar-wrap"
+                onClick={() => avatarInputRef.current?.click()}
+                title="Changer la photo"
+              >
                 {user?.avatar_url ? (
                   <img src={user.avatar_url} alt="Avatar" />
                 ) : (
                   <span>{getInitials(user?.firstname, user?.lastname)}</span>
                 )}
-              </div>
-              <div className="user-info">
-                <h3>{user?.firstname} {user?.lastname}</h3>
-                <p>{user?.email}</p>
-                <span className="user-badge">Client</span>
-              </div>
-            </div>
-
-            <nav className="sidebar-nav">
-              <button 
-                className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => setActiveTab('overview')}
-              >
-                <Briefcase size={20} />
-                <span>Vue d'ensemble</span>
-              </button>
-
-              <button 
-                className={`nav-item ${activeTab === 'reservations' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reservations')}
-              >
-                <Calendar size={20} />
-                <span>Mes Rendez-vous</span>
-                {stats.reservations > 0 && (
-                  <span className="badge">{stats.reservations}</span>
+                {avatarUploading && (
+                  <span className="avatar-loading">
+                    <Loader2 size={20} className="spin" />
+                  </span>
                 )}
               </button>
-
-              <button 
-                className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`}
-                onClick={() => setActiveTab('projects')}
-              >
-                <FolderOpen size={20} />
-                <span>Mes Projets</span>
-              </button>
-
-              <button 
-                className={`nav-item ${activeTab === 'files' ? 'active' : ''}`}
-                onClick={() => setActiveTab('files')}
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+              <h3>{user?.firstname} {user?.lastname}</h3>
+              <p>{user?.email}</p>
+              <span className="badge">{user?.role || 'member'}</span>
+            </div>
+            <nav className="sidebar-nav">
+              <button
+                className={`nav-btn ${activeTab === 'articles' ? 'active' : ''}`}
+                onClick={() => setActiveTab('articles')}
               >
                 <FileText size={20} />
-                <span>Mes Fichiers</span>
+                <span>Mes articles</span>
               </button>
-
-              <button 
-                className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+              <button
+                className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
                 <User size={20} />
-                <span>Mon Profil</span>
+                <span>Mon profil</span>
               </button>
-
-              <div className="nav-divider"></div>
-
-              <button className="nav-item logout" onClick={handleLogout}>
+              <div className="nav-divider" />
+              <button className="nav-btn logout" onClick={handleLogout}>
                 <LogOut size={20} />
                 <span>Déconnexion</span>
               </button>
             </nav>
           </aside>
 
-          {/* Main Content */}
-          <main className="dashboard-main">
-            <div className="main-header">
-              <div>
-                <h1>{getGreeting()}, {user?.firstname} ! 👋</h1>
-                <p>Bienvenue dans votre espace client</p>
-              </div>
-              <button className="btn-primary" onClick={() => router.push('/reservation')}>
-                <Calendar size={20} />
-                Nouveau Rendez-vous
-              </button>
-            </div>
-
-            {/* Vue d'ensemble */}
-            {activeTab === 'overview' && (
-              <div className="content-section">
-                <div className="stats-grid">
-                  <div className="stat-card" onClick={() => setActiveTab('reservations')} style={{ cursor: 'pointer' }}>
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #0066FF, #00D9FF)' }}>
-                      <Calendar size={28} color="white" />
-                    </div>
-                    <div className="stat-content">
-                      <h3>{stats.reservations}</h3>
-                      <p>Rendez-vous actifs</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card" onClick={() => setActiveTab('projects')} style={{ cursor: 'pointer' }}>
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #FF6B35, #FF8C42)' }}>
-                      <FolderOpen size={28} color="white" />
-                    </div>
-                    <div className="stat-content">
-                      <h3>{stats.projects}</h3>
-                      <p>Projets en cours</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card" onClick={() => setActiveTab('files')} style={{ cursor: 'pointer' }}>
-                    <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #764ba2, #667eea)' }}>
-                      <FileText size={28} color="white" />
-                    </div>
-                    <div className="stat-content">
-                      <h3>{stats.files}</h3>
-                      <p>Fichiers partagés</p>
-                    </div>
-                  </div>
+          <main className="main">
+            {activeTab === 'articles' && (
+              <div className="section">
+                <div className="section-head">
+                  <h1>Mes articles</h1>
+                  <button type="button" className="btn-primary" onClick={openNewArticle}>
+                    <Plus size={20} />
+                    Nouvel article
+                  </button>
                 </div>
 
-                <div className="section-card">
-                  <h2>Actions Rapides</h2>
-                  <div className="quick-actions">
-                    <button className="action-btn" onClick={() => router.push('/reservation')}>
-                      <Calendar size={32} />
-                      <span>Prendre rendez-vous</span>
-                    </button>
-
-                    <button className="action-btn" onClick={() => router.push('/offres')}>
-                      <Briefcase size={32} />
-                      <span>Découvrir nos offres</span>
-                    </button>
-
-                    <button className="action-btn" onClick={() => router.push('/portfolio')}>
-                      <FolderOpen size={32} />
-                      <span>Voir le portfolio</span>
-                    </button>
-
-                    <button className="action-btn" onClick={() => router.push('/contact')}>
-                      <FileText size={32} />
-                      <span>Nous contacter</span>
+                {articlesLoading ? (
+                  <div className="loading-row">
+                    <Loader2 size={32} className="spin" />
+                    <span>Chargement...</span>
+                  </div>
+                ) : articles.length === 0 ? (
+                  <div className="empty-state">
+                    <FileText size={64} />
+                    <p>Aucun article pour le moment.</p>
+                    <button type="button" className="btn-primary" onClick={openNewArticle}>
+                      <Plus size={20} />
+                      Créer un article
                     </button>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Section Réservations */}
-            {activeTab === 'reservations' && (
-              <div className="content-section">
-                <div className="section-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <div>
-                      <h2>Mes Rendez-vous</h2>
-                      <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '5px' }}>
-                        Gérez tous vos rendez-vous
-                      </p>
-                    </div>
-                    <button 
-                      className="btn-refresh"
-                      onClick={loadReservations}
-                      disabled={reservationsLoading}
-                    >
-                      <svg 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="2"
-                        style={{ 
-                          animation: reservationsLoading ? 'spin 1s linear infinite' : 'none',
-                          width: '20px',
-                          height: '20px'
-                        }}
-                      >
-                        <polyline points="23 4 23 10 17 10"/>
-                        <polyline points="1 20 1 14 7 14"/>
-                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                      </svg>
-                      Actualiser
-                    </button>
-                  </div>
-
-                  {reservationsLoading ? (
-                    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                      <div className="loading-spinner" style={{ margin: '0 auto 20px' }}></div>
-                      <p style={{ color: 'rgba(255,255,255,0.6)' }}>Chargement de vos rendez-vous...</p>
-                    </div>
-                  ) : reservations.length === 0 ? (
-                    <div className="empty-state">
-                      <Calendar size={80} />
-                      <h3>Aucun rendez-vous</h3>
-                      <p>Vous n'avez pas encore de rendez-vous programmé</p>
-                      <button 
-                        className="btn-primary"
-                        onClick={() => router.push('/reservation')}
-                        style={{ marginTop: '20px' }}
-                      >
-                        Prendre rendez-vous
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="reservations-grid">
-                      {reservations.map((reservation) => {
-                        const statusInfo = getStatusBadge(reservation.status);
-                        const StatusIcon = statusInfo.icon;
-                        const canCancel = canCancelReservation(reservation);
-                        const isCancelling = cancellingId === reservation.id;
-
-                        return (
-                          <div key={reservation.id} className="reservation-card">
-                            <div className="reservation-header">
-                              <div className="reservation-date-badge">
-                                <div className="date-day">
-                                  {new Date(reservation.reservation_date).getDate()}
-                                </div>
-                                <div className="date-month">
-                                  {new Date(reservation.reservation_date).toLocaleDateString('fr-FR', { month: 'short' })}
-                                </div>
-                              </div>
-                              <div className="reservation-status">
-                                <span 
-                                  className="status-badge"
-                                  style={{ 
-                                    background: statusInfo.bg,
-                                    color: statusInfo.color,
-                                    border: `2px solid ${statusInfo.color}`
-                                  }}
-                                >
-                                  <StatusIcon size={14} style={{ marginRight: '6px' }} />
-                                  {statusInfo.text}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="reservation-body">
-                              <div className="reservation-detail">
-                                <Clock size={20} />
-                                <div>
-                                  <strong>Heure</strong>
-                                  <p>{formatTime(reservation.reservation_time)}</p>
-                                </div>
-                              </div>
-
-                              {reservation.meeting_type && (
-                                <div className="reservation-detail">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                                    <line x1="8" y1="21" x2="16" y2="21"/>
-                                    <line x1="12" y1="17" x2="12" y2="21"/>
-                                  </svg>
-                                  <div>
-                                    <strong>Type</strong>
-                                    <p>{reservation.meeting_type === 'visio' ? 'Visioconférence' : 'Présentiel'}</p>
-                                  </div>
-                                </div>
-                              )}
-
-                              {reservation.message && (
-                                <div className="reservation-detail">
-                                  <FileText size={20} />
-                                  <div>
-                                    <strong>Message</strong>
-                                    <p>{reservation.message}</p>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="reservation-actions">
-                              {canCancel && (
-                                <button
-                                  className="btn-cancel-reservation"
-                                  onClick={() => handleCancelReservation(reservation.id)}
-                                  disabled={isCancelling}
-                                >
-                                  {isCancelling ? (
-                                    <>
-                                      <span className="spinner-small"></span>
-                                      Annulation...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <XCircle size={18} />
-                                      Annuler le rendez-vous
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                              <button 
-                                className="btn-delete"
-                                onClick={() => handleDeleteReservation(reservation.id)}
-                                disabled={deleteLoading === reservation.id}
-                              >
-                                {deleteLoading === reservation.id ? (
-                                  <>
-                                    <span className="spinner"></span>
-                                    Suppression...
-                                  </>
-                                ) : (
-                                  <>
-                                    <XCircle size={18} />
-                                    Supprimer
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Section Projets */}
-            {activeTab === 'projects' && (
-              <div className="content-section">
-                <div className="section-card">
-                  <h2>Mes Projets</h2>
-                  {myProjects.length === 0 ? (
-                    <div className="empty-state">
-                      <FolderOpen size={80} />
-                      <h3>Aucun projet</h3>
-                      <p>Vos projets en cours apparaîtront ici</p>
-                      <button 
-                        className="btn-primary"
-                        onClick={() => router.push('/offres')}
-                        style={{ marginTop: '20px' }}
-                      >
-                        Découvrir nos offres
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="projects-list">
-                      {myProjects.map((project) => (
-                        <div key={project.id} className="project-card" onClick={() => router.push(`/mes-projets/${project.id}`)}>
-                          <div className="project-header-card">
-                            <h3>{project.title || project.name || 'Projet'}</h3>
-                            <span className={`status-badge status-${project.status}`}>
-                              {project.status === 'discovery' && 'Découverte'}
-                              {project.status === 'design' && 'Design'}
-                              {project.status === 'development' && 'Développement'}
-                              {project.status === 'testing' && 'Tests'}
-                              {project.status === 'launched' && 'Lancé'}
-                              {project.status === 'completed' && 'Terminé'}
-                              {project.status === 'on_hold' && 'En pause'}
-                            </span>
-                          </div>
-                          <p className="project-description">{project.description || 'Aucune description'}</p>
-                          {project.progress !== undefined && (
-                            <div className="progress-container">
-                              <div className="progress-label">
-                                <span>Progression</span>
-                                <span>{project.progress}%</span>
-                              </div>
-                              <div className="progress-bar-small">
-                                <div className="progress-fill-small" style={{ width: `${project.progress}%` }}></div>
-                              </div>
-                            </div>
+                ) : (
+                  <ul className="articles-list">
+                    {articles.map((a) => (
+                      <li key={a.id} className="article-card">
+                        <div className="article-cover">
+                          {a.featured_image_url ? (
+                            <img src={a.featured_image_url} alt="" />
+                          ) : (
+                            <div className="no-cover"><FileText size={32} /></div>
                           )}
-                          <div className="project-footer">
-                            {project.estimated_delivery && (
-                              <span className="project-date">
-                                <Calendar size={14} />
-                                Livraison: {new Date(project.estimated_delivery).toLocaleDateString('fr-FR')}
-                              </span>
-                            )}
-                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        <div className="article-body">
+                          <h3>{a.title}</h3>
+                          <p className="meta">
+                            {a.rubrique_name && <span>{a.rubrique_name}</span>}
+                            <span>{a.status}</span>
+                            <span>{new Date(a.created_at).toLocaleDateString('fr-FR')}</span>
+                          </p>
+                          {a.excerpt && <p className="excerpt">{a.excerpt.slice(0, 120)}…</p>}
+                        </div>
+                        <div className="article-actions">
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            onClick={() => openEditArticle(a.id)}
+                            title="Modifier"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-icon danger"
+                            onClick={() => handleDeleteArticle(a.id)}
+                            disabled={deleteArticleId === a.id}
+                            title="Supprimer"
+                          >
+                            {deleteArticleId === a.id ? (
+                              <Loader2 size={18} className="spin" />
+                            ) : (
+                              <Trash2 size={18} />
+                            )}
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
 
-            {/* Section Fichiers */}
-            {activeTab === 'files' && (
-              <div className="content-section">
-                <div className="section-card">
-                  <h2>Mes Fichiers</h2>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '6px', marginBottom: '20px' }}>
-                    Téléversez et consultez les fichiers de vos projets
-                  </p>
-                  {myProjects.length === 0 ? (
-                    <div className="empty-state">
-                      <FileText size={80} />
-                      <h3>Aucun projet</h3>
-                      <p>Vos projets en cours apparaîtront ici. Les fichiers partagés avec vous seront accessibles par projet.</p>
-                      <button
-                        className="btn-primary"
-                        onClick={() => router.push('/offres')}
-                        style={{ marginTop: '20px' }}
-                      >
-                        Découvrir nos offres
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', color: 'rgba(255,255,255,0.8)' }}>Projet</label>
-                        <select
-                          value={selectedProjectId || ''}
-                          onChange={(e) => setSelectedProjectId(e.target.value || null)}
-                          style={{
-                            width: '100%',
-                            maxWidth: '400px',
-                            padding: '10px 14px',
-                            borderRadius: '10px',
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.15)',
-                            color: '#fff',
-                          }}
-                        >
-                          <option value="">Sélectionner un projet</option>
-                          {myProjects.map((p) => (
-                            <option key={p.id} value={p.id}>{p.title || p.name || p.id}</option>
-                          ))}
-                        </select>
-                      </div>
-                      {selectedProjectId && (
-                        <>
-                          <FileDropzone
-                            onFilesSelected={async (f) => {
-                              setFilesInProgress(f);
-                              try {
-                                await uploadFiles(f);
-                                toast.success('Fichier(s) envoyé(s) avec succès');
-                                setFilesInProgress([]);
-                                refreshFiles();
-                              } catch (e) {
-                                toast.error(e.message || "Échec de l'upload");
-                                setFilesInProgress([]);
-                              }
-                            }}
-                            maxFiles={10}
-                            maxSize={50 * 1024 * 1024}
-                            multiple
-                            uploading={uploading}
-                            progress={progress}
-                            filesInProgress={filesInProgress}
-                            uploadError={uploadError}
-                          />
-                          <div style={{ marginTop: '28px' }}>
-                            <FileGallery
-                              files={files}
-                              loading={filesLoading}
-                              error={filesError}
-                              onDownload={downloadFile}
-                              onDelete={deleteFile}
-                              onBulkDelete={async (ids) => {
-                                for (const id of ids) await deleteFile(id);
-                                refreshFiles();
-                              }}
-                            />
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Section Profil */}
             {activeTab === 'profile' && (
-              <div className="content-section">
-                <div className="section-card">
-                  <h2>Mon Profil</h2>
-                  <div className="profile-info">
-                    <div className="info-row">
+              <div className="section">
+                <h1>Mon profil</h1>
+                {!profileEditing ? (
+                  <div className="profile-view">
+                    <div className="profile-field">
                       <label>Prénom</label>
                       <span>{user?.firstname}</span>
                     </div>
-                    <div className="info-row">
+                    <div className="profile-field">
                       <label>Nom</label>
                       <span>{user?.lastname}</span>
                     </div>
-                    <div className="info-row">
+                    <div className="profile-field">
                       <label>Email</label>
                       <span>{user?.email}</span>
                     </div>
-                    <div className="info-row">
+                    {user?.username && (
+                      <div className="profile-field">
+                        <label>Nom d&apos;utilisateur</label>
+                        <span>{user.username}</span>
+                      </div>
+                    )}
+                    <div className="profile-field">
                       <label>Téléphone</label>
-                      <span>{user?.phone || 'Non renseigné'}</span>
+                      <span>{user?.phone || '—'}</span>
                     </div>
-                    <div className="info-row">
-                      <label>Entreprise</label>
-                      <span>{user?.company_name || 'Non renseigné'}</span>
-                    </div>
-                    <div className="info-row">
-                      <label>Membre depuis</label>
-                      <span>{new Date(user?.created_at).toLocaleDateString('fr-FR')}</span>
-                    </div>
+                    <button type="button" className="btn-secondary" onClick={() => setProfileEditing(true)}>
+                      <Pencil size={18} />
+                      Modifier le profil
+                    </button>
                   </div>
-                  <button className="btn-secondary" onClick={() => setActiveTab('settings')}>
-                    Modifier mon profil
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Section Paramètres */}
-            {activeTab === 'settings' && (
-              <div className="content-section">
-                <div className="section-card">
-                  <h2>Paramètres du Compte</h2>
-                  <div className="empty-state">
-                    <Settings size={80} />
-                    <h3>Fonctionnalité en cours de développement</h3>
-                    <p>Les paramètres seront bientôt disponibles</p>
-                  </div>
-                </div>
+                ) : (
+                  <form onSubmit={handleProfileSave} className="profile-form">
+                    <div className="form-group">
+                      <label>Prénom</label>
+                      <input
+                        value={profileForm.firstname}
+                        onChange={(e) => setProfileForm((p) => ({ ...p, firstname: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Nom</label>
+                      <input
+                        value={profileForm.lastname}
+                        onChange={(e) => setProfileForm((p) => ({ ...p, lastname: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Téléphone</label>
+                      <input
+                        value={profileForm.phone}
+                        onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn-primary" disabled={profileSaving}>
+                        {profileSaving ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
+                        Enregistrer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => setProfileEditing(false)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             )}
           </main>
         </div>
       </div>
 
+      {showArticleForm && (
+        <div className="modal-overlay" onClick={() => setShowArticleForm(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <h2>{editingArticleId ? 'Modifier l\'article' : 'Nouvel article'}</h2>
+              <button type="button" className="btn-icon" onClick={() => setShowArticleForm(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleArticleSubmit} className="article-form">
+              <div className="form-row">
+                <div className="form-group flex-2">
+                  <label>Titre *</label>
+                  <input
+                    value={articleForm.title}
+                    onChange={(e) => handleArticleFieldChange('title', e.target.value)}
+                    required
+                    placeholder="Titre de l'article"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Slug (URL)</label>
+                  <input
+                    value={articleForm.slug}
+                    onChange={(e) => handleArticleFieldChange('slug', e.target.value)}
+                    placeholder="titre-article"
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Rubrique</label>
+                <select
+                  value={articleForm.rubrique_id}
+                  onChange={(e) => handleArticleFieldChange('rubrique_id', e.target.value)}
+                >
+                  <option value="">— Choisir —</option>
+                  {rubriques.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Résumé (court)</label>
+                <textarea
+                  value={articleForm.excerpt}
+                  onChange={(e) => handleArticleFieldChange('excerpt', e.target.value)}
+                  rows={2}
+                  placeholder="Résumé affiché dans les listes"
+                />
+              </div>
+              <div className="form-group">
+                <label>Image de couverture</label>
+                <div className="cover-zone">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleArticleImagesUpload}
+                  />
+                  <button
+                    type="button"
+                    className="btn-upload"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ImageIcon size={24} />
+                    Ajouter des photos pour la couverture
+                  </button>
+                  {coverImageUrl && (
+                    <div className="cover-preview">
+                      <img src={coverImageUrl} alt="Couverture" />
+                      <span>Image de couverture</span>
+                    </div>
+                  )}
+                  {uploadedImages.length > 0 && (
+                    <div className="uploaded-list">
+                      {uploadedImages.map((url, i) => (
+                        <div key={i} className="thumb-wrap">
+                          <img src={url} alt="" />
+                          <button
+                            type="button"
+                            className="set-cover"
+                            onClick={() => {
+                              setCoverImageUrl(url);
+                              handleArticleFieldChange('featured_image_url', url);
+                            }}
+                          >
+                            {url === coverImageUrl ? 'Couverture' : 'Définir couverture'}
+                          </button>
+                          <button
+                            type="button"
+                            className="insert-in-content"
+                            onClick={() => addImageBlock(url)}
+                          >
+                            Ajouter dans l&apos;article
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Contenu — blocs texte et images</label>
+                <div className="blocks-toolbar">
+                  <button type="button" className="btn-block-add" onClick={addTextBlock}>
+                    <FileText size={18} />
+                    Ajouter un paragraphe
+                  </button>
+                  <input
+                    ref={blockImageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleBlockImageUpload}
+                  />
+                  <button
+                    type="button"
+                    className="btn-block-add"
+                    onClick={() => blockImageInputRef.current?.click()}
+                  >
+                    <ImageIcon size={18} />
+                    Ajouter une image
+                  </button>
+                </div>
+                <div className="content-blocks">
+                  {contentBlocks.map((block, index) => (
+                    <div key={block.id} className="content-block">
+                      <div className="block-actions">
+                        <button
+                          type="button"
+                          className="btn-icon small"
+                          onClick={() => moveBlock(block.id, -1)}
+                          disabled={index === 0}
+                          title="Monter"
+                        >
+                          <ChevronUp size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-icon small"
+                          onClick={() => moveBlock(block.id, 1)}
+                          disabled={index === contentBlocks.length - 1}
+                          title="Descendre"
+                        >
+                          <ChevronDown size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-icon small danger"
+                          onClick={() => removeBlock(block.id)}
+                          title="Supprimer le bloc"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      {block.type === 'text' ? (
+                        <textarea
+                          className="block-text"
+                          value={block.content}
+                          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                          placeholder="Paragraphe de texte…"
+                          rows={4}
+                        />
+                      ) : (
+                        <div className="block-image-wrap">
+                          {block.url ? (
+                            <>
+                              <img src={block.url} alt={block.alt || ''} className="block-image-preview" />
+                              <input
+                                type="text"
+                                className="block-image-alt"
+                                placeholder="Légende (optionnel)"
+                                value={block.alt || ''}
+                                onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
+                              />
+                            </>
+                          ) : (
+                            <span className="block-image-placeholder">Image</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {contentBlocks.length === 0 && (
+                  <p className="blocks-hint">Cliquez sur « Ajouter un paragraphe » ou « Ajouter une image » pour construire l&apos;article.</p>
+                )}
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Statut</label>
+                  <select
+                    value={articleForm.status}
+                    onChange={(e) => handleArticleFieldChange('status', e.target.value)}
+                  >
+                    <option value="draft">Brouillon</option>
+                    <option value="published">Publié</option>
+                    <option value="archived">Archivé</option>
+                  </select>
+                </div>
+                <div className="form-group checkbox-wrap">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={articleForm.is_featured}
+                      onChange={(e) => handleArticleFieldChange('is_featured', e.target.checked)}
+                    />
+                    <span>À la une</span>
+                  </label>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button type="submit" className="btn-primary" disabled={articleSubmitLoading}>
+                  {articleSubmitLoading ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
+                  {editingArticleId ? 'Enregistrer' : 'Créer l\'article'}
+                </button>
+                <button type="button" className="btn-secondary" onClick={() => setShowArticleForm(false)}>
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <Footer settings={settings} />
 
       <style jsx>{`
         .dashboard-page {
           min-height: 100vh;
-          background: #0A0E27;
+          background: #212E50;
           padding-top: 80px;
           position: relative;
-          overflow-x: hidden;
         }
-
-        .bg-effects {
+        .dashboard-bg {
           position: fixed;
           inset: 0;
+          background: url('/images/Histoire des arts.png') center/cover no-repeat;
+          opacity: 0.06;
           pointer-events: none;
           z-index: 0;
         }
-
-        .gradient-orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(120px);
-          opacity: 0.3;
-          animation: float 20s ease-in-out infinite;
-        }
-
-        .orb-1 {
-          width: 600px;
-          height: 600px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
-          top: -300px;
-          right: -300px;
-        }
-
-        .orb-2 {
-          width: 500px;
-          height: 500px;
-          background: linear-gradient(135deg, #FF6B35, #764ba2);
-          bottom: -250px;
-          left: -250px;
-          animation-delay: 10s;
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(50px, 50px) scale(1.1); }
-        }
-
         .dashboard-container {
           position: relative;
           z-index: 1;
-          max-width: 1400px;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 40px 20px;
+          padding: 32px 20px;
           display: grid;
-          grid-template-columns: 280px 1fr;
-          gap: 30px;
+          grid-template-columns: 260px 1fr;
+          gap: 32px;
           opacity: 0;
-          transform: translateY(20px);
-          transition: all 0.6s ease;
+          transform: translateY(12px);
+          transition: opacity 0.4s ease, transform 0.4s ease;
         }
-
-        .dashboard-container.mounted {
+        .dashboard-page.mounted .dashboard-container {
           opacity: 1;
           transform: translateY(0);
         }
-
-        .dashboard-sidebar {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        .sidebar {
+          background: rgba(33,46,80,0.9);
+          border: 1px solid rgba(199,161,30,0.2);
           border-radius: 20px;
-          padding: 30px;
+          padding: 24px;
           height: fit-content;
           position: sticky;
           top: 100px;
         }
-
         .sidebar-header {
           text-align: center;
-          margin-bottom: 30px;
-          padding-bottom: 30px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding-bottom: 20px;
+          border-bottom: 1px solid rgba(199,161,30,0.2);
         }
-
-        .user-avatar {
+        .avatar-wrap {
           width: 80px;
           height: 80px;
-          margin: 0 auto 15px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
           border-radius: 50%;
+          margin: 0 auto 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 2em;
+          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
+          color: #F8F8F0;
+          font-size: 1.5rem;
           font-weight: 700;
-          color: white;
-          box-shadow: 0 10px 30px rgba(0, 102, 255, 0.4);
+          border: 2px solid rgba(199,161,30,0.3);
+          cursor: pointer;
+          overflow: hidden;
+          position: relative;
         }
-
-        .user-avatar img {
+        .avatar-wrap img {
           width: 100%;
           height: 100%;
-          border-radius: 50%;
           object-fit: cover;
         }
-
-        .user-info h3 {
-          color: white;
-          font-size: 1.2em;
-          margin-bottom: 5px;
+        .avatar-loading {
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
         }
-
-        .user-info p {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.9em;
-          margin-bottom: 10px;
+        .hidden { display: none; }
+        .spin { animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .sidebar-header h3 {
+          color: #F8F8F0;
+          font-size: 1.1rem;
+          margin-bottom: 4px;
         }
-
-        .user-badge {
+        .sidebar-header p {
+          color: rgba(248,248,240,0.7);
+          font-size: 0.9rem;
+          margin-bottom: 8px;
+        }
+        .badge {
           display: inline-block;
-          padding: 5px 15px;
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
+          padding: 4px 12px;
+          background: rgba(124,42,60,0.4);
+          color: #F1B2C8;
           border-radius: 20px;
-          font-size: 0.85em;
+          font-size: 0.75rem;
           font-weight: 600;
         }
-
         .sidebar-nav {
           display: flex;
           flex-direction: column;
-          gap: 5px;
+          gap: 4px;
+          padding-top: 16px;
         }
-
-        .nav-item {
+        .nav-btn {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px 15px;
+          padding: 12px 16px;
           background: transparent;
           border: none;
           border-radius: 12px;
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.95em;
+          color: rgba(248,248,240,0.8);
+          font-size: 0.95rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s;
           width: 100%;
           text-align: left;
         }
-
-        .nav-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
+        .nav-btn:hover {
+          background: rgba(108,129,87,0.15);
+          color: #F8F8F0;
         }
-
-        .nav-item.active {
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
+        .nav-btn.active {
+          background: rgba(124,42,60,0.3);
+          color: #F1B2C8;
         }
-
-        .nav-item.logout {
-          color: #FF6B35;
-          margin-top: 10px;
+        .nav-btn.logout {
+          color: #F1B2C8;
+          margin-top: 8px;
         }
-
-        .nav-item.logout:hover {
-          background: rgba(255, 107, 53, 0.1);
+        .nav-btn.logout:hover {
+          background: rgba(124,42,60,0.2);
         }
-
-        .badge {
-          margin-left: auto;
-          background: #FF6B35;
-          color: white;
-          padding: 2px 8px;
-          border-radius: 10px;
-          font-size: 0.75em;
-          font-weight: 700;
-        }
-
         .nav-divider {
           height: 1px;
-          background: rgba(255, 255, 255, 0.1);
-          margin: 10px 0;
+          background: rgba(199,161,30,0.2);
+          margin: 8px 0;
         }
-
-        .dashboard-main {
-          min-height: calc(100vh - 200px);
+        .main {
+          min-height: 60vh;
         }
-
-        .main-header {
+        .section-head {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 16px;
+          margin-bottom: 24px;
         }
-
-        .main-header h1 {
-          color: white;
-          font-size: 2.5em;
-          margin-bottom: 5px;
+        .section h1 {
+          color: #F8F8F0;
+          font-size: 1.75rem;
+          margin-bottom: 24px;
         }
-
-        .main-header p {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 1.1em;
-        }
-
         .btn-primary {
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 10px;
-          padding: 14px 28px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
-          color: white;
+          gap: 8px;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
+          color: #F8F8F0;
           border: none;
           border-radius: 12px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 10px 30px rgba(0, 102, 255, 0.4);
+          transition: all 0.2s;
         }
-
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
           transform: translateY(-2px);
-          box-shadow: 0 15px 40px rgba(0, 102, 255, 0.6);
+          box-shadow: 0 8px 24px rgba(124,42,60,0.4);
         }
-
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
         .btn-secondary {
-          padding: 12px 24px;
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .btn-secondary:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .content-section {
-          display: flex;
-          flex-direction: column;
-          gap: 25px;
-        }
-
-        .section-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
-          padding: 30px;
-        }
-
-        .section-card h2 {
-          color: white;
-          font-size: 1.5em;
-          margin-bottom: 20px;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 20px;
-          margin-bottom: 30px;
-        }
-
-        .stat-card {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
-          padding: 25px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-icon {
-          width: 60px;
-          height: 60px;
-          border-radius: 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .stat-content h3 {
-          color: white;
-          font-size: 2em;
-          font-weight: 800;
-          margin-bottom: 5px;
-        }
-
-        .stat-content p {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.95em;
-        }
-
-        .quick-actions {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 15px;
-        }
-
-        .action-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-          padding: 25px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-radius: 15px;
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .action-btn:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: #0066FF;
-          transform: translateY(-3px);
-        }
-
-        .reservations-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-          gap: 25px;
-        }
-
-        .reservation-card {
-          background: rgba(255, 255, 255, 0.05);
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
-          padding: 25px;
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-          animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .reservation-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
-          border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .reservation-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 20px;
-          padding-bottom: 20px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .reservation-date-badge {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          width: 70px;
-          height: 70px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
-          border-radius: 15px;
-          box-shadow: 0 8px 25px rgba(0, 102, 255, 0.4);
-        }
-
-        .date-day {
-          font-size: 2em;
-          font-weight: 900;
-          color: white;
-          line-height: 1;
-        }
-
-        .date-month {
-          font-size: 0.75em;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-
-        .status-badge {
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 0.85em;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          display: flex;
-          align-items: center;
-        }
-
-        .reservation-body {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-
-        .reservation-detail {
-          display: flex;
-          align-items: flex-start;
-          gap: 15px;
-          padding: 12px;
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 12px;
-          transition: all 0.3s ease;
-        }
-
-        .reservation-detail:hover {
-          background: rgba(255, 255, 255, 0.06);
-        }
-
-        .reservation-detail svg {
-          color: #00D9FF;
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .reservation-detail strong {
-          display: block;
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.85em;
-          margin-bottom: 4px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .reservation-detail p {
-          color: white;
-          font-weight: 600;
-          margin: 0;
-        }
-
-        .reservation-actions {
-          padding-top: 15px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-
-        .btn-cancel-reservation {
-          flex: 1;
-          min-width: 150px;
-          padding: 12px;
-          background: rgba(255, 107, 53, 0.15);
-          border: 2px solid rgba(255, 107, 53, 0.3);
-          border-radius: 12px;
-          color: #FF6B35;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-        }
-
-        .btn-cancel-reservation:hover:not(:disabled) {
-          background: rgba(255, 107, 53, 0.25);
-          border-color: #FF6B35;
-          transform: translateY(-2px);
-        }
-
-        .btn-cancel-reservation:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .btn-delete {
-          padding: 12px 18px;
-          background: rgba(239, 68, 68, 0.15);
-          color: #ef4444;
-          border: 2px solid rgba(239, 68, 68, 0.3);
-          border-radius: 10px;
-          font-weight: 600;
-          cursor: pointer;
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          transition: all 0.3s;
-        }
-
-        .btn-delete:hover:not(:disabled) {
-          background: rgba(239, 68, 68, 0.25);
-          border-color: #ef4444;
-          transform: translateY(-2px);
-        }
-
-        .btn-delete:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-
-        .spinner {
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          border-top-color: white;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-
-        .spinner-small {
-          width: 16px;
-          height: 16px;
-          border: 2px solid rgba(255, 107, 53, 0.3);
-          border-top-color: #FF6B35;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        .btn-refresh {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 20px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 10px;
-          color: white;
+          padding: 10px 18px;
+          background: rgba(248,248,240,0.1);
+          color: #F8F8F0;
+          border: 1px solid rgba(199,161,30,0.3);
+          border-radius: 12px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 0.3s ease;
         }
-
-        .btn-refresh:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: #0066FF;
+        .btn-secondary:hover {
+          background: rgba(108,129,87,0.2);
         }
-
-        .btn-refresh:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .empty-state {
+        .btn-icon {
+          width: 40px;
+          height: 40px;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
-          padding: 60px 20px;
-          color: rgba(255, 255, 255, 0.6);
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 10px;
+          color: #F8F8F0;
+          cursor: pointer;
+        }
+        .btn-icon:hover { background: rgba(108,129,87,0.2); }
+        .btn-icon.danger { color: #F1B2C8; border-color: rgba(241,178,200,0.3); }
+        .btn-icon.danger:hover { background: rgba(124,42,60,0.3); }
+        .loading-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: rgba(248,248,240,0.8);
+          padding: 40px;
+        }
+        .empty-state {
           text-align: center;
+          padding: 60px 20px;
+          color: rgba(248,248,240,0.7);
         }
-
-        .empty-state svg {
-          stroke: rgba(255, 255, 255, 0.3);
-          margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-          color: white;
-          font-size: 1.5em;
-          margin-bottom: 10px;
-        }
-
-        .empty-state p {
-          margin-bottom: 0;
-        }
-
-        .loading-spinner {
-          width: 50px;
-          height: 50px;
-          border: 4px solid rgba(255, 255, 255, 0.1);
-          border-top-color: #0066FF;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-
-        .profile-info {
+        .empty-state svg { margin-bottom: 16px; opacity: 0.5; }
+        .empty-state p { margin-bottom: 20px; }
+        .articles-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
           display: flex;
           flex-direction: column;
+          gap: 16px;
+        }
+        .article-card {
+          display: grid;
+          grid-template-columns: 120px 1fr auto;
           gap: 20px;
-        }
-
-        .info-row {
-          display: flex;
-          justify-content: space-between;
           align-items: center;
-          padding: 15px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(248,248,240,0.05);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 16px;
+          padding: 16px;
+          transition: all 0.2s;
         }
-
-        .info-row:last-child {
-          border-bottom: none;
+        .article-card:hover {
+          border-color: rgba(199,161,30,0.35);
         }
-
-        .info-row label {
-          color: rgba(255, 255, 255, 0.6);
-          font-weight: 600;
+        .article-cover {
+          width: 120px;
+          height: 80px;
+          border-radius: 10px;
+          overflow: hidden;
+          background: rgba(0,0,0,0.2);
         }
-
-        .info-row span {
-          color: white;
+        .article-cover img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .no-cover {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(248,248,240,0.3);
+        }
+        .article-body h3 {
+          color: #F8F8F0;
+          font-size: 1.1rem;
+          margin-bottom: 6px;
+        }
+        .meta {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+          font-size: 0.8rem;
+          color: rgba(248,248,240,0.6);
+          margin-bottom: 4px;
+        }
+        .excerpt {
+          font-size: 0.9rem;
+          color: rgba(248,248,240,0.7);
+          margin: 0;
+        }
+        .article-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .profile-view, .profile-form {
+          max-width: 480px;
+        }
+        .profile-field {
+          margin-bottom: 16px;
+        }
+        .profile-field label {
+          display: block;
+          color: rgba(248,248,240,0.7);
+          font-size: 0.85rem;
+          margin-bottom: 4px;
+        }
+        .profile-field span {
+          color: #F8F8F0;
           font-weight: 500;
         }
-
-        @media (max-width: 1024px) {
-          .dashboard-container {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-
-          .dashboard-sidebar {
-            position: relative;
-            top: 0;
-          }
-
-          .reservations-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .projects-list {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-          gap: 24px;
-        }
-
-        .project-card {
-          padding: 24px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-radius: 16px;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-
-        .project-card:hover {
-          background: rgba(255, 255, 255, 0.06);
-          border-color: rgba(0, 102, 255, 0.5);
-          transform: translateY(-4px);
-        }
-
-        .project-header-card {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-          margin-bottom: 12px;
-        }
-
-        .project-header-card h3 {
-          color: white;
-          font-size: 1.2em;
-          font-weight: 700;
-          margin: 0;
-        }
-
-        .status-badge {
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          white-space: nowrap;
-        }
-
-        .status-discovery { background: rgba(255, 215, 0, 0.2); color: #FFD700; }
-        .status-design { background: rgba(0, 217, 255, 0.2); color: #00D9FF; }
-        .status-development { background: rgba(0, 102, 255, 0.2); color: #0066FF; }
-        .status-testing { background: rgba(255, 140, 66, 0.2); color: #FF8C42; }
-        .status-launched { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .status-completed { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
-        .status-on_hold { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-        .project-description {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.95em;
-          line-height: 1.5;
-          margin-bottom: 16px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .progress-container {
+        .profile-form .form-group {
           margin-bottom: 16px;
         }
-
-        .progress-label {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.85em;
-          color: rgba(255, 255, 255, 0.6);
-          margin-bottom: 8px;
+        .profile-form label {
+          display: block;
+          color: rgba(248,248,240,0.9);
+          font-size: 0.9rem;
+          margin-bottom: 6px;
         }
-
-        .progress-bar-small {
+        .profile-form input {
           width: 100%;
-          height: 8px;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-          overflow: hidden;
+          padding: 10px 14px;
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.25);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 1rem;
         }
-
-        .progress-fill-small {
-          height: 100%;
-          background: linear-gradient(90deg, #0066FF, #00D9FF);
-          transition: width 0.5s ease;
+        .form-actions {
+          display: flex;
+          gap: 12px;
+          margin-top: 20px;
         }
-
-        .project-footer {
-          padding-top: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding: 40px 20px 20px;
+          z-index: 1000;
+          overflow-y: auto;
         }
-
-        .project-date {
+        .modal {
+          background: #212E50;
+          border: 1px solid rgba(199,161,30,0.25);
+          border-radius: 20px;
+          padding: 24px;
+          width: 100%;
+          max-width: 720px;
+          margin-bottom: 40px;
+        }
+        .modal-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 24px;
+        }
+        .modal-head h2 {
+          color: #F8F8F0;
+          font-size: 1.35rem;
+        }
+        .article-form .form-group {
+          margin-bottom: 16px;
+        }
+        .article-form label {
+          display: block;
+          color: rgba(248,248,240,0.9);
+          font-size: 0.9rem;
+          margin-bottom: 6px;
+        }
+        .article-form input,
+        .article-form select,
+        .article-form textarea {
+          width: 100%;
+          padding: 10px 14px;
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.25);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 1rem;
+        }
+        .article-form textarea { min-height: 120px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row .flex-2 { grid-column: span 1; }
+        .cover-zone { margin-top: 8px; }
+        .btn-upload {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.85em;
+          gap: 8px;
+          padding: 10px 16px;
+          background: rgba(108,129,87,0.2);
+          border: 1px dashed rgba(199,161,30,0.4);
+          border-radius: 10px;
+          color: #F8F8F0;
+          cursor: pointer;
+          margin-bottom: 12px;
         }
-
-        @media (max-width: 768px) {
-          .dashboard-page {
-            padding-top: 60px;
-          }
-
-          .main-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .btn-primary {
-            width: 100%;
-            justify-content: center;
-          }
-
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .quick-actions {
-            grid-template-columns: 1fr;
-          }
-
-          .projects-list {
-            grid-template-columns: 1fr;
-          }
+        .btn-upload:hover { background: rgba(108,129,87,0.3); }
+        .cover-preview {
+          margin-bottom: 12px;
+        }
+        .cover-preview img {
+          max-width: 100%;
+          max-height: 200px;
+          border-radius: 10px;
+          object-fit: cover;
+        }
+        .cover-preview span {
+          display: block;
+          font-size: 0.85rem;
+          color: rgba(248,248,240,0.6);
+          margin-top: 4px;
+        }
+        .uploaded-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .thumb-wrap {
+          width: 100px;
+          text-align: center;
+        }
+        .thumb-wrap img {
+          width: 100%;
+          height: 70px;
+          object-fit: cover;
+          border-radius: 8px;
+        }
+        .set-cover, .insert-in-content {
+          display: block;
+          width: 100%;
+          margin-top: 6px;
+          padding: 4px 8px;
+          font-size: 0.75rem;
+          background: rgba(124,42,60,0.3);
+          border: none;
+          border-radius: 6px;
+          color: #F1B2C8;
+          cursor: pointer;
+        }
+        .insert-in-content {
+          background: rgba(108,129,87,0.3);
+          color: #C7A11E;
+        }
+        .blocks-toolbar {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+        }
+        .btn-block-add {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: rgba(108,129,87,0.25);
+          border: 1px solid rgba(108,129,87,0.4);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .btn-block-add:hover {
+          background: rgba(108,129,87,0.4);
+        }
+        .content-blocks {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .content-block {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          padding: 12px;
+          background: rgba(33,46,80,0.5);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 12px;
+        }
+        .block-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex-shrink: 0;
+        }
+        .block-actions .btn-icon.small {
+          padding: 6px;
+        }
+        .block-text {
+          flex: 1;
+          min-height: 80px;
+          padding: 12px;
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 8px;
+          color: #F8F8F0;
+          font-size: 0.95rem;
+          resize: vertical;
+        }
+        .block-text::placeholder {
+          color: rgba(248,248,240,0.5);
+        }
+        .block-image-wrap {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .block-image-preview {
+          max-width: 100%;
+          max-height: 200px;
+          object-fit: contain;
+          border-radius: 8px;
+        }
+        .block-image-alt {
+          padding: 8px 12px;
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 6px;
+          color: #F8F8F0;
+          font-size: 0.9rem;
+        }
+        .block-image-placeholder {
+          color: rgba(248,248,240,0.5);
+          font-size: 0.9rem;
+        }
+        .blocks-hint {
+          color: rgba(248,248,240,0.6);
+          font-size: 0.9rem;
+          margin-top: 8px;
+        }
+        .checkbox-wrap label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+        .checkbox-wrap input[type="checkbox"] {
+          width: auto;
+          margin: 0;
+        }
+        @media (max-width: 900px) {
+          .dashboard-container { grid-template-columns: 1fr; }
+          .sidebar { position: relative; top: 0; }
+          .article-card { grid-template-columns: 80px 1fr; }
+          .article-actions { grid-column: 2; }
+        }
+        @media (max-width: 600px) {
+          .form-row { grid-template-columns: 1fr; }
+          .article-card { grid-template-columns: 1fr; }
         }
       `}</style>
     </>

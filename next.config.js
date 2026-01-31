@@ -2,7 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['res.cloudinary.com'], // Pour Cloudinary
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   // Support pour TypeScript et JavaScript coexistant
@@ -17,37 +23,21 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
-  // Redirections pour la migration dashboard -> admin
+  // Redirections : pages agence (site de vente) -> association
   async redirects() {
     return [
-      // Redirection permanente de /dashboard/* vers /admin/*
-      // Note: Les pages de redirection en JavaScript sont déjà créées
-      // Ces redirections server-side sont une couche de sécurité supplémentaire
-      {
-        source: '/dashboard/projects',
-        destination: '/admin/projects',
-        permanent: false, // 307 redirect (temporaire pour pouvoir changer)
-      },
-      {
-        source: '/dashboard/reservations',
-        destination: '/admin/reservations',
-        permanent: false,
-      },
-      {
-        source: '/dashboard/clients',
-        destination: '/admin/clients',
-        permanent: false,
-      },
-      {
-        source: '/dashboard/messages',
-        destination: '/admin/messages',
-        permanent: false,
-      },
-      {
-        source: '/dashboard/blog',
-        destination: '/admin/blog',
-        permanent: false,
-      },
+      { source: '/reservation', destination: '/', permanent: false },
+      { source: '/offres', destination: '/', permanent: false },
+      // /dashboard = nouveau dashboard (articles + profil), pas de redirection
+      { source: '/admin/projects', destination: '/admin', permanent: false },
+      { source: '/admin/reservations', destination: '/admin', permanent: false },
+      { source: '/admin/clients', destination: '/admin', permanent: false },
+      { source: '/admin/chat', destination: '/admin', permanent: false },
+      { source: '/dashboard/projects', destination: '/admin', permanent: false },
+      { source: '/dashboard/reservations', destination: '/admin', permanent: false },
+      { source: '/dashboard/clients', destination: '/admin', permanent: false },
+      { source: '/dashboard/messages', destination: '/admin/messages', permanent: false },
+      { source: '/dashboard/blog', destination: '/admin/blog', permanent: false },
     ];
   },
 }

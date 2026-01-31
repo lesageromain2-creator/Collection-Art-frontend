@@ -11,10 +11,10 @@ export default function StatsCard({
   onClick 
 }) {
   const gradients = {
-    blue: 'linear-gradient(135deg, #0066FF, #00D9FF)',
-    orange: 'linear-gradient(135deg, #FF6B35, #FF8C42)',
-    purple: 'linear-gradient(135deg, #764ba2, #667eea)',
-    green: 'linear-gradient(135deg, #10b981, #34d399)',
+    blue: 'linear-gradient(135deg, #212E50, #6C8157)',
+    orange: 'linear-gradient(135deg, #C7A11E, #7C2A3C)',
+    purple: 'linear-gradient(135deg, #7C2A3C, #F1B2C8)',
+    green: 'linear-gradient(135deg, #6C8157, #C7A11E)',
   };
 
   const gradientColors = gradients[gradient] || gradients.blue;
@@ -44,9 +44,9 @@ export default function StatsCard({
 
       <style jsx>{`
         .stats-card {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(248, 248, 240, 0.06);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 20px;
           padding: 24px;
           transition: all 0.3s ease;
@@ -54,8 +54,8 @@ export default function StatsCard({
 
         .stats-card:hover {
           transform: translateY(-4px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 10px 30px rgba(33, 46, 80, 0.4);
+          border-color: rgba(199, 161, 30, 0.35);
         }
 
         .stats-card.clickable {
@@ -76,7 +76,7 @@ export default function StatsCard({
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 20px rgba(0, 102, 255, 0.3);
+          box-shadow: 0 8px 20px rgba(124, 42, 60, 0.35);
         }
 
         .trend {
@@ -106,7 +106,7 @@ export default function StatsCard({
         }
 
         .card-value {
-          color: white;
+          color: #F8F8F0;
           font-size: 32px;
           font-weight: 800;
           margin: 0;
@@ -114,14 +114,14 @@ export default function StatsCard({
         }
 
         .card-title {
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(248, 248, 240, 0.75);
           font-size: 14px;
           font-weight: 500;
           margin: 0;
         }
 
         .card-trend {
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(248, 248, 240, 0.55);
           font-size: 12px;
           margin: 0;
           margin-top: 4px;

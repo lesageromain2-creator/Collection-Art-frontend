@@ -1,24 +1,16 @@
-// frontend/pages/admin/index.js - Vue d'ensemble Admin
+// frontend/pages/admin/index.js - Vue d'ensemble Admin (Association)
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
 import StatsCard from '../../components/admin/StatsCard';
-import { 
-  FolderOpen, 
-  Calendar, 
-  MessageSquare, 
-  Users,
-  TrendingUp,
-  FileText
-} from 'lucide-react';
+import { MessageSquare, FileText, Mail, Calendar, FolderOpen } from 'lucide-react';
 import {
   checkAuth,
-  getAdminDashboard,
-  getProjectsStats,
-  getReservationsStats,
-  getContactMessagesStats
+  getContactMessagesStats,
+  getNewsletterStats,
+  fetchAPI
 } from '../../utils/api';
 
 export default function AdminDashboard() {
@@ -26,19 +18,16 @@ export default function AdminDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    projects: { active: 0, pending: 0, completed: 0 },
-    reservations: { pending: 0, confirmed: 0, total: 0 },
+    articles: 0,
     messages: { unread: 0, total: 0 },
-    clients: { total: 0, new: 0 },
+    newsletter: { total: 0, active: 0 },
   });
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [projectsNeedingAttention, setProjectsNeedingAttention] = useState([]);
-  const [upcomingReservations, setUpcomingReservations] = useState([]);
+  const [recentActivity] = useState([]);
+  const [projectsNeedingAttention] = useState([]);
+  const [upcomingReservations] = useState([]);
 
   useEffect(() => {
     loadDashboardData();
-    
-    // Polling toutes les 30s pour updates
     const interval = setInterval(loadDashboardData, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -46,35 +35,24 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Vérifier auth
       const authData = await checkAuth();
       if (!authData.authenticated || authData.user?.role !== 'admin') {
         router.push('/login?redirect=/admin');
         return;
       }
-
       setUser(authData.user);
 
-      // Charger toutes les stats en parallèle
-      const [dashboardData, projectsStats, reservationsStats, messagesStats] = await Promise.all([
-        getAdminDashboard().catch(() => ({ stats: {}, recentActivity: [], projectsNeedingAttention: [], upcomingReservations: [] })),
-        getProjectsStats().catch(() => ({ active: 0, pending: 0, completed: 0 })),
-        getReservationsStats().catch(() => ({ pending: 0, confirmed: 0, total: 0 })),
+      const [articlesRes, messagesStats, newsletterStats] = await Promise.all([
+        fetchAPI('/articles?limit=1&page=1').catch(() => ({ total: 0 })),
         getContactMessagesStats().catch(() => ({ unread: 0, total: 0 })),
+        getNewsletterStats().catch(() => ({ total: 0, active: 0 })),
       ]);
 
       setStats({
-        projects: projectsStats,
-        reservations: reservationsStats,
+        articles: articlesRes?.total ?? 0,
         messages: messagesStats,
-        clients: dashboardData.stats?.clients || { total: 0, new: 0 },
+        newsletter: newsletterStats,
       });
-
-      setRecentActivity(dashboardData.recentActivity || []);
-      setProjectsNeedingAttention(dashboardData.projectsNeedingAttention || []);
-      setUpcomingReservations(dashboardData.upcomingReservations || []);
-
     } catch (error) {
       console.error('Erreur chargement dashboard:', error);
       router.push('/login');
@@ -95,14 +73,14 @@ export default function AdminDashboard() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #0A0E27;
-            color: white;
+            background: #212E50;
+            color: #F8F8F0;
           }
           .loading-spinner {
             width: 50px;
             height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #0066FF;
+            border: 4px solid rgba(199, 161, 30, 0.2);
+            border-top-color: #C7A11E;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin-bottom: 20px;
@@ -118,10 +96,11 @@ export default function AdminDashboard() {
   return (
     <>
       <Head>
-        <title>Tableau de bord Admin - LE SAGE DEV</title>
+        <title>Tableau de bord Admin - Collection Aur&apos;Art</title>
       </Head>
 
       <div className="admin-layout">
+        <div className="admin-art-bg" aria-hidden="true" />
         <AdminSidebar activeSection="overview" />
         <div className="admin-main">
           <AdminHeader user={user} />
@@ -132,63 +111,44 @@ export default function AdminDashboard() {
               <p>Bienvenue dans votre tableau de bord administrateur</p>
             </div>
 
-            {/* Stats Cards */}
+            {/* Stats Cards - Association */}
             <div className="stats-grid">
               <StatsCard
-                title="Projets actifs"
-                value={stats.projects.active}
-                icon={FolderOpen}
-                trend={5}
-                trendValue={2}
+                title="Articles publiés"
+                value={stats.articles}
+                icon={FileText}
                 gradient="blue"
-                onClick={() => router.push('/admin/projects')}
+                onClick={() => router.push('/admin/blog')}
               />
               <StatsCard
-                title="RDV en attente"
-                value={stats.reservations.pending}
-                icon={Calendar}
-                trend={-3}
-                trendValue={-1}
-                gradient="orange"
-                onClick={() => router.push('/admin/reservations')}
-              />
-              <StatsCard
-                title="Messages non lus"
-                value={stats.messages.unread}
+                title="Messages contact"
+                value={stats.messages.total ?? 0}
                 icon={MessageSquare}
-                trend={12}
-                trendValue={3}
                 gradient="purple"
                 onClick={() => router.push('/admin/messages')}
               />
               <StatsCard
-                title="Total clients"
-                value={stats.clients.total}
-                icon={Users}
-                trend={8}
-                trendValue={stats.clients.new}
+                title="Abonnés newsletter"
+                value={stats.newsletter?.total ?? stats.newsletter?.active ?? 0}
+                icon={Mail}
                 gradient="green"
-                onClick={() => router.push('/admin/clients')}
+                onClick={() => router.push('/admin/newsletter')}
               />
             </div>
 
             {/* Quick Actions */}
             <div className="quick-actions-grid">
-              <button className="quick-action-card" onClick={() => router.push('/admin/projects')}>
-                <FolderOpen size={32} />
-                <span>Gérer les projets</span>
-              </button>
-              <button className="quick-action-card" onClick={() => router.push('/admin/clients')}>
-                <Users size={32} />
-                <span>Gérer les clients</span>
-              </button>
               <button className="quick-action-card" onClick={() => router.push('/admin/blog')}>
                 <FileText size={32} />
-                <span>Gérer le blog</span>
+                <span>Gérer les articles</span>
               </button>
-              <button className="quick-action-card" onClick={() => router.push('/admin/reservations')}>
-                <Calendar size={32} />
-                <span>Réservations</span>
+              <button className="quick-action-card" onClick={() => router.push('/admin/messages')}>
+                <MessageSquare size={32} />
+                <span>Messages contact</span>
+              </button>
+              <button className="quick-action-card" onClick={() => router.push('/admin/newsletter')}>
+                <Mail size={32} />
+                <span>Newsletter</span>
               </button>
             </div>
 
@@ -297,11 +257,24 @@ export default function AdminDashboard() {
       <style jsx>{`
         .admin-layout {
           min-height: 100vh;
-          background: #0A0E27;
+          background: #212E50;
           display: flex;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .admin-art-bg {
+          position: fixed;
+          inset: 0;
+          background: url('/images/au fil des oeuvres.png') center center / cover no-repeat;
+          opacity: 0.06;
+          pointer-events: none;
+          z-index: 0;
         }
 
         .admin-main {
+          position: relative;
+          z-index: 1;
           flex: 1;
           margin-left: 280px;
           display: flex;
@@ -319,14 +292,14 @@ export default function AdminDashboard() {
         }
 
         .content-header h1 {
-          color: white;
+          color: #F8F8F0;
           font-size: 32px;
           font-weight: 800;
           margin-bottom: 8px;
         }
 
         .content-header p {
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(248, 248, 240, 0.65);
           font-size: 16px;
         }
 
@@ -338,9 +311,9 @@ export default function AdminDashboard() {
         }
 
         .section-card {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(248, 248, 240, 0.06);
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 20px;
           padding: 24px;
           margin-bottom: 24px;
@@ -354,7 +327,7 @@ export default function AdminDashboard() {
         }
 
         .section-card h2 {
-          color: white;
+          color: #F8F8F0;
           font-size: 20px;
           font-weight: 700;
           margin: 0;
@@ -362,10 +335,10 @@ export default function AdminDashboard() {
 
         .view-all-btn {
           padding: 8px 16px;
-          background: rgba(0, 102, 255, 0.2);
-          border: 1px solid rgba(0, 102, 255, 0.3);
+          background: rgba(124, 42, 60, 0.3);
+          border: 1px solid rgba(241, 178, 200, 0.3);
           border-radius: 8px;
-          color: #00D9FF;
+          color: #F1B2C8;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
@@ -373,7 +346,7 @@ export default function AdminDashboard() {
         }
 
         .view-all-btn:hover {
-          background: rgba(0, 102, 255, 0.3);
+          background: rgba(124, 42, 60, 0.5);
         }
 
         .attention-list,
@@ -389,14 +362,14 @@ export default function AdminDashboard() {
           align-items: center;
           gap: 16px;
           padding: 16px;
-          background: rgba(255, 255, 255, 0.03);
+          background: rgba(248, 248, 240, 0.04);
           border-radius: 12px;
           transition: background 0.2s;
         }
 
         .attention-item:hover,
         .reservation-item:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(108, 129, 87, 0.1);
         }
 
         .attention-content,
@@ -406,7 +379,7 @@ export default function AdminDashboard() {
 
         .attention-content h3,
         .reservation-info h3 {
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           font-weight: 600;
           margin: 0 0 4px 0;
@@ -414,7 +387,7 @@ export default function AdminDashboard() {
 
         .attention-content p,
         .reservation-info p {
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(248, 248, 240, 0.65);
           font-size: 12px;
           margin: 0;
         }
@@ -422,8 +395,8 @@ export default function AdminDashboard() {
         .attention-badge,
         .reservation-status {
           padding: 6px 12px;
-          background: rgba(255, 107, 53, 0.15);
-          color: #FF6B35;
+          background: rgba(199, 161, 30, 0.2);
+          color: #C7A11E;
           border-radius: 8px;
           font-size: 12px;
           font-weight: 600;
@@ -436,21 +409,21 @@ export default function AdminDashboard() {
           justify-content: center;
           width: 50px;
           height: 50px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
           border-radius: 10px;
         }
 
         .date-day {
           font-size: 20px;
           font-weight: 900;
-          color: white;
+          color: #F8F8F0;
           line-height: 1;
         }
 
         .date-month {
           font-size: 10px;
           font-weight: 700;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(248, 248, 240, 0.9);
           text-transform: uppercase;
         }
 
@@ -469,12 +442,12 @@ export default function AdminDashboard() {
         .activity-icon {
           width: 32px;
           height: 32px;
-          background: rgba(0, 102, 255, 0.2);
+          background: rgba(124, 42, 60, 0.3);
           border-radius: 8px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #00D9FF;
+          color: #F1B2C8;
           flex-shrink: 0;
         }
 
@@ -483,17 +456,17 @@ export default function AdminDashboard() {
         }
 
         .activity-content p {
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           margin: 0 0 4px 0;
         }
 
         .activity-content strong {
-          color: #00D9FF;
+          color: #C7A11E;
         }
 
         .activity-time {
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(248, 248, 240, 0.5);
           font-size: 12px;
         }
 
@@ -511,20 +484,20 @@ export default function AdminDashboard() {
           justify-content: center;
           gap: 16px;
           padding: 32px 20px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(248, 248, 240, 0.06);
           backdrop-filter: blur(20px);
-          border: 2px solid rgba(255, 255, 255, 0.1);
+          border: 2px solid rgba(199, 161, 30, 0.2);
           border-radius: 16px;
-          color: white;
+          color: #F8F8F0;
           cursor: pointer;
           transition: all 0.3s;
         }
 
         .quick-action-card:hover {
           transform: translateY(-5px);
-          border-color: rgba(0, 102, 255, 0.5);
-          box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(199, 161, 30, 0.45);
+          box-shadow: 0 15px 40px rgba(33, 46, 80, 0.4);
+          background: rgba(108, 129, 87, 0.12);
         }
 
         .quick-action-card span {

@@ -1,5 +1,8 @@
 // frontend/components/Header.js
+// Bannière du site avec logo icône (palette Collection Aur'art)
+
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -18,7 +21,7 @@ export default function Header({ settings = {} }) {
   const [userRole, setUserRole] = useState(null);
   const router = useRouter();
 
-  const siteName = settings.site_name || 'Collection Aur\'art';
+  const siteName = settings.site_name || "Collection Aur'art";
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -30,8 +33,6 @@ export default function Header({ settings = {} }) {
     if (typeof window === 'undefined') return;
     const token = localStorage.getItem('authToken');
     setIsLoggedIn(!!token);
-    
-    // Récupérer le rôle de l'utilisateur si connecté
     if (token) {
       checkUserRole();
     }
@@ -70,23 +71,36 @@ export default function Header({ settings = {} }) {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all ${
-        scrolled ? 'backdrop-blur-xl bg-creme/95 border-b border-anthracite/10 shadow-sm' : 'bg-creme/80 backdrop-blur-sm'
+      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+        scrolled
+          ? 'backdrop-blur-xl bg-creme/95 border-b border-navy/10 shadow-sm'
+          : 'bg-navy/95 backdrop-blur-md border-b border-creme/10'
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-        <Link 
-          href="/"
-          className="flex items-center gap-3 group"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-gradient shadow-md">
-            <span className="text-lg font-bold text-white font-serif">A</span>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full overflow-hidden bg-creme shadow-md ring-2 ring-navy/10">
+            <Image
+              src="/images/logo icone.jpeg"
+              alt="Collection Aur'art"
+              width={40}
+              height={40}
+              className="object-contain p-1"
+            />
           </div>
           <div className="flex flex-col">
-            <span className="font-heading text-base font-semibold tracking-tight text-anthracite md:text-lg transition-colors group-hover:text-framboise">
+            <span
+              className={`font-heading text-base font-semibold tracking-tight transition-colors group-hover:text-burgundy md:text-lg ${
+                scrolled ? 'text-navy' : 'text-creme'
+              }`}
+            >
               {siteName}
             </span>
-            <span className="text-[9px] font-medium uppercase tracking-[0.2em] text-gris">
+            <span
+              className={`text-[9px] font-medium uppercase tracking-[0.2em] ${
+                scrolled ? 'text-gris' : 'text-creme/80'
+              }`}
+            >
               Esquisses de l'Art & son marché
             </span>
           </div>
@@ -94,18 +108,26 @@ export default function Header({ settings = {} }) {
 
         <nav className="hidden items-center gap-7 text-sm font-medium md:flex">
           {navItems.map((item) => (
-            <Link 
-              key={item.href} 
+            <Link
+              key={item.href}
               href={item.href}
               className={`relative transition-colors ${
                 isActive(item.href)
-                  ? 'text-anthracite font-semibold'
-                  : 'text-gris hover:text-anthracite'
+                  ? scrolled
+                    ? 'text-navy font-semibold'
+                    : 'text-creme font-semibold'
+                  : scrolled
+                  ? 'text-gris hover:text-navy'
+                  : 'text-creme/90 hover:text-creme'
               }`}
             >
               {item.label}
               {isActive(item.href) && (
-                <span className="absolute -bottom-1 left-0 right-0 h-[2px] rounded-full bg-primary-gradient" />
+                <span
+                  className={`absolute -bottom-1 left-0 right-0 h-[2px] rounded-full ${
+                    scrolled ? 'bg-primary-gradient' : 'bg-gold'
+                  }`}
+                />
               )}
             </Link>
           ))}
@@ -113,31 +135,31 @@ export default function Header({ settings = {} }) {
             {isLoggedIn ? (
               <>
                 {userRole === 'admin' && (
-                  <Link 
+                  <Link
                     href="/admin"
-                    className="rounded-full border border-orange/30 bg-orange/10 px-3 py-1.5 text-xs font-semibold text-orange hover:bg-orange/20"
+                    className="rounded-full border border-gold/50 bg-gold/10 px-3 py-1.5 text-xs font-semibold text-navy hover:bg-gold/20"
                   >
                     Admin
                   </Link>
                 )}
-                <Link 
+                <Link
                   href="/dashboard"
-                  className="rounded-full border border-anthracite/20 bg-anthracite/5 px-3 py-1.5 text-xs font-semibold text-anthracite hover:bg-anthracite/10"
+                  className="rounded-full border border-navy/20 bg-navy/5 px-3 py-1.5 text-xs font-semibold text-navy hover:bg-navy/10"
                 >
                   Dashboard
                 </Link>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-full bg-primary-gradient px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:shadow-lg transition-all"
+                  className="rounded-full bg-primary-gradient px-3 py-1.5 text-xs font-semibold text-creme shadow-md hover:shadow-lg transition-all"
                 >
                   Déconnexion
                 </button>
               </>
             ) : (
-              <Link 
+              <Link
                 href="/login"
-                className="rounded-full border border-framboise/30 bg-framboise/10 px-4 py-1.5 text-xs font-semibold text-framboise hover:bg-framboise/20 transition-all"
+                className="rounded-full border border-gold/50 bg-gold/10 px-4 py-1.5 text-xs font-semibold text-navy hover:bg-gold/20 transition-all"
               >
                 Connexion
               </Link>
@@ -149,7 +171,11 @@ export default function Header({ settings = {} }) {
           type="button"
           aria-label="Ouvrir le menu"
           onClick={() => setMenuOpen((v) => !v)}
-          className="relative flex h-9 w-9 items-center justify-center rounded-full border border-anthracite/15 bg-white text-anthracite shadow-sm transition hover:bg-anthracite/5 md:hidden"
+          className={`relative flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition md:hidden ${
+            scrolled
+              ? 'border-navy/15 bg-white text-navy hover:bg-navy/5'
+              : 'border-creme/30 bg-creme/10 text-creme hover:bg-creme/20'
+          }`}
         >
           <span
             className={`absolute h-0.5 w-4 rounded-full bg-current transition-transform ${
@@ -170,7 +196,11 @@ export default function Header({ settings = {} }) {
       </div>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-30 bg-anthracite/30 backdrop-blur-sm md:hidden" onClick={() => setMenuOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-navy/40 backdrop-blur-sm md:hidden"
+          onClick={() => setMenuOpen(false)}
+          aria-hidden
+        />
       )}
 
       <div
@@ -180,18 +210,22 @@ export default function Header({ settings = {} }) {
       >
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-gradient">
-              <span className="text-sm font-bold text-white font-serif">A</span>
+            <div className="relative h-9 w-9 flex-shrink-0 rounded-full overflow-hidden bg-navy/10 ring-2 ring-navy/10">
+              <Image
+                src="/images/logo icone.jpeg"
+                alt=""
+                width={36}
+                height={36}
+                className="object-contain p-0.5"
+              />
             </div>
-            <span className="text-sm font-semibold text-anthracite">
-              {siteName}
-            </span>
+            <span className="text-sm font-semibold text-navy">{siteName}</span>
           </div>
           <button
             type="button"
             aria-label="Fermer le menu"
             onClick={() => setMenuOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-anthracite/5 text-anthracite hover:bg-anthracite/10"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-navy/5 text-navy hover:bg-navy/10"
           >
             ✕
           </button>
@@ -199,14 +233,14 @@ export default function Header({ settings = {} }) {
 
         <nav className="flex flex-col gap-2 text-sm font-medium">
           {navItems.map((item) => (
-            <Link 
-              key={item.href} 
+            <Link
+              key={item.href}
               href={item.href}
               onClick={() => setMenuOpen(false)}
               className={`rounded-xl px-4 py-2.5 transition-colors ${
                 isActive(item.href)
-                  ? 'bg-framboise/10 text-framboise font-semibold'
-                  : 'text-gris hover:bg-anthracite/5 hover:text-anthracite'
+                  ? 'bg-burgundy/10 text-burgundy font-semibold'
+                  : 'text-gris hover:bg-navy/5 hover:text-navy'
               }`}
             >
               {item.label}
@@ -214,38 +248,38 @@ export default function Header({ settings = {} }) {
           ))}
         </nav>
 
-        <div className="mt-6 border-t border-anthracite/10 pt-4 text-sm">
+        <div className="mt-6 border-t border-navy/10 pt-4 text-sm">
           {isLoggedIn ? (
             <div className="space-y-3">
               {userRole === 'admin' && (
-                <Link 
+                <Link
                   href="/admin"
                   onClick={() => setMenuOpen(false)}
-                  className="block rounded-full border border-orange/30 bg-orange/10 px-4 py-2 text-center font-semibold text-orange hover:bg-orange/20"
+                  className="block rounded-full border border-gold/30 bg-gold/10 px-4 py-2 text-center font-semibold text-navy hover:bg-gold/20"
                 >
                   Espace Admin
                 </Link>
               )}
-              <Link 
+              <Link
                 href="/dashboard"
                 onClick={() => setMenuOpen(false)}
-                className="block rounded-full border border-anthracite/15 bg-anthracite/5 px-4 py-2 text-center font-semibold text-anthracite hover:bg-anthracite/10"
+                className="block rounded-full border border-navy/15 bg-navy/5 px-4 py-2 text-center font-semibold text-navy hover:bg-navy/10"
               >
                 Accéder au dashboard
               </Link>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="block w-full rounded-full bg-primary-gradient px-4 py-2 text-center font-semibold text-white shadow-md hover:shadow-lg"
+                className="block w-full rounded-full bg-primary-gradient px-4 py-2 text-center font-semibold text-creme shadow-md hover:shadow-lg"
               >
                 Déconnexion
               </button>
             </div>
           ) : (
-            <Link 
+            <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="block rounded-full bg-primary-gradient px-4 py-2 text-center font-semibold text-white shadow-md hover:shadow-lg"
+              className="block rounded-full bg-primary-gradient px-4 py-2 text-center font-semibold text-creme shadow-md hover:shadow-lg"
             >
               Connexion
             </Link>

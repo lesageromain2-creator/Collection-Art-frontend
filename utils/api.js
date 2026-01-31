@@ -286,6 +286,83 @@ export const deleteSetting = async (key) => {
 };
 
 // ============================================
+// RUBRIQUES API (pour formulaire articles)
+// ============================================
+
+export const getRubriques = async () => {
+  const data = await fetchAPI('/rubriques');
+  return Array.isArray(data) ? data : (data?.rubriques || data?.data || []);
+};
+
+// ============================================
+// ARTICLES API (dashboard - mes articles)
+// ============================================
+
+export const getMyArticles = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const data = await fetchAPI(`/articles/my/articles${queryString ? `?${queryString}` : ''}`);
+  return data?.articles || [];
+};
+
+export const getArticleById = async (id) => {
+  const data = await fetchAPI(`/articles/by-id/${id}`);
+  return data?.article;
+};
+
+export const createArticle = async (payload) => {
+  const data = await fetchAPI('/articles', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+  return data?.article;
+};
+
+export const updateArticle = async (id, payload) => {
+  const data = await fetchAPI(`/articles/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+  return data?.article;
+};
+
+export const deleteArticle = async (id) => {
+  await fetchAPI(`/articles/${id}`, { method: 'DELETE' });
+};
+
+// ============================================
+// UPLOAD API (multipart - pas JSON)
+// ============================================
+
+const uploadFiles = async (endpoint, files, fieldName = 'images') => {
+  const token = getToken();
+  const url = `${API_URL}${endpoint}`;
+  const formData = new FormData();
+  if (Array.isArray(files)) {
+    files.forEach((f) => formData.append(fieldName, f));
+  } else {
+    formData.append(fieldName, files);
+  }
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || data.message || 'Upload failed');
+  return data;
+};
+
+export const uploadArticleImages = async (files) => {
+  const data = await uploadFiles('/upload/article-image', files, 'images');
+  return data?.images || (data?.image ? [data.image] : []);
+};
+
+export const uploadAvatar = async (file) => {
+  const data = await uploadFiles('/upload/avatar', file, 'images');
+  return data?.avatar?.urls || data?.avatar || data;
+};
+
+// ============================================
 // DISHES API
 // ============================================
 
@@ -556,7 +633,7 @@ export const sendContactMessage = async (messageData) => {
 // Contact Messages
 export const getAdminContactMessages = async (params = {}) => {
   const queryString = new URLSearchParams(params).toString();
-  return fetchAPI(`/admin/contact${queryString ? `?${queryString}` : ''}`); // ✅ CORRECT
+  return fetchAPI(`/contact/messages${queryString ? `?${queryString}` : ''}`);
 };
 
 export const getAdminContactMessage = async (id) => {
@@ -584,7 +661,7 @@ export const deleteContactMessage = async (id, permanent = false) => {
 };
 
 export const getContactMessagesStats = async () => {
-  return fetchAPI('/admin/contact/stats/overview');
+  return fetchAPI('/contact/stats/overview');
 };
 
 // Projects
@@ -973,38 +1050,27 @@ export const getTestimonialsStats = async () => {
 // ============================================
 
 export const subscribeNewsletter = async (email, name = null) => {
-  return fetchAPI('/api/newsletter/subscribe', {
+  return fetchAPI('/newsletter/subscribe', {
     method: 'POST',
-    body: JSON.stringify({ email, name }),
+    body: JSON.stringify({ email, firstname: name?.firstname, lastname: name?.lastname }),
   });
 };
 
 export const unsubscribeNewsletter = async (email) => {
-  return fetchAPI('/api/newsletter/unsubscribe', {
+  return fetchAPI('/newsletter/unsubscribe', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
 };
 
-// Admin Newsletter
+// Admin Newsletter (backend: /newsletter/*)
 export const getNewsletterSubscribers = async (params = {}) => {
   const queryString = new URLSearchParams(params).toString();
-  return fetchAPI(`/admin/newsletter/subscribers${queryString ? `?${queryString}` : ''}`);
-};
-
-export const sendNewsletterEmail = async (emailData) => {
-  return fetchAPI('/admin/newsletter/send', {
-    method: 'POST',
-    body: JSON.stringify(emailData),
-  });
+  return fetchAPI(`/newsletter/subscribers${queryString ? `?${queryString}` : ''}`);
 };
 
 export const getNewsletterStats = async () => {
-  return fetchAPI('/admin/newsletter/stats');
-};
-
-export const exportNewsletterSubscribers = async () => {
-  return fetchAPI('/admin/newsletter/export');
+  return fetchAPI('/newsletter/stats');
 };
 
 // ============================================

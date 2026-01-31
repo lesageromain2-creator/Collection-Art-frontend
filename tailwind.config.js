@@ -8,26 +8,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        framboise: '#D63384',
-        violet: {
-          profond: '#6A2C70',
-          clair: '#9B59B6',
-        },
-        orange: '#E67E22',
-        creme: '#FAF8F3',
-        anthracite: '#2C2C2C',
+        /* Palette officielle Collection Aur'art */
+        creme: '#F8F8F0',
+        olive: '#6C8157',
+        burgundy: '#7C2A3C',
+        gold: '#C7A11E',
+        pink: '#F1B2C8',
+        navy: '#212E50',
+        anthracite: '#212E50',
         gris: '#5A5A5A',
-        or: '#C9A961',
-        // Alias
-        primary: '#D63384',
-        secondary: '#6A2C70',
-        accent: '#E67E22',
-        dark: '#2C2C2C',
-        light: '#FAF8F3',
+        /* Alias */
+        primary: '#7C2A3C',
+        secondary: '#6C8157',
+        accent: '#C7A11E',
+        framboise: '#7C2A3C',
+        'violet-profond': '#212E50',
+        'violet-clair': '#6C8157',
+        orange: '#C7A11E',
+        or: '#C7A11E',
+        dark: '#212E50',
+        light: '#F8F8F0',
       },
       backgroundImage: {
-        'primary-gradient': 'linear-gradient(135deg, #D63384 0%, #6A2C70 100%)',
-        'soft-gradient': 'linear-gradient(135deg, #9B59B6 0%, #D63384 50%, #E67E22 100%)',
+        'primary-gradient': 'linear-gradient(135deg, #7C2A3C 0%, #212E50 100%)',
+        'warm-gradient': 'linear-gradient(135deg, #C7A11E 0%, #7C2A3C 100%)',
+        'soft-gradient': 'linear-gradient(135deg, #F1B2C8 0%, #6C8157 50%, #C7A11E 100%)',
+        'hero-overlay': 'linear-gradient(180deg, rgba(33, 46, 80, 0.5) 0%, rgba(124, 42, 60, 0.35) 50%, transparent 100%)',
       },
       fontFamily: {
         heading: ['Cormorant Garamond', 'Georgia', 'serif'],
@@ -38,14 +44,19 @@ module.exports = {
       animation: {
         'bounce': 'bounce 1s infinite',
         'fade-in': 'fadeIn 0.6s ease-out',
+        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(24px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
     },
   },
   plugins: [],
-}
+};

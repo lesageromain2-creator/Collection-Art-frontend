@@ -1,14 +1,12 @@
 // frontend/components/admin/AdminSidebar.js
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { 
   LayoutDashboard, 
-  FolderOpen, 
-  Calendar, 
   MessageSquare, 
-  MessagesSquare,
-  Users, 
-  LogOut,
-  Settings
+  FileText, 
+  Mail,
+  LogOut
 } from 'lucide-react';
 
 export default function AdminSidebar({ activeSection, onNavigate, notifications = {} }) {
@@ -16,11 +14,9 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
 
   const menuItems = [
     { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard, path: '/admin' },
-    { id: 'projects', label: 'Projets', icon: FolderOpen, path: '/admin/projects', badge: notifications.projects },
-    { id: 'reservations', label: 'Rendez-vous', icon: Calendar, path: '/admin/reservations', badge: notifications.reservations },
-    { id: 'chat', label: 'Chat', icon: MessagesSquare, path: '/admin/chat', badge: notifications.chat },
-    { id: 'messages', label: 'Contact', icon: MessageSquare, path: '/admin/messages', badge: notifications.messages },
-    { id: 'clients', label: 'Clients', icon: Users, path: '/admin/clients', badge: notifications.clients },
+    { id: 'blog', label: 'Articles / Blog', icon: FileText, path: '/admin/blog', badge: notifications.articles },
+    { id: 'messages', label: 'Messages contact', icon: MessageSquare, path: '/admin/messages', badge: notifications.messages },
+    { id: 'newsletter', label: 'Newsletter', icon: Mail, path: '/admin/newsletter', badge: notifications.newsletter },
   ];
 
   const handleLogout = async () => {
@@ -35,10 +31,13 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
 
   return (
     <aside className="admin-sidebar">
+      <div className="sidebar-art-bg" aria-hidden="true" />
       <div className="sidebar-header">
         <div className="logo">
-          <span className="logo-icon">LS</span>
-          <span className="logo-text">LE SAGE DEV</span>
+          <div className="logo-icon">
+            <Image src="/images/logo icone.jpeg" alt="Collection Aurart" width={40} height={40} className="logo-img" />
+          </div>
+          <span className="logo-text">Collection Aur&apos;Art</span>
         </div>
         <span className="admin-badge">Admin</span>
       </div>
@@ -81,17 +80,27 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
           position: fixed;
           left: 0;
           top: 0;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border-right: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(180deg, #212E50 0%, #2a3a62 50%, #212E50 100%);
+          border-right: 1px solid rgba(199, 161, 30, 0.2);
           display: flex;
           flex-direction: column;
           z-index: 100;
+          overflow: hidden;
+        }
+
+        .sidebar-art-bg {
+          position: absolute;
+          inset: 0;
+          background: url('/images/Histoire des arts.png') center bottom / cover no-repeat;
+          opacity: 0.08;
+          pointer-events: none;
         }
 
         .sidebar-header {
+          position: relative;
+          z-index: 1;
           padding: 24px 20px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid rgba(199, 161, 30, 0.15);
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -106,33 +115,41 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
         .logo-icon {
           width: 40px;
           height: 40px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
           border-radius: 12px;
+          overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 900;
-          font-size: 18px;
-          color: white;
+          background: rgba(248, 248, 240, 0.1);
+          border: 1px solid rgba(199, 161, 30, 0.3);
+        }
+
+        .logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .logo-text {
-          color: white;
+          color: #F8F8F0;
           font-weight: 700;
-          font-size: 16px;
+          font-size: 15px;
         }
 
         .admin-badge {
           padding: 4px 12px;
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
+          background: rgba(124, 42, 60, 0.4);
+          color: #F1B2C8;
           border-radius: 12px;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .sidebar-nav {
+          position: relative;
+          z-index: 1;
           flex: 1;
           padding: 20px 12px;
           display: flex;
@@ -149,7 +166,7 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
           background: transparent;
           border: none;
           border-radius: 12px;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(248, 248, 240, 0.75);
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
@@ -160,13 +177,13 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
         }
 
         .nav-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
+          background: rgba(108, 129, 87, 0.15);
+          color: #F8F8F0;
         }
 
         .nav-item.active {
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
+          background: rgba(124, 42, 60, 0.25);
+          color: #F1B2C8;
         }
 
         .nav-item.active::before {
@@ -177,14 +194,14 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
           transform: translateY(-50%);
           width: 4px;
           height: 60%;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
+          background: linear-gradient(180deg, #C7A11E, #7C2A3C);
           border-radius: 0 4px 4px 0;
         }
 
         .nav-badge {
           margin-left: auto;
-          background: #FF6B35;
-          color: white;
+          background: #7C2A3C;
+          color: #F1B2C8;
           padding: 2px 8px;
           border-radius: 10px;
           font-size: 11px;
@@ -195,17 +212,17 @@ export default function AdminSidebar({ activeSection, onNavigate, notifications 
 
         .nav-divider {
           height: 1px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(199, 161, 30, 0.2);
           margin: 12px 0;
         }
 
         .nav-item.logout {
-          color: #FF6B35;
+          color: #F1B2C8;
           margin-top: auto;
         }
 
         .nav-item.logout:hover {
-          background: rgba(255, 107, 53, 0.1);
+          background: rgba(124, 42, 60, 0.2);
         }
 
         @media (max-width: 1024px) {

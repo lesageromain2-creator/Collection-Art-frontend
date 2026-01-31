@@ -148,9 +148,9 @@ export default function AdminHeader({ user, onSearch }) {
           left: 280px;
           right: 0;
           height: 80px;
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(33, 46, 80, 0.92);
           backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid rgba(199, 161, 30, 0.2);
           z-index: 90;
           padding: 0 32px;
         }
@@ -172,18 +172,18 @@ export default function AdminHeader({ user, onSearch }) {
         .search-input {
           width: 100%;
           padding: 12px 16px 12px 48px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(248, 248, 240, 0.06);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 12px;
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           transition: all 0.3s ease;
         }
 
         .search-input:focus {
           outline: none;
-          border-color: #0066FF;
-          background: rgba(255, 255, 255, 0.08);
+          border-color: #C7A11E;
+          background: rgba(248, 248, 240, 0.08);
         }
 
         .search-input::placeholder {
@@ -203,8 +203,8 @@ export default function AdminHeader({ user, onSearch }) {
           top: calc(100% + 8px);
           left: 0;
           right: 0;
-          background: rgba(10, 14, 39, 0.98);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(33, 46, 80, 0.98);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 12px;
           padding: 8px;
           max-height: 300px;
@@ -228,8 +228,8 @@ export default function AdminHeader({ user, onSearch }) {
 
         .result-type {
           padding: 4px 8px;
-          background: rgba(0, 102, 255, 0.2);
-          color: #00D9FF;
+          background: rgba(124, 42, 60, 0.4);
+          color: #F1B2C8;
           border-radius: 6px;
           font-size: 11px;
           font-weight: 700;
@@ -237,7 +237,7 @@ export default function AdminHeader({ user, onSearch }) {
         }
 
         .result-title {
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
         }
 
@@ -254,25 +254,25 @@ export default function AdminHeader({ user, onSearch }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(248, 248, 240, 0.06);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 12px;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(248, 248, 240, 0.8);
           cursor: pointer;
           transition: all 0.3s ease;
         }
 
         .icon-button:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: white;
+          background: rgba(108, 129, 87, 0.2);
+          color: #F8F8F0;
         }
 
         .notification-badge {
           position: absolute;
           top: -4px;
           right: -4px;
-          background: #FF6B35;
-          color: white;
+          background: #7C2A3C;
+          color: #F1B2C8;
           border-radius: 10px;
           padding: 2px 6px;
           font-size: 10px;
@@ -331,13 +331,13 @@ export default function AdminHeader({ user, onSearch }) {
         }
 
         .notification-text {
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           margin-bottom: 4px;
         }
 
         .notification-time {
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(248, 248, 240, 0.5);
           font-size: 12px;
         }
 
@@ -390,13 +390,13 @@ export default function AdminHeader({ user, onSearch }) {
         }
 
         .profile-name {
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           font-weight: 600;
         }
 
         .profile-role {
-          color: rgba(255, 255, 255, 0.5);
+          color: rgba(248, 248, 240, 0.5);
           font-size: 12px;
         }
 
@@ -405,8 +405,8 @@ export default function AdminHeader({ user, onSearch }) {
           top: calc(100% + 12px);
           right: 0;
           width: 200px;
-          background: rgba(10, 14, 39, 0.98);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(33, 46, 80, 0.98);
+          border: 1px solid rgba(199, 161, 30, 0.2);
           border-radius: 12px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
           z-index: 1000;
@@ -415,7 +415,7 @@ export default function AdminHeader({ user, onSearch }) {
 
         .dropdown-item {
           padding: 12px 16px;
-          color: white;
+          color: #F8F8F0;
           font-size: 14px;
           cursor: pointer;
           transition: background 0.2s;
@@ -425,16 +425,16 @@ export default function AdminHeader({ user, onSearch }) {
         }
 
         .dropdown-item:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(108, 129, 87, 0.15);
         }
 
         .dropdown-item.danger {
-          color: #FF6B35;
+          color: #F1B2C8;
         }
 
         .dropdown-divider {
           height: 1px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(199, 161, 30, 0.2);
           margin: 4px 0;
         }
 

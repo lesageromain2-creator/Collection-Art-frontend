@@ -8,6 +8,18 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getBlogPostBySlug, fetchSettings } from '../../utils/api';
 
+function parseArticleContent(content) {
+  if (!content || typeof content !== 'string') return null;
+  const t = content.trim();
+  if (!t.startsWith('[')) return null;
+  try {
+    const arr = JSON.parse(content);
+    return Array.isArray(arr) ? arr : null;
+  } catch (_) {
+    return null;
+  }
+}
+
 export default function BlogPostPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -110,9 +122,9 @@ export default function BlogPostPage() {
             Retour au blog
           </Link>
 
-          {post.featured_image && (
+          {(post.featured_image_url || post.featured_image) && (
             <div className="post-hero-image">
-              <img src={post.featured_image} alt={post.title} />
+              <img src={post.featured_image_url || post.featured_image} alt={post.title} />
             </div>
           )}
 
@@ -148,10 +160,30 @@ export default function BlogPostPage() {
               </div>
             </header>
 
-            <div 
-              className="post-body" 
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="post-body">
+              {(() => {
+                const blocks = parseArticleContent(post.content);
+                if (blocks && blocks.length > 0) {
+                  return blocks.map((block, i) => {
+                    if (block.type === 'text') {
+                      const text = (block.content || '').trim();
+                      if (!text) return null;
+                      return <p key={i} className="post-block-text">{text}</p>;
+                    }
+                    if (block.type === 'image' && block.url) {
+                      return (
+                        <figure key={i} className="post-block-figure">
+                          <img src={block.url} alt={block.alt || ''} />
+                          {block.alt && <figcaption>{block.alt}</figcaption>}
+                        </figure>
+                      );
+                    }
+                    return null;
+                  });
+                }
+                return <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />;
+              })()}
+            </div>
 
             {post.tags && post.tags.length > 0 && (
               <div className="post-tags">
@@ -335,6 +367,25 @@ export default function BlogPostPage() {
           max-width: 100%;
           border-radius: 12px;
           margin: 30px 0;
+        }
+
+        .post-block-text {
+          margin-bottom: 20px;
+        }
+
+        .post-block-figure {
+          margin: 24px 0;
+        }
+        .post-block-figure img {
+          max-width: 100%;
+          border-radius: 12px;
+          display: block;
+        }
+        .post-block-figure figcaption {
+          margin-top: 8px;
+          font-size: 0.95em;
+          color: rgba(255, 255, 255, 0.7);
+          font-style: italic;
         }
 
         .post-tags {

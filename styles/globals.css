@@ -4,27 +4,35 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   COLLECTION AUR'ART - PALETTE OFFICIELLE
+   Idées couleurs de l'association
+   ============================================ */
 :root {
-  /* Collection Aur'art - Palette artistique */
-  --framboise: #D63384;
-  --violet-profond: #6A2C70;
-  --violet-clair: #9B59B6;
-  --orange-doux: #E67E22;
-  --creme: #FAF8F3;
-  --anthracite: #2C2C2C;
-  --gris-chaud: #5A5A5A;
-  --or: #C9A961;
-  
-  /* Alias pour compatibilité */
-  --primary: #D63384;
-  --secondary: #6A2C70;
-  --accent: #E67E22;
-  --light: #FAF8F3;
-  --dark: #2C2C2C;
-  
-  /* Gradients artistiques */
-  --gradient-main: linear-gradient(135deg, #D63384 0%, #6A2C70 100%);
-  --gradient-soft: linear-gradient(135deg, #9B59B6 0%, #D63384 50%, #E67E22 100%);
+  /* Palette principale */
+  --creme: #F8F8F0;           /* Off-white / Crème - fonds, zones claires */
+  --olive: #6C8157;          /* Vert olive - nature, sérénité */
+  --burgundy: #7C2A3C;       /* Bordeaux / Bourgogne - profondeur, art */
+  --gold: #C7A11E;           /* Or / Moutarde - accent, prestige */
+  --pink: #F1B2C8;           /* Rose pastel - douceur, lien */
+  --navy: #212E50;           /* Bleu marine - texte, structure, header */
+
+  /* Alias sémantiques */
+  --primary: #7C2A3C;
+  --secondary: #6C8157;
+  --accent: #C7A11E;
+  --accent-soft: #F1B2C8;
+  --light: #F8F8F0;
+  --dark: #212E50;
+  --anthracite: #212E50;
+  --gris: #5A5A5A;
+  --gris-chaud: #6C6C6C;
+
+  /* Gradients palette association */
+  --gradient-main: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+  --gradient-warm: linear-gradient(135deg, #C7A11E 0%, #7C2A3C 100%);
+  --gradient-soft: linear-gradient(135deg, #F1B2C8 0%, #6C8157 50%, #C7A11E 100%);
+  --gradient-hero: linear-gradient(180deg, rgba(33, 46, 80, 0.4) 0%, rgba(124, 42, 60, 0.3) 50%, transparent 100%);
 }
 
 * {
@@ -42,7 +50,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--creme);
-  color: var(--anthracite);
+  color: var(--navy);
   line-height: 1.7;
 }
 
@@ -54,4 +62,30 @@ h1, h2, h3, h4, h5, h6 {
 
 .text-justify {
   text-align: justify;
+}
+
+/* Animation d'entrée pour le contenu après le hero logo */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Scroll indicator pulse */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.6; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(4px); }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
 }
