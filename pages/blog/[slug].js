@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Calendar, User, Tag, ArrowLeft, Clock, Share2 } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { getBlogPostBySlug, fetchSettings } from '../../utils/api';
+import { getArticleBySlug, fetchSettings } from '../../utils/api';
 
 function parseArticleContent(content) {
   if (!content || typeof content !== 'string') return null;
@@ -36,12 +36,11 @@ export default function BlogPostPage() {
   const loadPost = async () => {
     try {
       setLoading(true);
-      const [postData, settingsData] = await Promise.all([
-        getBlogPostBySlug(slug),
+      const [article, settingsData] = await Promise.all([
+        getArticleBySlug(slug),
         fetchSettings()
       ]);
-      
-      setPost(postData.post || postData);
+      setPost(article || null);
       setSettings(settingsData);
     } catch (error) {
       console.error('Erreur chargement article:', error);
@@ -205,7 +204,7 @@ export default function BlogPostPage() {
       <style jsx>{`
         .post-page {
           min-height: 100vh;
-          background: #0A0E27;
+          background: #F8F8F0;
           padding: 120px 20px 80px;
         }
 
@@ -218,23 +217,26 @@ export default function BlogPostPage() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          color: #00D9FF;
+          color: #7C2A3C;
           font-weight: 600;
           text-decoration: none;
           margin-bottom: 30px;
-          transition: gap 0.3s;
+          transition: gap 0.3s, color 0.2s;
         }
 
         .back-link:hover {
           gap: 12px;
+          color: #212E50;
         }
 
         .post-hero-image {
           width: 100%;
           height: 400px;
-          border-radius: 20px;
+          border-radius: 12px;
           overflow: hidden;
           margin-bottom: 40px;
+          border: 3px solid #212E50;
+          box-shadow: 0 8px 32px rgba(33, 46, 80, 0.15);
         }
 
         .post-hero-image img {
@@ -244,24 +246,36 @@ export default function BlogPostPage() {
         }
 
         .post-article {
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 20px;
+          background: #fff;
+          border: 2px solid #212E50;
+          border-radius: 12px;
           padding: 50px;
+          box-shadow: 0 4px 24px rgba(33, 46, 80, 0.08);
+          position: relative;
+        }
+        .post-article::before {
+          content: '';
+          position: absolute;
+          top: 8px;
+          left: 8px;
+          right: 8px;
+          bottom: 8px;
+          border: 1px solid rgba(199, 161, 30, 0.4);
+          border-radius: 8px;
+          pointer-events: none;
         }
 
         .post-header {
           margin-bottom: 40px;
           padding-bottom: 30px;
-          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 2px solid rgba(33, 46, 80, 0.12);
         }
 
         .category-badge {
           display: inline-block;
           padding: 8px 16px;
-          background: linear-gradient(135deg, #0066FF, #00D9FF);
-          color: white;
+          background: #7C2A3C;
+          color: #F8F8F0;
           border-radius: 20px;
           font-size: 12px;
           font-weight: 700;
@@ -271,7 +285,7 @@ export default function BlogPostPage() {
         }
 
         .post-header h1 {
-          color: white;
+          color: #212E50;
           font-size: 2.5em;
           font-weight: 900;
           line-height: 1.2;
@@ -279,7 +293,8 @@ export default function BlogPostPage() {
         }
 
         .post-lead {
-          color: rgba(255, 255, 255, 0.8);
+          color: #212E50;
+          opacity: 0.85;
           font-size: 1.2em;
           line-height: 1.6;
           margin-bottom: 24px;
@@ -296,7 +311,7 @@ export default function BlogPostPage() {
           display: flex;
           align-items: center;
           gap: 8px;
-          color: rgba(255, 255, 255, 0.6);
+          color: #6C8157;
           font-size: 14px;
         }
 
@@ -305,10 +320,10 @@ export default function BlogPostPage() {
           align-items: center;
           gap: 8px;
           padding: 8px 16px;
-          background: rgba(0, 102, 255, 0.2);
-          border: 1px solid rgba(0, 102, 255, 0.3);
+          background: rgba(108, 129, 87, 0.15);
+          border: 1px solid rgba(108, 129, 87, 0.4);
           border-radius: 8px;
-          color: #00D9FF;
+          color: #6C8157;
           font-size: 14px;
           font-weight: 600;
           cursor: pointer;
@@ -316,24 +331,24 @@ export default function BlogPostPage() {
         }
 
         .share-btn:hover {
-          background: rgba(0, 102, 255, 0.3);
+          background: rgba(108, 129, 87, 0.25);
         }
 
         .post-body {
-          color: rgba(255, 255, 255, 0.9);
+          color: #212E50;
           font-size: 1.1em;
           line-height: 1.8;
         }
 
         .post-body :global(h2) {
-          color: white;
+          color: #212E50;
           font-size: 1.8em;
           font-weight: 700;
           margin: 40px 0 20px;
         }
 
         .post-body :global(h3) {
-          color: white;
+          color: #212E50;
           font-size: 1.4em;
           font-weight: 600;
           margin: 32px 0 16px;
@@ -344,19 +359,25 @@ export default function BlogPostPage() {
         }
 
         .post-body :global(a) {
-          color: #00D9FF;
+          color: #7C2A3C;
           text-decoration: underline;
         }
 
+        .post-body :global(a):hover {
+          color: #212E50;
+        }
+
         .post-body :global(code) {
-          background: rgba(0, 102, 255, 0.15);
+          background: rgba(199, 161, 30, 0.15);
           padding: 2px 6px;
           border-radius: 4px;
           font-family: 'Courier New', monospace;
+          color: #212E50;
         }
 
         .post-body :global(pre) {
-          background: rgba(0, 0, 0, 0.3);
+          background: rgba(33, 46, 80, 0.06);
+          border: 1px solid rgba(33, 46, 80, 0.12);
           padding: 20px;
           border-radius: 12px;
           overflow-x: auto;
@@ -367,6 +388,7 @@ export default function BlogPostPage() {
           max-width: 100%;
           border-radius: 12px;
           margin: 30px 0;
+          border: 1px solid rgba(33, 46, 80, 0.1);
         }
 
         .post-block-text {
@@ -380,11 +402,12 @@ export default function BlogPostPage() {
           max-width: 100%;
           border-radius: 12px;
           display: block;
+          border: 1px solid rgba(33, 46, 80, 0.1);
         }
         .post-block-figure figcaption {
           margin-top: 8px;
           font-size: 0.95em;
-          color: rgba(255, 255, 255, 0.7);
+          color: #6C8157;
           font-style: italic;
         }
 
@@ -395,11 +418,11 @@ export default function BlogPostPage() {
           align-items: center;
           margin-top: 40px;
           padding-top: 30px;
-          border-top: 2px solid rgba(255, 255, 255, 0.1);
+          border-top: 2px solid rgba(33, 46, 80, 0.12);
         }
 
         .post-tags strong {
-          color: white;
+          color: #212E50;
           font-size: 16px;
         }
 
@@ -408,8 +431,9 @@ export default function BlogPostPage() {
           align-items: center;
           gap: 6px;
           padding: 6px 14px;
-          background: rgba(0, 102, 255, 0.15);
-          color: #00D9FF;
+          background: rgba(199, 161, 30, 0.2);
+          color: #212E50;
+          border: 1px solid rgba(199, 161, 30, 0.4);
           border-radius: 8px;
           font-size: 14px;
           font-weight: 600;

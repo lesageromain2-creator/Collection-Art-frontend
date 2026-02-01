@@ -329,6 +329,19 @@ export const deleteArticle = async (id) => {
   await fetchAPI(`/articles/${id}`, { method: 'DELETE' });
 };
 
+// Liste publique des articles publiés (feed, page articles, rubriques)
+export const getPublicArticles = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const data = await fetchAPI(`/articles${queryString ? `?${queryString}` : ''}`);
+  return { articles: data?.articles || [], pagination: data?.pagination || {} };
+};
+
+// Détail public d'un article par slug (page article / blog)
+export const getArticleBySlug = async (slug) => {
+  const data = await fetchAPI(`/articles/${slug}`);
+  return data?.article;
+};
+
 // ============================================
 // UPLOAD API (multipart - pas JSON)
 // ============================================

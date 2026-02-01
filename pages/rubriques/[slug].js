@@ -1,22 +1,29 @@
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles } from 'lucide-react';
+import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import { getPublicArticles, fetchSettings } from '../../utils/api';
 
-const demoSettings = {
-  site_name: "Collection Aur'art",
-  email: 'collection.aurart@gmail.com',
-};
+const formatDate = (dateStr) =>
+  dateStr
+    ? new Date(dateStr).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '';
 
+// Chemins sans apostrophe dans l’URL pour éviter 404 (marche-art servi via rewrite)
 const RUBRIQUES_IMAGES = {
   'histoire-arts': '/images/Histoire des arts.png',
   'fil-oeuvres': '/images/au fil des oeuvres.png',
   'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': null,
-  'marche-art': "/images/Marché de l'art.jpg.jpeg",
+  'tribunal-arts': '/images/tribunal des arts.jpeg',
+  'marche-art': '/images/marche-art.jpg',
 };
 
 const rubriquesConfig = {
@@ -66,8 +73,36 @@ export default function RubriquePage() {
   const router = useRouter();
   const { slug } = router.query;
   const rubrique = slug ? rubriquesConfig[slug] : null;
-  const articles = [];
+  const [articles, setArticles] = useState([]);
+  const [settings, setSettings] = useState({ site_name: "Collection Aur'art" });
+  const [loading, setLoading] = useState(true);
+  const [heroImageError, setHeroImageError] = useState(false);
   const imageSrc = slug ? RUBRIQUES_IMAGES[slug] : null;
+  const showHeroImage = imageSrc && !heroImageError;
+
+  useEffect(() => {
+    if (!slug) return;
+    (async () => {
+      try {
+        setLoading(true);
+        const [res, settingsRes] = await Promise.all([
+          getPublicArticles({ rubrique: slug, limit: 24 }),
+          fetchSettings().catch(() => ({})),
+        ]);
+        setArticles(res.articles || []);
+        if (settingsRes?.site_name) setSettings(settingsRes);
+      } catch (e) {
+        console.error(e);
+        setArticles([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [slug]);
+
+  useEffect(() => {
+    setHeroImageError(false);
+  }, [slug]);
 
   if (!rubrique) {
     return (
@@ -76,7 +111,7 @@ export default function RubriquePage() {
           <title>Rubrique introuvable – Collection Aur'art</title>
         </Head>
         <div className="min-h-screen bg-creme">
-          <Header settings={demoSettings} />
+          <Header settings={settings} />
           <main className="px-6 py-20 text-center">
             <h1 className="font-heading text-3xl font-bold text-navy mb-4">
               Rubrique introuvable
@@ -85,7 +120,7 @@ export default function RubriquePage() {
               Retour aux rubriques
             </Link>
           </main>
-          <Footer settings={demoSettings} />
+          <Footer settings={settings} />
         </div>
       </>
     );
@@ -96,17 +131,17 @@ export default function RubriquePage() {
   return (
     <>
       <Head>
-        <title>{rubrique.title} – Collection Aur'art</title>
+        <title>{rubrique.title} – {settings.site_name}</title>
         <meta name="description" content={rubrique.description} />
       </Head>
 
-      <div className="min-h-screen bg-creme">
-        <Header settings={demoSettings} />
+      <div className="min-h-screen rubrique-page">
+        <Header settings={settings} />
 
         <main className="px-0 pb-20 md:pb-32">
           {/* Hero avec image de rubrique - pleine largeur, élégant */}
           <section className="relative w-full h-[45vh] min-h-[320px] md:h-[55vh] overflow-hidden">
-            {imageSrc ? (
+            {showHeroImage ? (
               <>
                 <Image
                   src={imageSrc}
@@ -115,6 +150,8 @@ export default function RubriquePage() {
                   className="object-cover"
                   priority
                   sizes="100vw"
+                  onError={() => setHeroImageError(true)}
+                  unoptimized={imageSrc?.includes('marche-art')}
                 />
                 <div
                   className="absolute inset-0"
@@ -165,71 +202,84 @@ export default function RubriquePage() {
             </div>
           </section>
 
-          {/* Articles de la rubrique */}
-          <section className="mx-auto max-w-6xl px-6 mt-16">
-            {articles.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Feed articles de la rubrique */}
+          <section className="rubrique-feed mx-auto max-w-6xl px-6 mt-16">
+            {loading ? (
+              <div className="feed-loading">
+                <div className="spinner" />
+                <p>Chargement des articles...</p>
+              </div>
+            ) : articles.length > 0 ? (
+              <div className="feed-grid">
                 {articles.map((article) => (
                   <Link
                     key={article.id}
-                    href={`/articles/${article.slug}`}
-                    className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-navy/5 hover:shadow-lg transition-all duration-300"
+                    href={`/blog/${article.slug}`}
+                    className="article-card"
                   >
-                    {article.image && (
-                      <div className="aspect-video overflow-hidden">
-                        <Image
-                          src={article.image}
-                          alt={article.title}
-                          width={400}
-                          height={225}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-                    <div className="p-6">
-                      <h3 className="font-heading text-xl font-semibold text-navy mb-3 group-hover:text-burgundy transition-colors">
-                        {article.title}
-                      </h3>
-                      <p className="text-gris text-sm leading-relaxed mb-4 line-clamp-3">
-                        {article.excerpt}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-gris">
-                        {article.author && (
-                          <div className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            <span>{article.author}</span>
+                    <div className="card-frame">
+                      <div className="card-mat">
+                        <div className="card-cover">
+                          {article.featured_image_url ? (
+                            <img
+                              src={article.featured_image_url}
+                              alt=""
+                              className="card-cover-img"
+                            />
+                          ) : (
+                            <div className="card-cover-placeholder">
+                              <Icon size={56} />
+                            </div>
+                          )}
+                          <span
+                            className="card-badge"
+                            style={{
+                              backgroundColor: rubrique.hex + '22',
+                              color: rubrique.hex,
+                            }}
+                          >
+                            {rubrique.title}
+                          </span>
+                        </div>
+                        <div className="card-body">
+                          <h2 className="card-title">{article.title}</h2>
+                          {article.excerpt && (
+                            <p className="card-excerpt">{article.excerpt}</p>
+                          )}
+                          <div className="card-meta">
+                            {(article.firstname || article.lastname) && (
+                              <span className="meta-item">
+                                <User size={16} />
+                                {[article.firstname, article.lastname].filter(Boolean).join(' ')}
+                              </span>
+                            )}
+                            <span className="meta-item">
+                              <Calendar size={16} />
+                              {formatDate(article.published_at || article.created_at)}
+                            </span>
                           </div>
-                        )}
-                        {article.date && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>{article.date}</span>
-                          </div>
-                        )}
+                          <span className="card-link-label">
+                            Lire l&apos;article
+                            <ArrowRight size={18} />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-navy/5">
-                <div
-                  className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{ backgroundColor: `${rubrique.hex}20` }}
-                >
-                  <Icon className="h-8 w-8" style={{ color: rubrique.color }} />
+              <div className="feed-empty">
+                <div className="empty-icon" style={{ color: rubrique.hex }}>
+                  <Icon size={64} />
                 </div>
-                <h2 className="font-heading text-2xl font-semibold text-navy mb-4">
-                  Bientôt disponible
-                </h2>
-                <p className="text-gris mb-6 max-w-md mx-auto">
-                  Les articles de cette rubrique seront prochainement disponibles. Revenez nous voir bientôt !
+                <h2>Bientôt disponible</h2>
+                <p>
+                  Les articles de cette rubrique seront prochainement disponibles. Découvrez tous nos articles en attendant.
                 </p>
-                <Link
-                  href="/articles"
-                  className="inline-flex items-center gap-2 text-burgundy hover:text-navy transition-colors font-medium"
-                >
+                <Link href="/articles" className="btn-primary">
                   Découvrir tous nos articles
+                  <ArrowRight size={20} />
                 </Link>
               </div>
             )}
@@ -254,7 +304,183 @@ export default function RubriquePage() {
           </section>
         </main>
 
-        <Footer settings={demoSettings} />
+        <Footer settings={settings} />
+
+        <style jsx>{`
+          .rubrique-page { background: #F8F8F0; }
+          .rubrique-feed .feed-loading {
+            text-align: center;
+            padding: 64px 20px;
+            color: #212E50;
+          }
+          .rubrique-feed .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(108, 129, 87, 0.2);
+            border-top-color: #6C8157;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+          .rubrique-feed .feed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 36px;
+          }
+          .rubrique-feed .article-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s ease;
+          }
+          .rubrique-feed .article-card:hover {
+            transform: translateY(-6px);
+          }
+          .rubrique-feed .card-frame {
+            background: linear-gradient(145deg, #fff 0%, #fafaf8 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0;
+            box-shadow: 0 4px 20px rgba(33, 46, 80, 0.08),
+                        0 12px 40px rgba(33, 46, 80, 0.06);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.35s ease;
+          }
+          .rubrique-feed .article-card:hover .card-frame {
+            box-shadow: 0 8px 28px rgba(33, 46, 80, 0.12),
+                        0 20px 56px rgba(33, 46, 80, 0.1);
+          }
+          .rubrique-feed .card-mat {
+            background: #F8F8F0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: none;
+          }
+          .rubrique-feed .card-cover {
+            position: relative;
+            aspect-ratio: 16/10;
+            background: #212E50;
+            overflow: hidden;
+          }
+          .rubrique-feed .card-cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+          }
+          .rubrique-feed .article-card:hover .card-cover-img {
+            transform: scale(1.06);
+          }
+          .rubrique-feed .card-cover-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(248, 248, 240, 0.35);
+          }
+          .rubrique-feed .card-badge {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            padding: 8px 14px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+          }
+          .rubrique-feed .card-body {
+            padding: 24px 28px 20px;
+            display: flex;
+            flex-direction: column;
+          }
+          .rubrique-feed .card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #212E50;
+            margin-bottom: 10px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .rubrique-feed .article-card:hover .card-title {
+            color: #7C2A3C;
+          }
+          .rubrique-feed .card-excerpt {
+            font-size: 1rem;
+            color: #212E50;
+            opacity: 0.85;
+            line-height: 1.55;
+            margin-bottom: 16px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .rubrique-feed .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            font-size: 0.9rem;
+            color: #6C8157;
+            margin-top: auto;
+            margin-bottom: 12px;
+          }
+          .rubrique-feed .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .rubrique-feed .card-link-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 0 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7C2A3C;
+            border-top: 1px solid rgba(33, 46, 80, 0.08);
+            transition: color 0.2s;
+          }
+          .rubrique-feed .article-card:hover .card-link-label {
+            color: #212E50;
+          }
+          .rubrique-feed .feed-empty {
+            text-align: center;
+            padding: 64px 20px;
+            background: #fff;
+            border-radius: 20px;
+            border: 2px solid #212E50;
+            box-shadow: 0 4px 24px rgba(33, 46, 80, 0.08);
+          }
+          .rubrique-feed .empty-icon { margin-bottom: 20px; opacity: 0.8; }
+          .rubrique-feed .feed-empty h2 { font-size: 1.5rem; color: #212E50; margin-bottom: 12px; }
+          .rubrique-feed .feed-empty p { color: #212E50; opacity: 0.85; margin-bottom: 24px; }
+          .rubrique-feed .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #7C2A3C, #212E50);
+            color: #F8F8F0;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+          }
+          .rubrique-feed .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(124, 42, 60, 0.35);
+          }
+          @media (max-width: 768px) {
+            .rubrique-feed .feed-grid { grid-template-columns: 1fr; gap: 28px; }
+            .rubrique-feed .card-body { padding: 20px 20px 16px; }
+          }
+        `}</style>
       </div>
     </>
   );

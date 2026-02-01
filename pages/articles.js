@@ -1,234 +1,514 @@
-import { useState } from 'react';
+// frontend/pages/articles.js - Catalogue d'articles (tous les articles, design cadre artistique)
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Search, Calendar, User, ArrowRight, BookOpen, Scale, TrendingUp, Palette } from 'lucide-react';
+import { useRouter } from 'next/router';
+import { Calendar, User, ArrowRight, BookOpen } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { getPublicArticles, fetchSettings } from '../utils/api';
 
-const demoSettings = {
-  site_name: 'Collection Aur\'art',
-  email: 'collection.aurart@gmail.com',
-};
-
-// Mapping des rubriques avec leurs couleurs et icônes
-const rubriquesConfig = {
-  'Histoire des arts': { color: '#D63384', icon: BookOpen },
-  'Au fil des œuvres': { color: '#6A2C70', icon: Palette },
-  'Tribunal des arts': { color: '#E67E22', icon: Scale },
-  'Marché de l\'art': { color: '#9B59B6', icon: TrendingUp },
-};
+const formatDate = (dateStr) =>
+  dateStr
+    ? new Date(dateStr).toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '';
 
 export default function ArticlesPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRubrique, setSelectedRubrique] = useState('all');
+  const router = useRouter();
+  const [articles, setArticles] = useState([]);
+  const [pagination, setPagination] = useState({});
+  const [settings, setSettings] = useState({ site_name: "Collection Aur'art" });
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
-  // Articles d'exemple (à remplacer par de vraies données depuis l'API)
-  const articles = [];
+  useEffect(() => {
+    if (!router.isReady) return;
+    loadData();
+  }, [page, router.isReady, router.query.search, router.query.rubrique]);
 
-  const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         article.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRubrique = selectedRubrique === 'all' || article.rubrique === selectedRubrique;
-    return matchesSearch && matchesRubrique;
-  });
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const q = router.query;
+      const [articlesRes, settingsRes] = await Promise.all([
+        getPublicArticles({
+          page,
+          limit: 9,
+          ...(q.search && { search: String(q.search) }),
+          ...(q.rubrique && { rubrique: String(q.rubrique) }),
+        }),
+        fetchSettings().catch(() => ({})),
+      ]);
+      setArticles(articlesRes.articles || []);
+      setPagination(articlesRes.pagination || {});
+      if (settingsRes?.site_name) setSettings(settingsRes);
+    } catch (e) {
+      console.error(e);
+      setArticles([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
       <Head>
-        <title>Tous nos articles – Collection Aur'art</title>
+        <title>Tous nos articles – {settings.site_name}</title>
         <meta
           name="description"
           content="Découvrez tous nos articles sur l'histoire de l'art, le marché de l'art, les procès artistiques et nos analyses d'œuvres."
         />
       </Head>
 
-      <div className="min-h-screen bg-creme">
-        <Header settings={demoSettings} />
+      <div className="articles-page">
+        <Header settings={settings} />
 
-        <main className="px-6 py-20 md:py-32">
+        <main className="articles-main">
           {/* Hero */}
-          <section className="mx-auto max-w-4xl text-center mb-16">
-            <div className="mb-8 flex justify-center">
-              <div className="h-16 w-16 rounded-full bg-primary-gradient flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-white font-serif">A</span>
+          <section className="hero">
+            <div className="hero-inner">
+              <div className="hero-icon" aria-hidden="true">
+                <BookOpen size={44} />
               </div>
-            </div>
-
-            <h1 className="font-heading text-4xl md:text-6xl font-bold text-anthracite mb-6">
-              Tous nos articles
-            </h1>
-            
-            <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full mb-8"></div>
-
-            <p className="text-lg md:text-xl text-gris leading-relaxed">
-              Explorez nos publications sur l'art, son histoire, son marché et ses enjeux contemporains
-            </p>
-          </section>
-
-          {/* Filtres 
-          <section className="mx-auto max-w-6xl mb-12">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-anthracite/5">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gris" />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un article..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-anthracite/15 rounded-xl focus:outline-none focus:border-framboise focus:ring-2 focus:ring-framboise/20 transition-all"
-                  />
-                </div>
-
-                <select
-                  value={selectedRubrique}
-                  onChange={(e) => setSelectedRubrique(e.target.value)}
-                  className="px-4 py-3 border border-anthracite/15 rounded-xl focus:outline-none focus:border-framboise focus:ring-2 focus:ring-framboise/20 transition-all cursor-pointer"
-                >
-                  <option value="all">Toutes les rubriques</option>
-                  {Object.keys(rubriquesConfig).map(rubrique => (
-                    <option key={rubrique} value={rubrique}>{rubrique}</option>
-                  ))}
-                </select>
-              </div>
+              <h1 className="hero-title">Notre catalogue d&apos;articles</h1>
+              <div className="hero-line" />
+              <p className="hero-desc">
+                Découvrez l&apos;ensemble des publications de l&apos;association sur l&apos;art, son histoire et son marché.
+              </p>
             </div>
           </section>
-          */}
 
-          {/* Articles */}
-          <section className="mx-auto max-w-6xl">
-            {filteredArticles.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredArticles.map((article) => {
-                  const rubriqueConfig = rubriquesConfig[article.rubrique] || {};
-                  const RubriqueIcon = rubriqueConfig.icon;
-                  
-                  return (
+          {/* Feed */}
+          <section className="feed-section">
+            {loading ? (
+              <div className="feed-loading">
+                <div className="spinner" />
+                <p>Chargement des articles...</p>
+              </div>
+            ) : articles.length > 0 ? (
+              <>
+                <div className="feed-grid">
+                  {articles.map((article) => (
                     <Link
                       key={article.id}
-                      href={`/articles/${article.slug}`}
-                      className="group bg-white rounded-2xl overflow-hidden shadow-sm border border-anthracite/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                      href={`/blog/${article.slug}`}
+                      className="article-card"
                     >
-                      {/* Image */}
-                      {article.image ? (
-                        <div className="aspect-[4/3] overflow-hidden">
-                          <img
-                            src={article.image}
-                            alt={article.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                      ) : (
-                        <div 
-                          className="aspect-[4/3] flex items-center justify-center"
-                          style={{ backgroundColor: `${rubriqueConfig.color}15` }}
-                        >
-                          {RubriqueIcon && (
-                            <RubriqueIcon 
-                              className="h-16 w-16" 
-                              style={{ color: rubriqueConfig.color }} 
-                            />
-                          )}
-                        </div>
-                      )}
-
-                      {/* Contenu */}
-                      <div className="p-6">
-                        {/* Badge rubrique */}
-                        {article.rubrique && (
-                          <div className="mb-3">
-                            <span 
-                              className="inline-block px-3 py-1 rounded-full text-xs font-medium"
-                              style={{ 
-                                backgroundColor: `${rubriqueConfig.color}15`,
-                                color: rubriqueConfig.color 
-                              }}
-                            >
-                              {article.rubrique}
+                      <div className="card-frame">
+                        <div className="card-mat">
+                          <div className="card-cover">
+                            {article.featured_image_url ? (
+                              <img
+                                src={article.featured_image_url}
+                                alt=""
+                                className="card-cover-img"
+                              />
+                            ) : (
+                              <div className="card-cover-placeholder">
+                                <BookOpen size={56} />
+                              </div>
+                            )}
+                            {article.rubrique_name && (
+                              <span
+                                className="card-badge"
+                                style={
+                                  article.rubrique_color
+                                    ? { backgroundColor: article.rubrique_color + '22', color: article.rubrique_color }
+                                    : {}
+                                }
+                              >
+                                {article.rubrique_name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="card-body">
+                            <h2 className="card-title">{article.title}</h2>
+                            {article.excerpt && (
+                              <p className="card-excerpt">{article.excerpt}</p>
+                            )}
+                            <div className="card-meta">
+                              {(article.firstname || article.lastname) && (
+                                <span className="meta-item">
+                                  <User size={16} />
+                                  {[article.firstname, article.lastname].filter(Boolean).join(' ')}
+                                </span>
+                              )}
+                              <span className="meta-item">
+                                <Calendar size={16} />
+                                {formatDate(article.published_at || article.created_at)}
+                              </span>
+                            </div>
+                            <span className="card-link-label">
+                              Lire l&apos;article
+                              <ArrowRight size={18} />
                             </span>
                           </div>
-                        )}
-
-                        <h3 className="font-heading text-xl font-semibold text-anthracite mb-3 group-hover:text-framboise transition-colors line-clamp-2">
-                          {article.title}
-                        </h3>
-                        
-                        <p className="text-gris text-sm leading-relaxed mb-4 line-clamp-3">
-                          {article.excerpt}
-                        </p>
-
-                        {/* Meta */}
-                        <div className="flex items-center gap-4 text-xs text-gris">
-                          {article.author && (
-                            <div className="flex items-center gap-1">
-                              <User className="h-3 w-3" />
-                              <span>{article.author}</span>
-                            </div>
-                          )}
-                          {article.date && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>{article.date}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-anthracite/5">
-                <div className="h-16 w-16 rounded-full bg-anthracite/5 flex items-center justify-center mx-auto mb-6">
-                  <BookOpen className="h-8 w-8 text-gris" />
+                  ))}
                 </div>
-                <h2 className="font-heading text-2xl font-semibold text-anthracite mb-4">
-                  Bientôt disponible
-                </h2>
-                <p className="text-gris mb-6 max-w-md mx-auto">
-                  Nos premiers articles seront bientôt publiés. En attendant, découvrez nos différentes rubriques et ce que nous préparons.
+                {pagination.totalPages > 1 && (
+                  <div className="pagination">
+                    <button
+                      type="button"
+                      className="btn-pag"
+                      disabled={page <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Précédent
+                    </button>
+                    <span className="pag-info">
+                      Page {pagination.page || page} / {pagination.totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn-pag"
+                      disabled={page >= (pagination.totalPages || 1)}
+                      onClick={() => setPage((p) => p + 1)}
+                    >
+                      Suivant
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="feed-empty">
+                <div className="empty-icon">
+                  <BookOpen size={64} />
+                </div>
+                <h2>Bientôt disponible</h2>
+                <p>
+                  Nos premiers articles seront bientôt publiés. Découvrez nos rubriques en attendant.
                 </p>
-                <Link
-                  href="/rubriques"
-                  className="inline-flex items-center gap-2 bg-primary-gradient text-white px-6 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                >
+                <Link href="/rubriques" className="btn-primary">
                   Découvrir nos rubriques
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight size={20} />
                 </Link>
               </div>
             )}
           </section>
 
           {/* CTA */}
-          <section className="mx-auto max-w-4xl mt-20">
-            <div className="bg-white rounded-2xl p-8 md:p-12 text-center shadow-sm border border-anthracite/5">
-              <h2 className="font-heading text-2xl md:text-3xl font-bold text-anthracite mb-4">
-                Rejoignez notre communauté
-              </h2>
-              <p className="text-gris mb-6 max-w-2xl mx-auto leading-relaxed">
-                Ne manquez aucune de nos publications. Contactez-nous pour en savoir plus sur notre association et nos activités.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 bg-primary-gradient text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                >
-                  Nous contacter
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/about"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-anthracite/20 text-anthracite px-8 py-3 rounded-full font-medium hover:border-framboise hover:text-framboise transition-all"
-                >
-                  Découvrir notre équipe
-                </Link>
-              </div>
+          <section className="cta-section">
+            <div className="cta-box">
+              <h2>Rejoignez notre communauté</h2>
+              <p>Ne manquez aucune de nos publications. Contactez-nous pour en savoir plus.</p>
+              <Link href="/contact" className="btn-primary">
+                Nous contacter
+                <ArrowRight size={20} />
+              </Link>
             </div>
           </section>
         </main>
 
-        <Footer settings={demoSettings} />
+        <Footer settings={settings} />
       </div>
+
+      <style jsx>{`
+        .articles-page {
+          min-height: 100vh;
+          background: #F8F8F0;
+        }
+        .articles-main {
+          padding-top: 80px;
+          padding-bottom: 60px;
+        }
+        .hero {
+          background: linear-gradient(135deg, #212E50 0%, #7C2A3C 100%);
+          color: #F8F8F0;
+          padding: 48px 24px 56px;
+          text-align: center;
+        }
+        .hero-inner {
+          max-width: 640px;
+          margin: 0 auto;
+        }
+        .hero-icon {
+          opacity: 0.9;
+          margin-bottom: 16px;
+        }
+        .hero-title {
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 16px;
+          letter-spacing: -0.02em;
+        }
+        .hero-line {
+          width: 80px;
+          height: 4px;
+          background: #C7A11E;
+          border-radius: 2px;
+          margin: 0 auto 20px;
+        }
+        .hero-desc {
+          font-size: 1.15rem;
+          opacity: 0.95;
+          line-height: 1.6;
+        }
+        .feed-section {
+          max-width: 1100px;
+          margin: 56px auto 0;
+          padding: 0 24px;
+        }
+        .feed-loading {
+          text-align: center;
+          padding: 64px 20px;
+          color: #212E50;
+        }
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 3px solid rgba(108, 129, 87, 0.2);
+          border-top-color: #6C8157;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 0 auto 16px;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .feed-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+          gap: 36px;
+        }
+        .article-card {
+          display: block;
+          text-decoration: none;
+          color: inherit;
+          transition: transform 0.3s ease;
+        }
+        .article-card:hover {
+          transform: translateY(-6px);
+        }
+        .card-frame {
+          background: linear-gradient(145deg, #fff 0%, #fafaf8 100%);
+          border: none;
+          border-radius: 12px;
+          padding: 0;
+          box-shadow: 0 4px 20px rgba(33, 46, 80, 0.08),
+                      0 12px 40px rgba(33, 46, 80, 0.06);
+          position: relative;
+          overflow: hidden;
+          transition: box-shadow 0.35s ease;
+        }
+        .article-card:hover .card-frame {
+          box-shadow: 0 8px 28px rgba(33, 46, 80, 0.12),
+                      0 20px 56px rgba(33, 46, 80, 0.1);
+        }
+        .card-mat {
+          background: #F8F8F0;
+          border-radius: 12px;
+          overflow: hidden;
+          border: none;
+        }
+        .card-cover {
+          position: relative;
+          aspect-ratio: 16/10;
+          background: #212E50;
+          overflow: hidden;
+        }
+        .card-cover-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.4s ease;
+        }
+        .article-card:hover .card-cover-img {
+          transform: scale(1.06);
+        }
+        .card-cover-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: rgba(248, 248, 240, 0.35);
+        }
+        .card-badge {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          padding: 8px 14px;
+          border-radius: 4px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          background: rgba(124, 42, 60, 0.92);
+          color: #F8F8F0;
+          letter-spacing: 0.02em;
+        }
+        .card-body {
+          padding: 24px 28px 20px;
+          display: flex;
+          flex-direction: column;
+        }
+        .card-title {
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: #212E50;
+          margin-bottom: 10px;
+          line-height: 1.35;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .article-card:hover .card-title {
+          color: #7C2A3C;
+        }
+        .card-excerpt {
+          font-size: 1rem;
+          color: #212E50;
+          opacity: 0.85;
+          line-height: 1.55;
+          margin-bottom: 16px;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .card-meta {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 18px;
+          font-size: 0.9rem;
+          color: #6C8157;
+          margin-top: auto;
+          margin-bottom: 12px;
+        }
+        .meta-item {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .card-link-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 0 0;
+          font-size: 1rem;
+          font-weight: 600;
+          color: #7C2A3C;
+          border-top: 1px solid rgba(33, 46, 80, 0.08);
+          transition: color 0.2s;
+        }
+        .article-card:hover .card-link-label {
+          color: #212E50;
+        }
+        .pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 20px;
+          margin-top: 40px;
+        }
+        .btn-pag {
+          padding: 10px 20px;
+          border: 1px solid rgba(33, 46, 80, 0.2);
+          border-radius: 10px;
+          background: #fff;
+          color: #212E50;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .btn-pag:hover:not(:disabled) {
+          border-color: #6C8157;
+          color: #6C8157;
+        }
+        .btn-pag:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .pag-info {
+          font-size: 0.9rem;
+          color: #212E50;
+          opacity: 0.8;
+        }
+        .feed-empty {
+          text-align: center;
+          padding: 64px 20px;
+          background: #fff;
+          border-radius: 20px;
+          border: 2px solid #212E50;
+          box-shadow: 0 4px 24px rgba(33, 46, 80, 0.08);
+        }
+        .empty-icon {
+          color: #C7A11E;
+          margin-bottom: 20px;
+          opacity: 0.8;
+        }
+        .feed-empty h2 {
+          font-size: 1.5rem;
+          color: #212E50;
+          margin-bottom: 12px;
+        }
+        .feed-empty p {
+          color: #212E50;
+          opacity: 0.85;
+          margin-bottom: 24px;
+          max-width: 400px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 28px;
+          background: linear-gradient(135deg, #7C2A3C, #212E50);
+          color: #F8F8F0;
+          border-radius: 12px;
+          font-weight: 600;
+          text-decoration: none;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(124, 42, 60, 0.35);
+        }
+        .cta-section {
+          max-width: 800px;
+          margin: 64px auto 0;
+          padding: 0 20px;
+        }
+        .cta-box {
+          background: linear-gradient(135deg, #212E50 0%, #7C2A3C 100%);
+          color: #F8F8F0;
+          padding: 40px;
+          border-radius: 20px;
+          text-align: center;
+          border: 2px solid rgba(199, 161, 30, 0.3);
+        }
+        .cta-box h2 {
+          font-size: 1.5rem;
+          margin-bottom: 12px;
+          color: #F8F8F0;
+        }
+        .cta-box p {
+          opacity: 0.95;
+          margin-bottom: 24px;
+          color: #F8F8F0;
+        }
+        .cta-box .btn-primary {
+          background: #C7A11E;
+          color: #212E50;
+        }
+        .cta-box .btn-primary:hover {
+          background: #d4ad2a;
+          color: #212E50;
+        }
+        @media (max-width: 768px) {
+          .hero-title { font-size: 1.85rem; }
+          .feed-grid { grid-template-columns: 1fr; gap: 28px; }
+          .card-body { padding: 20px 20px 16px; }
+        }
+      `}</style>
     </>
   );
 }

@@ -16,7 +16,10 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
+  Search,
+  ExternalLink,
 } from 'lucide-react';
+import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import {
@@ -113,6 +116,8 @@ export default function Dashboard() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
+  const [catalogueSearch, setCatalogueSearch] = useState('');
+  const [catalogueRubrique, setCatalogueRubrique] = useState('');
 
   useEffect(() => {
     loadUserData();
@@ -122,6 +127,9 @@ export default function Dashboard() {
   useEffect(() => {
     if (activeTab === 'articles' && user) {
       loadArticles();
+      getRubriques().then(setRubriques);
+    }
+    if (activeTab === 'profile') {
       getRubriques().then(setRubriques);
     }
   }, [activeTab, user]);
@@ -592,16 +600,54 @@ export default function Dashboard() {
                         {profileSaving ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
                         Enregistrer
                       </button>
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={() => setProfileEditing(false)}
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </form>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => setProfileEditing(false)}
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </form>
                 )}
+                <div className="catalogue-search-wrap">
+                  <h2 className="catalogue-search-title">Rechercher dans le catalogue d&apos;articles</h2>
+                  <div className="catalogue-search-row">
+                    <div className="catalogue-search-input-wrap">
+                      <Search size={20} className="catalogue-search-icon" />
+                      <input
+                        type="search"
+                        placeholder="Rechercher un article..."
+                        value={catalogueSearch}
+                        onChange={(e) => setCatalogueSearch(e.target.value)}
+                        className="catalogue-search-input"
+                      />
+                    </div>
+                    <select
+                      value={catalogueRubrique}
+                      onChange={(e) => setCatalogueRubrique(e.target.value)}
+                      className="catalogue-rubrique-select"
+                    >
+                      <option value="">Toutes les rubriques</option>
+                      {rubriques.map((r) => (
+                        <option key={r.id} value={r.slug || r.name}>{r.name}</option>
+                      ))}
+                    </select>
+                    <Link
+                      href={{
+                        pathname: '/articles',
+                        query: {
+                          ...(catalogueSearch && { search: catalogueSearch }),
+                          ...(catalogueRubrique && { rubrique: catalogueRubrique }),
+                        },
+                      }}
+                      className="btn-catalogue-link"
+                    >
+                      Voir le catalogue
+                      <ExternalLink size={18} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
           </main>
@@ -1123,6 +1169,78 @@ export default function Dashboard() {
         }
         .profile-view, .profile-form {
           max-width: 480px;
+        }
+        .catalogue-search-wrap {
+          margin-top: 40px;
+          padding-top: 32px;
+          border-top: 1px solid rgba(199,161,30,0.25);
+          max-width: 640px;
+        }
+        .catalogue-search-title {
+          color: #F8F8F0;
+          font-size: 1.15rem;
+          font-weight: 600;
+          margin-bottom: 16px;
+        }
+        .catalogue-search-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          align-items: center;
+        }
+        .catalogue-search-input-wrap {
+          flex: 1;
+          min-width: 200px;
+          position: relative;
+        }
+        .catalogue-search-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #6C8157;
+          pointer-events: none;
+        }
+        .catalogue-search-input {
+          width: 100%;
+          padding: 10px 14px 10px 40px;
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.3);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 0.95rem;
+          outline: none;
+        }
+        .catalogue-search-input::placeholder {
+          color: rgba(248,248,240,0.5);
+        }
+        .catalogue-rubrique-select {
+          padding: 10px 14px;
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.3);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 0.95rem;
+          min-width: 180px;
+          cursor: pointer;
+        }
+        .btn-catalogue-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: rgba(108,129,87,0.4);
+          border: 1px solid rgba(108,129,87,0.5);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-weight: 600;
+          font-size: 0.95rem;
+          text-decoration: none;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-catalogue-link:hover {
+          background: rgba(108,129,87,0.55);
+          border-color: rgba(108,129,87,0.7);
         }
         .profile-field {
           margin-bottom: 16px;

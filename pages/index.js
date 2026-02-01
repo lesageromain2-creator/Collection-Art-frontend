@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Scale, TrendingUp, Palette, ChevronDown, Sparkles } from 'lucide-react';
+import { ArrowRight, BookOpen, Scale, TrendingUp, Palette, Sparkles } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+
+const HermesSection = dynamic(() => import('../components/HermesSection'), { ssr: false });
 
 // Mapping rubriques → images (dossier public/images)
 const RUBRIQUES_IMAGES = {
   'histoire-arts': '/images/Histoire des arts.png',
   'fil-oeuvres': '/images/au fil des oeuvres.png',
   'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': null, // pas d'image, overlay dégradé
-  'marche-art': "/images/Marché de l'art.jpg.jpeg",
+  'tribunal-arts': '/images/tribunal des arts.jpeg',
+  'marche-art': '/images/marche-art.jpg',
 };
 
 const rubriques = [
@@ -60,7 +63,6 @@ const rubriques = [
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  const [heroVisible, setHeroVisible] = useState(true);
 
   const demoSettings = {
     site_name: "Collection Aur'art",
@@ -71,11 +73,6 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const handleEnterSite = () => {
-    setHeroVisible(false);
-    document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <>
@@ -91,40 +88,48 @@ export default function Home() {
       <div className="min-h-screen bg-creme">
         <Header settings={demoSettings} />
 
-        {/* HERO PLEIN ÉCRAN - Logo full page à l'arrivée */}
+        {/* Image d'accueil — logo centré, animation d'entrée artistique */}
         <section
-          className={`fixed inset-0 z-20 flex flex-col items-center justify-center bg-navy transition-all duration-700 ${
-            heroVisible ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-          style={{ paddingTop: '4rem' }}
+          className="relative min-h-screen w-full flex items-center justify-center overflow-hidden"
+          style={{
+            paddingTop: '0.5rem',
+            background: 'linear-gradient(165deg, #15182a 0%, #1a1f38 35%, #212E50 70%, #161b2e 100%)',
+          }}
         >
-          <div className="absolute inset-0">
+          <div
+            className="logo-hero-reveal relative aspect-square flex items-center justify-center"
+            style={{ width: 'min(100vw, calc(100vh - 1rem))' }}
+          >
             <Image
               src="/images/logo avec fond.png"
               alt="Collection Aur'art"
               fill
-              className="object-contain object-center p-4 md:p-8"
+              className="object-contain object-center"
               priority
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-hero-overlay" aria-hidden />
-          </div>
-
-          <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh] w-full">
-            <button
-              type="button"
-              onClick={handleEnterSite}
-              className="mt-auto mb-12 px-8 py-3 rounded-full border-2 border-creme/80 text-creme font-medium hover:bg-creme/10 hover:border-creme transition-all duration-300 flex items-center gap-2"
-              aria-label="Entrer sur le site"
-            >
-              Entrer
-              <ChevronDown className="h-5 w-5 animate-pulse-soft" />
-            </button>
           </div>
         </section>
 
-        {/* CONTENU PRINCIPAL */}
+        <style jsx global>{`
+          @keyframes logoHeroReveal {
+            0% {
+              opacity: 0;
+              transform: scale(0.72);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          .logo-hero-reveal {
+            animation: logoHeroReveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+        `}</style>
+
+        {/* Statue 3D + titre + contenu */}
         <main id="main-content" className="relative z-10">
+          <HermesSection rubriques={rubriques}>
           {/* Section présentation */}
           <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-24 pb-16 px-6 bg-creme">
             <div className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
@@ -290,6 +295,7 @@ export default function Home() {
               </div>
             </div>
           </section>
+          </HermesSection>
         </main>
 
         <Footer settings={demoSettings} />

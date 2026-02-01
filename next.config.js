@@ -23,6 +23,16 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },
+  // Réécriture : /models/hermes.glb → fichier réel dans public/model 3d/hermes/source/Angel.glb
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/models/hermes.glb', destination: '/model%203d/hermes/source/Angel.glb' },
+        // Image avec apostrophe dans le nom → URL sans apostrophe
+        { source: '/images/marche-art.jpg', destination: '/images/Marché de l\'art.jpg.jpeg' },
+      ],
+    };
+  },
   // Redirections : pages agence (site de vente) -> association
   async redirects() {
     return [

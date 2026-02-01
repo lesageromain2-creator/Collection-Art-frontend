@@ -15,8 +15,8 @@ const RUBRIQUES_IMAGES = {
   'histoire-arts': '/images/Histoire des arts.png',
   'fil-oeuvres': '/images/au fil des oeuvres.png',
   'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': null,
-  'marche-art': "/images/Marché de l'art.jpg.jpeg",
+  'tribunal-arts': '/images/tribunal des arts.jpeg',
+  'marche-art': '/images/marche-art.jpg',
 };
 
 const rubriques = [
