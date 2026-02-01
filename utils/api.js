@@ -251,6 +251,23 @@ export const getUserMessages = async () => {
   return fetchAPI('/users/messages'); // ✅ CORRECT (pas besoin de /api car déjà dans API_URL)
 };
 
+// ============================================
+// TEAM / ÉQUIPE ASSOCIATIVE
+// ============================================
+
+export const getTeamMembers = async () => {
+  const data = await fetchAPI('/team');
+  const members = data?.members ?? data?.data ?? (Array.isArray(data) ? data : []);
+  return Array.isArray(members) ? members : [];
+};
+
+export const updateMyTeamProfile = async (data) => {
+  return fetchAPI('/team/me', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+};
+
 // Autres fonctions users existantes...
 // ============================================
 // SETTINGS API

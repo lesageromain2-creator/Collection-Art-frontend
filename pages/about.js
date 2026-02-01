@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Mail, Linkedin } from 'lucide-react';
+import { Mail, Linkedin, Phone, Globe, Loader2 } from 'lucide-react';
+import { getTeamMembers, fetchSettings } from '../utils/api';
 
 const demoSettings = {
   site_name: 'Collection Aur\'art',
@@ -10,51 +12,54 @@ const demoSettings = {
   email: 'collection.aurart@gmail.com',
 };
 
-// Données de l'équipe - dans l'ordre demandé
-const teamMembers = [
-  {
-    name: 'Prénom Nom',
-    role: 'Président',
-    description: 'Description du président de l\'association et de son rôle.',
-    image: '/team/president.jpg',
-    email: 'president@collection.aurart.com',
-    linkedin: null,
-  },
-  {
-    name: 'Prénom Nom',
-    role: 'Vice-Président',
-    description: 'Description du vice-président et de ses missions au sein de l\'association.',
-    image: '/team/vice-president.jpg',
-    email: 'vicepresident@collection.aurart.com',
-    linkedin: null,
-  },
-  {
-    name: 'Prénom Nom',
-    role: 'Rédactrice en Chef',
-    description: 'Description de la rédactrice en chef et de son travail éditorial.',
-    image: '/team/redactrice.jpg',
-    email: 'redaction@collection.aurart.com',
-    linkedin: null,
-  },
-  {
-    name: 'Prénom Nom',
-    role: 'Secrétaire',
-    description: 'Description du secrétaire et de ses responsabilités administratives.',
-    image: '/team/secretaire.jpg',
-    email: 'secretaire@collection.aurart.com',
-    linkedin: null,
-  },
-  {
-    name: 'Prénom Nom',
-    role: 'Développeur Web',
-    description: 'Description du développeur web et de son travail technique pour l\'association.',
-    image: '/team/dev.jpg',
-    email: 'dev@collection.aurart.com',
-    linkedin: null,
-  },
-];
+export async function getServerSideProps() {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  let initialMembers = [];
+  let initialSettings = {};
+  try {
+    const [teamRes, settingsRes] = await Promise.all([
+      fetch(`${apiUrl}/team`, { method: 'GET' }),
+      fetch(`${apiUrl}/settings`, { method: 'GET' }).catch(() => null),
+    ]);
+    if (teamRes.ok) {
+      const teamData = await teamRes.json();
+      const m = teamData?.members ?? teamData?.data ?? (Array.isArray(teamData) ? teamData : []);
+      initialMembers = Array.isArray(m) ? m : [];
+    }
+    if (settingsRes?.ok) {
+      const settingsData = await settingsRes.json();
+      if (settingsData?.site_name) initialSettings = { site_name: settingsData.site_name };
+    }
+  } catch (e) {
+    console.error('[About getServerSideProps]', e.message);
+  }
+  return { props: { initialMembers, initialSettings } };
+}
 
-export default function AboutPage() {
+export default function AboutPage({ initialMembers = [], initialSettings = {} }) {
+  const [teamMembers, setTeamMembers] = useState(initialMembers);
+  const [settings, setSettings] = useState({ ...demoSettings, ...initialSettings });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialMembers.length > 0) return;
+    setLoading(true);
+    (async () => {
+      try {
+        const [members, settingsData] = await Promise.all([
+          getTeamMembers(),
+          fetchSettings().catch(() => ({})),
+        ]);
+        setTeamMembers(Array.isArray(members) ? members : []);
+        if (settingsData?.site_name) setSettings((s) => ({ ...s, site_name: settingsData.site_name }));
+      } catch (e) {
+        console.error(e);
+        setTeamMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [initialMembers.length]);
   return (
     <>
       <Head>
@@ -66,7 +71,7 @@ export default function AboutPage() {
       </Head>
 
       <div className="min-h-screen bg-creme">
-        <Header settings={demoSettings} />
+        <Header settings={settings} />
 
         <main className="px-6 py-20 md:py-32">
           {/* Hero Section */}
@@ -116,76 +121,116 @@ export default function AboutPage() {
               <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full"></div>
             </div>
 
-            <div className="space-y-8">
-              {teamMembers.map((member, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm border border-anthracite/5 hover:shadow-lg transition-all duration-300"
-                >
-                  <div className="grid md:grid-cols-[200px_1fr] gap-8 p-8">
-                    {/* Photo */}
-                    <div className="flex justify-center md:justify-start">
-                      <div className="relative">
-                        {member.image ? (
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-48 h-48 rounded-full object-cover border-4 border-anthracite/5"
-                          />
-                        ) : (
-                          <div className="w-48 h-48 rounded-full bg-primary-gradient flex items-center justify-center shadow-md">
-                            <span className="text-5xl font-bold text-white font-serif">
-                              {member.name.split(' ').map(n => n[0]).join('')}
-                            </span>
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="h-10 w-10 text-anthracite/50 animate-spin" />
+              </div>
+            ) : teamMembers.length === 0 ? (
+              <div className="text-center text-gris py-12 max-w-xl mx-auto">
+                <p className="mb-4">
+                  Aucun membre n&apos;est affiché pour l&apos;instant. Pour apparaître ici :
+                </p>
+                <ol className="list-decimal list-inside text-left space-y-2 mb-6">
+                  <li>Connectez-vous, allez dans <strong>Dashboard → Équipe associative</strong>, cochez « Apparaître sur la page équipe » et enregistrez.</li>
+                  <li>Ou exécutez le script SQL <code className="bg-anthracite/10 px-1 rounded">database/update-team-member.sql</code> pour activer l&apos;affichage des comptes en base.</li>
+                </ol>
+                <Link href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 bg-primary-gradient text-white rounded-full font-medium">
+                  Aller au dashboard
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {teamMembers.map((member) => {
+                  const name = [member.firstname, member.lastname].filter(Boolean).join(' ') || 'Membre';
+                  const initials = [member.firstname, member.lastname].filter(Boolean).map((n) => n.charAt(0)).join('').toUpperCase() || '?';
+                  return (
+                    <div
+                      key={member.id}
+                      className="bg-white rounded-2xl overflow-hidden shadow-sm border border-anthracite/5 hover:shadow-lg transition-all duration-300"
+                    >
+                      <div className="grid md:grid-cols-[200px_1fr] gap-8 p-8">
+                        {/* Photo */}
+                        <div className="flex justify-center md:justify-start">
+                          <div className="relative">
+                            {member.avatar_url ? (
+                              <img
+                                src={member.avatar_url}
+                                alt={name}
+                                className="w-48 h-48 rounded-full object-cover border-4 border-anthracite/5"
+                              />
+                            ) : (
+                              <div className="w-48 h-48 rounded-full bg-primary-gradient flex items-center justify-center shadow-md">
+                                <span className="text-5xl font-bold text-white font-serif">{initials}</span>
+                              </div>
+                            )}
+                            {member.team_position && (
+                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-4 py-1.5 rounded-full shadow-md border border-anthracite/10">
+                                <span className="text-sm font-semibold text-framboise">{member.team_position}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {/* Badge du rôle */}
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-4 py-1.5 rounded-full shadow-md border border-anthracite/10">
-                          <span className="text-sm font-semibold text-framboise">
-                            {member.role}
-                          </span>
+                        </div>
+
+                        {/* Informations */}
+                        <div className="flex flex-col justify-center">
+                          <h3 className="font-heading text-2xl md:text-3xl font-semibold text-anthracite mb-3">
+                            {name}
+                          </h3>
+
+                          {member.bio && (
+                            <p className="text-gris leading-relaxed mb-4">{member.bio}</p>
+                          )}
+
+                          {/* Contact */}
+                          <div className="flex flex-wrap gap-3">
+                            {member.email && (
+                              <a
+                                href={`mailto:${member.email}`}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                              >
+                                <Mail className="h-4 w-4" />
+                                <span>Email</span>
+                              </a>
+                            )}
+                            {member.phone && (
+                              <a
+                                href={`tel:${member.phone}`}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                              >
+                                <Phone className="h-4 w-4" />
+                                <span>Téléphone</span>
+                              </a>
+                            )}
+                            {member.social_linkedin && (
+                              <a
+                                href={member.social_linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                              >
+                                <Linkedin className="h-4 w-4" />
+                                <span>LinkedIn</span>
+                              </a>
+                            )}
+                            {member.social_website && (
+                              <a
+                                href={member.social_website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
+                              >
+                                <Globe className="h-4 w-4" />
+                                <span>Site web</span>
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-
-                    {/* Informations */}
-                    <div className="flex flex-col justify-center">
-                      <h3 className="font-heading text-2xl md:text-3xl font-semibold text-anthracite mb-3">
-                        {member.name}
-                      </h3>
-                      
-                      <p className="text-gris leading-relaxed mb-4">
-                        {member.description}
-                      </p>
-
-                      {/* Contact */}
-                      <div className="flex flex-wrap gap-3">
-                        {member.email && (
-                          <a
-                            href={`mailto:${member.email}`}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
-                          >
-                            <Mail className="h-4 w-4" />
-                            <span>Contact</span>
-                          </a>
-                        )}
-                        {member.linkedin && (
-                          <a
-                            href={member.linkedin}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-anthracite/5 rounded-full text-sm text-anthracite hover:bg-framboise/10 hover:text-framboise transition-all"
-                          >
-                            <Linkedin className="h-4 w-4" />
-                            <span>LinkedIn</span>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </section>
 
           {/* CTA */}
@@ -215,7 +260,7 @@ export default function AboutPage() {
           </section>
         </main>
 
-        <Footer settings={demoSettings} />
+        <Footer settings={settings} />
       </div>
     </>
   );

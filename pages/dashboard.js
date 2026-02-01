@@ -6,6 +6,7 @@ import Image from 'next/image';
 import {
   FileText,
   User,
+  Users,
   LogOut,
   Plus,
   Pencil,
@@ -36,6 +37,8 @@ import {
   uploadAvatar,
   updateUserProfile,
   getUserProfile,
+  getTeamMembers,
+  updateMyTeamProfile,
 } from '../utils/api';
 
 const slugify = (text) =>
@@ -119,6 +122,19 @@ export default function Dashboard() {
   const [catalogueSearch, setCatalogueSearch] = useState('');
   const [catalogueRubrique, setCatalogueRubrique] = useState('');
 
+  // Équipe associative
+  const [teamForm, setTeamForm] = useState({
+    team_position: '',
+    bio: '',
+    phone: '',
+    is_team_member: false,
+    team_order: '',
+    social_linkedin: '',
+    social_website: '',
+  });
+  const [teamSaving, setTeamSaving] = useState(false);
+  const [teamEditing, setTeamEditing] = useState(false);
+
   useEffect(() => {
     loadUserData();
     setTimeout(() => setMounted(true), 50);
@@ -131,6 +147,17 @@ export default function Dashboard() {
     }
     if (activeTab === 'profile') {
       getRubriques().then(setRubriques);
+    }
+    if (activeTab === 'team' && user) {
+      setTeamForm({
+        team_position: user.team_position || '',
+        bio: user.bio || '',
+        phone: user.phone || '',
+        is_team_member: !!user.is_team_member,
+        team_order: user.team_order != null ? String(user.team_order) : '',
+        social_linkedin: user.social_linkedin || '',
+        social_website: user.social_website || '',
+      });
     }
   }, [activeTab, user]);
 
@@ -360,6 +387,31 @@ export default function Dashboard() {
     e.target.value = '';
   };
 
+  const handleTeamSave = async (e) => {
+    e.preventDefault();
+    setTeamSaving(true);
+    try {
+      await updateMyTeamProfile({
+        team_position: teamForm.team_position || undefined,
+        bio: teamForm.bio || undefined,
+        phone: teamForm.phone || undefined,
+        is_team_member: teamForm.is_team_member,
+        team_order: teamForm.team_order === '' ? null : parseInt(teamForm.team_order, 10),
+        social_linkedin: teamForm.social_linkedin || undefined,
+        social_website: teamForm.social_website || undefined,
+      });
+      const authData = await checkAuth();
+      if (authData.user) setUser(authData.user);
+      setTeamEditing(false);
+      alert('Profil équipe enregistré. Vos informations seront visibles sur la page À propos si vous avez coché « Apparaître sur la page équipe ».');
+    } catch (e) {
+      console.error(e);
+      alert(e.message || 'Erreur sauvegarde');
+    } finally {
+      setTeamSaving(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -455,6 +507,13 @@ export default function Dashboard() {
                 <User size={20} />
                 <span>Mon profil</span>
               </button>
+              <button
+                className={`nav-btn ${activeTab === 'team' ? 'active' : ''}`}
+                onClick={() => setActiveTab('team')}
+              >
+                <Users size={20} />
+                <span>Équipe associative</span>
+              </button>
               <div className="nav-divider" />
               <button className="nav-btn logout" onClick={handleLogout}>
                 <LogOut size={20} />
@@ -534,6 +593,131 @@ export default function Dashboard() {
                       </li>
                     ))}
                   </ul>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'team' && (
+              <div className="section">
+                <h1>Équipe associative</h1>
+                <p className="section-desc">
+                  Renseignez votre rôle et votre description pour apparaître sur la page <Link href="/about" className="link-inline">À propos</Link>. Prénom, nom et photo de profil sont pris de votre compte.
+                </p>
+                {!teamEditing ? (
+                  <div className="profile-view">
+                    <div className="profile-field">
+                      <label>Prénom / Nom</label>
+                      <span>{user?.firstname} {user?.lastname}</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Photo de profil</label>
+                      <span>Utilisée automatiquement (modifiable dans Mon profil)</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Rôle dans l&apos;association</label>
+                      <span>{user?.team_position || '—'}</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Description</label>
+                      <span>{user?.bio ? user.bio.slice(0, 120) + (user.bio.length > 120 ? '…' : '') : '—'}</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Contact (téléphone)</label>
+                      <span>{user?.phone || '—'}</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Apparaître sur la page équipe</label>
+                      <span>{user?.is_team_member ? 'Oui' : 'Non'}</span>
+                    </div>
+                    <div className="profile-field">
+                      <label>Ordre d&apos;apparition</label>
+                      <span>{user?.team_order != null ? user.team_order : '—'}</span>
+                    </div>
+                    <button type="button" className="btn-secondary" onClick={() => setTeamEditing(true)}>
+                      <Pencil size={18} />
+                      Modifier mon profil équipe
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleTeamSave} className="profile-form">
+                    <div className="form-group">
+                      <label>Rôle dans l&apos;association</label>
+                      <input
+                        value={teamForm.team_position}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, team_position: e.target.value }))}
+                        placeholder="ex. Président, Secrétaire, Rédacteur…"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Description (présentation publique)</label>
+                      <textarea
+                        value={teamForm.bio}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, bio: e.target.value }))}
+                        placeholder="Quelques lignes pour vous présenter et décrire votre rôle."
+                        rows={4}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Contact (téléphone)</label>
+                      <input
+                        type="tel"
+                        value={teamForm.phone}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, phone: e.target.value }))}
+                        placeholder="Optionnel"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>LinkedIn (URL)</label>
+                      <input
+                        type="url"
+                        value={teamForm.social_linkedin}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, social_linkedin: e.target.value }))}
+                        placeholder="https://linkedin.com/in/..."
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Site web (URL)</label>
+                      <input
+                        type="url"
+                        value={teamForm.social_website}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, social_website: e.target.value }))}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="form-group checkbox-wrap">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={teamForm.is_team_member}
+                          onChange={(e) => setTeamForm((p) => ({ ...p, is_team_member: e.target.checked }))}
+                        />
+                        <span>Apparaître sur la page équipe (À propos)</span>
+                      </label>
+                    </div>
+                    <div className="form-group">
+                      <label>Ordre d&apos;apparition (nombre, plus petit = plus haut)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={teamForm.team_order}
+                        onChange={(e) => setTeamForm((p) => ({ ...p, team_order: e.target.value }))}
+                        placeholder="ex. 1, 2, 3…"
+                      />
+                    </div>
+                    <div className="form-actions">
+                      <button type="submit" className="btn-primary" disabled={teamSaving}>
+                        {teamSaving ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
+                        Enregistrer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => setTeamEditing(false)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
             )}
@@ -1040,6 +1224,19 @@ export default function Dashboard() {
           color: #F8F8F0;
           font-size: 1.75rem;
           margin-bottom: 24px;
+        }
+        .section-desc {
+          color: rgba(248,248,240,0.85);
+          font-size: 0.95rem;
+          margin-bottom: 24px;
+          max-width: 560px;
+        }
+        .link-inline {
+          color: #C7A11E;
+          text-decoration: underline;
+        }
+        .link-inline:hover {
+          color: #F8F8F0;
         }
         .btn-primary {
           display: inline-flex;
