@@ -99,7 +99,7 @@ export default function BlogPostPage() {
         <Header settings={settings} />
         <div style={{ minHeight: '100vh', background: '#0A0E27', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', color: 'white' }}>
           <h1>Article non trouvé</h1>
-          <Link href="/blog" style={{ color: '#00D9FF', marginTop: '20px' }}>← Retour au blog</Link>
+          <Link href="/articles" style={{ color: '#00D9FF', marginTop: '20px' }}>← Retour aux articles</Link>
         </div>
       </>
     );
@@ -116,9 +116,9 @@ export default function BlogPostPage() {
 
       <div className="post-page">
         <div className="post-container">
-          <Link href="/blog" className="back-link">
+          <Link href="/articles" className="back-link">
             <ArrowLeft size={20} />
-            Retour au blog
+            Retour aux articles
           </Link>
 
           {(post.featured_image_url || post.featured_image) && (
