@@ -725,6 +725,43 @@ export default function Dashboard() {
             {activeTab === 'profile' && (
               <div className="section">
                 <h1>Mon profil</h1>
+
+                {/* Photo de profil */}
+                <div className="profile-photo-block">
+                  <label className="profile-photo-label">Photo de profil</label>
+                  <div className="profile-photo-row">
+                    <button
+                      type="button"
+                      className="profile-photo-wrap"
+                      onClick={() => avatarInputRef.current?.click()}
+                      title="Changer la photo"
+                      disabled={avatarUploading}
+                    >
+                      {user?.avatar_url ? (
+                        <img src={user.avatar_url} alt="Avatar" />
+                      ) : (
+                        <span className="profile-photo-initials">{getInitials(user?.firstname, user?.lastname)}</span>
+                      )}
+                      {avatarUploading && (
+                        <span className="profile-photo-loading">
+                          <Loader2 size={24} className="spin" />
+                        </span>
+                      )}
+                    </button>
+                    <div className="profile-photo-actions">
+                      <button
+                        type="button"
+                        className="btn-secondary btn-sm"
+                        onClick={() => avatarInputRef.current?.click()}
+                        disabled={avatarUploading}
+                      >
+                        {user?.avatar_url ? 'Changer la photo' : 'Ajouter une photo'}
+                      </button>
+                      <p className="profile-photo-hint">JPG, PNG ou WebP. Utilisée sur la page équipe et dans vos articles.</p>
+                    </div>
+                  </div>
+                </div>
+
                 {!profileEditing ? (
                   <div className="profile-view">
                     <div className="profile-field">
@@ -1366,6 +1403,80 @@ export default function Dashboard() {
         }
         .profile-view, .profile-form {
           max-width: 480px;
+        }
+        .profile-photo-block {
+          margin-bottom: 28px;
+          max-width: 480px;
+        }
+        .profile-photo-label {
+          display: block;
+          color: rgba(248,248,240,0.7);
+          font-size: 0.9rem;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+        .profile-photo-row {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .profile-photo-wrap {
+          width: 96px;
+          height: 96px;
+          border-radius: 50%;
+          overflow: hidden;
+          background: rgba(199,161,30,0.2);
+          border: 2px solid rgba(199,161,30,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          position: relative;
+          transition: border-color 0.2s, transform 0.15s;
+          flex-shrink: 0;
+        }
+        .profile-photo-wrap:hover:not(:disabled) {
+          border-color: rgba(199,161,30,0.7);
+          transform: scale(1.02);
+        }
+        .profile-photo-wrap:disabled {
+          cursor: not-allowed;
+          opacity: 0.8;
+        }
+        .profile-photo-wrap img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .profile-photo-initials {
+          font-size: 1.75rem;
+          font-weight: 700;
+          color: rgba(248,248,240,0.9);
+        }
+        .profile-photo-loading {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0,0,0,0.5);
+          color: #F8F8F0;
+        }
+        .profile-photo-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .profile-photo-hint {
+          font-size: 0.8rem;
+          color: rgba(248,248,240,0.5);
+          margin: 0;
+        }
+        .btn-sm {
+          padding: 8px 16px;
+          font-size: 0.9rem;
+          align-self: flex-start;
         }
         .catalogue-search-wrap {
           margin-top: 40px;
