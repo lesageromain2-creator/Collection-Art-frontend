@@ -33,7 +33,7 @@ const removeToken = () => {
 // FONCTION FETCH API (AMÉLIORÉE)
 // ============================================
 
-const fetchAPI = async (endpoint, options = {}) => {
+export const fetchAPI = async (endpoint, options = {}) => {
   const token = getToken();
   const url = `${API_URL}${endpoint}`;
   
