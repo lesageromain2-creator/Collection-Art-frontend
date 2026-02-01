@@ -141,6 +141,7 @@ export default function Login() {
     <>
       <Head>
         <title>Connexion - {settings.site_name || 'LE SAGE'}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <Header settings={settings} />
@@ -463,9 +464,9 @@ export default function Login() {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 40px 20px;
+          padding: 90px 20px 40px;
           position: relative;
-          overflow: hidden;
+          overflow-y: auto;
         }
 
         .bg-effects {
@@ -521,10 +522,11 @@ export default function Login() {
           width: 100%;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 60px;
+          gap: 40px;
           opacity: 0;
           transform: translateY(30px);
           transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+          margin: auto;
         }
 
         .auth-container.mounted {
@@ -536,10 +538,12 @@ export default function Login() {
           background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(20px);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 30px;
-          padding: 50px;
+          border-radius: 24px;
+          padding: 35px 40px;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
           transition: transform 0.3s ease;
+          max-height: 85vh;
+          overflow-y: auto;
         }
 
         .auth-card.shake {
@@ -554,13 +558,13 @@ export default function Login() {
 
         .auth-header {
           text-align: center;
-          margin-bottom: 40px;
+          margin-bottom: 28px;
         }
 
         .auth-icon-wrapper {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto 25px;
+          width: 64px;
+          height: 64px;
+          margin: 0 auto 18px;
           background: linear-gradient(135deg, #667eea, #764ba2);
           border-radius: 20px;
           display: flex;
@@ -571,15 +575,15 @@ export default function Login() {
         }
 
         .auth-icon {
-          width: 40px;
-          height: 40px;
+          width: 32px;
+          height: 32px;
           stroke: white;
         }
 
         .auth-header h1 {
-          font-size: 2.5em;
+          font-size: 2em;
           color: white;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           font-weight: 800;
         }
 
@@ -592,12 +596,12 @@ export default function Login() {
         .success-box {
           display: flex;
           align-items: flex-start;
-          gap: 15px;
+          gap: 12px;
           background: rgba(52, 199, 89, 0.15);
           border: 2px solid rgba(52, 199, 89, 0.3);
-          border-radius: 15px;
-          padding: 20px;
-          margin-bottom: 30px;
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 22px;
           animation: slideDown 0.4s ease;
         }
 
@@ -627,12 +631,12 @@ export default function Login() {
         .error-box {
           display: flex;
           align-items: flex-start;
-          gap: 15px;
+          gap: 12px;
           background: rgba(239, 68, 68, 0.15);
           border: 2px solid rgba(239, 68, 68, 0.3);
-          border-radius: 15px;
-          padding: 20px;
-          margin-bottom: 30px;
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 22px;
           animation: slideDown 0.4s ease;
         }
 
@@ -666,7 +670,7 @@ export default function Login() {
         }
 
         .form-group {
-          margin-bottom: 25px;
+          margin-bottom: 18px;
         }
 
         .form-group label {
@@ -747,7 +751,7 @@ export default function Login() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 30px;
+          margin-bottom: 22px;
         }
 
         .remember-me {
@@ -802,7 +806,7 @@ export default function Login() {
 
         .btn-submit {
           width: 100%;
-          padding: 18px;
+          padding: 14px 18px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
           border: none;
@@ -877,7 +881,7 @@ export default function Login() {
     .divider {
       position: relative;
       text-align: center;
-      margin: 35px 0;
+      margin: 24px 0;
     }
 
     .divider::before {
@@ -901,8 +905,8 @@ export default function Login() {
     .social-login {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      margin-bottom: 35px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
     .social-btn {
@@ -938,7 +942,7 @@ export default function Login() {
 
     .auth-footer {
       text-align: center;
-      padding-top: 30px;
+      padding-top: 22px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -968,10 +972,10 @@ export default function Login() {
       height: 18px;
     }
 
-    .auth-side {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 30px;
-      padding: 60px;
+        .auth-side {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 24px;
+          padding: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1012,9 +1016,9 @@ export default function Login() {
       height: 40px;
     }
 
-    .side-content h2 {
-      font-size: 2.2em;
-      margin-bottom: 30px;
+        .side-content h2 {
+          font-size: 1.75em;
+          margin-bottom: 24px;
       font-weight: 800;
       text-align: center;
     }
