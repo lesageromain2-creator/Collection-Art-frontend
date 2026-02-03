@@ -8,13 +8,27 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getArticleBySlug, fetchSettings } from '../../utils/api';
 
-function parseArticleContent(content) {
+function formatTextToHtml(text) {
+  if (!text || typeof text !== 'string') return '';
+  let html = text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\[(\d+)\]/g, '<sup class="article-ref"><a href="#source-$1">[$1]</a></sup>');
+  html = html.replace(/\n/g, '<br />');
+  return html;
+}
+
+function parseArticleContent(content, outSources = {}) {
   if (!content || typeof content !== 'string') return null;
   const t = content.trim();
-  if (!t.startsWith('[')) return null;
+  if (!t.startsWith('[') && !t.startsWith('{')) return null;
   try {
-    const arr = JSON.parse(content);
-    return Array.isArray(arr) ? arr : null;
+    const parsed = JSON.parse(content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.blocks) {
+      outSources.sources = parsed.sources || [];
+      return parsed.blocks;
+    }
+    return Array.isArray(parsed) ? parsed : null;
   } catch (_) {
     return null;
   }
@@ -161,24 +175,52 @@ export default function BlogPostPage() {
 
             <div className="post-body">
               {(() => {
-                const blocks = parseArticleContent(post.content);
+                const articleSources = {};
+                const blocks = parseArticleContent(post.content, articleSources);
+                const sourcesList = articleSources.sources || [];
                 if (blocks && blocks.length > 0) {
-                  return blocks.map((block, i) => {
-                    if (block.type === 'text') {
-                      const text = (block.content || '').trim();
-                      if (!text) return null;
-                      return <p key={i} className="post-block-text">{text}</p>;
-                    }
-                    if (block.type === 'image' && block.url) {
-                      return (
-                        <figure key={i} className="post-block-figure">
-                          <img src={block.url} alt={block.alt || ''} />
-                          {block.alt && <figcaption>{block.alt}</figcaption>}
-                        </figure>
-                      );
-                    }
-                    return null;
-                  });
+                  return (
+                    <>
+                      {blocks.map((block, i) => {
+                        if (block.type === 'text') {
+                          const raw = (block.content || '').trim();
+                          if (!raw) return null;
+                          const html = raw.includes('<') ? raw : formatTextToHtml(raw);
+                          return (
+                            <div
+                              key={i}
+                              className="post-block-text"
+                              dangerouslySetInnerHTML={{ __html: html }}
+                            />
+                          );
+                        }
+                        if (block.type === 'image' && block.url) {
+                          return (
+                            <figure key={i} className="post-block-figure">
+                              <img src={block.url} alt={block.alt || ''} />
+                              {block.alt && <figcaption>{block.alt}</figcaption>}
+                            </figure>
+                          );
+                        }
+                        return null;
+                      })}
+                      {sourcesList.length > 0 && (
+                        <section className="post-sources">
+                          <h3>Sources</h3>
+                          <ol>
+                            {sourcesList.map((s, idx) => {
+                              const text = typeof s === 'string' ? s : (s && typeof s === 'object' && 'text' in s) ? String(s.text ?? '') : '';
+                              return (
+                                <li key={idx} id={`source-${(s && s.num) || idx + 1}`}>
+                                  {text}
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </section>
+                      )}
+                    </>
+                  );
                 }
                 return <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />;
               })()}
@@ -187,12 +229,15 @@ export default function BlogPostPage() {
             {post.tags && post.tags.length > 0 && (
               <div className="post-tags">
                 <strong>Tags:</strong>
-                {post.tags.map((tag, idx) => (
-                  <span key={idx} className="tag">
-                    <Tag size={14} />
-                    {tag}
-                  </span>
-                ))}
+                {post.tags.map((tag, idx) => {
+                  const label = typeof tag === 'string' ? tag : (tag && typeof tag === 'object' && tag.name) ? tag.name : String(tag || '');
+                  return (
+                    <span key={idx} className="tag">
+                      <Tag size={14} />
+                      {label}
+                    </span>
+                  );
+                })}
               </div>
             )}
           </article>
@@ -204,13 +249,16 @@ export default function BlogPostPage() {
       <style jsx>{`
         .post-page {
           min-height: 100vh;
-          background: #F8F8F0;
+          background: #F9F6F0;
           padding: 120px 20px 80px;
         }
 
         .post-container {
           max-width: 900px;
+          width: 100%;
           margin: 0 auto;
+          overflow-x: hidden;
+          box-sizing: border-box;
         }
 
         .back-link {
@@ -231,27 +279,36 @@ export default function BlogPostPage() {
 
         .post-hero-image {
           width: 100%;
-          height: 400px;
+          min-height: 280px;
+          max-height: 70vh;
           border-radius: 12px;
           overflow: hidden;
           margin-bottom: 40px;
           border: 3px solid #212E50;
           box-shadow: 0 8px 32px rgba(33, 46, 80, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f5f3ee;
         }
 
         .post-hero-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+          max-width: 100%;
+          max-height: 70vh;
+          width: auto;
+          height: auto;
+          object-fit: contain;
         }
 
         .post-article {
           background: #fff;
-          border: 2px solid #212E50;
+          border: 2px solid #e39fd0;
           border-radius: 12px;
           padding: 50px;
-          box-shadow: 0 4px 24px rgba(33, 46, 80, 0.08);
+          box-sizing: border-box;
+          box-shadow: 0 4px 24px rgba(227, 159, 208, 0.2);
           position: relative;
+          overflow: hidden;
         }
         .post-article::before {
           content: '';
@@ -260,7 +317,7 @@ export default function BlogPostPage() {
           left: 8px;
           right: 8px;
           bottom: 8px;
-          border: 1px solid rgba(199, 161, 30, 0.4);
+          border: 1px solid rgba(227, 159, 208, 0.5);
           border-radius: 8px;
           pointer-events: none;
         }
@@ -290,6 +347,8 @@ export default function BlogPostPage() {
           font-weight: 900;
           line-height: 1.2;
           margin-bottom: 20px;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
         }
 
         .post-lead {
@@ -338,6 +397,11 @@ export default function BlogPostPage() {
           color: #212E50;
           font-size: 1.1em;
           line-height: 1.8;
+          text-align: justify;
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          word-break: break-word;
         }
 
         .post-body :global(h2) {
@@ -361,6 +425,8 @@ export default function BlogPostPage() {
         .post-body :global(a) {
           color: #7C2A3C;
           text-decoration: underline;
+          overflow-wrap: break-word;
+          word-break: break-word;
         }
 
         .post-body :global(a):hover {
@@ -381,27 +447,94 @@ export default function BlogPostPage() {
           padding: 20px;
           border-radius: 12px;
           overflow-x: auto;
+          overflow-y: hidden;
+          max-width: 100%;
           margin: 20px 0;
         }
 
         .post-body :global(img) {
           max-width: 100%;
+          width: auto;
+          height: auto;
+          max-height: 70vh;
+          object-fit: contain;
           border-radius: 12px;
           margin: 30px 0;
           border: 1px solid rgba(33, 46, 80, 0.1);
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .post-block-text {
           margin-bottom: 20px;
+          text-align: justify;
+          max-width: 100%;
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+          word-break: break-word;
+        }
+        .post-block-text :global(.article-ref) {
+          font-size: 0.75em;
+          vertical-align: super;
+          line-height: 0;
+        }
+        .post-block-text :global(.article-ref a),
+        .post-block-text :global(a.article-ref) {
+          color: #7C2A3C;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .post-block-text :global(.article-ref a:hover) {
+          text-decoration: underline;
+        }
+        .post-sources {
+          margin-top: 48px;
+          padding-top: 32px;
+          border-top: 2px solid rgba(33, 46, 80, 0.12);
+        }
+        .post-sources h3 {
+          font-size: 1.4em;
+          color: #212E50;
+          margin-bottom: 20px;
+        }
+        .post-sources ol {
+          list-style: none;
+          counter-reset: sources;
+          padding: 0;
+        }
+        .post-sources li {
+          counter-increment: sources;
+          margin-bottom: 12px;
+          padding-left: 2em;
+          position: relative;
+          font-size: 0.95em;
+          color: #212E50;
+          line-height: 1.6;
+          overflow-wrap: break-word;
+          word-break: break-word;
+        }
+        .post-sources li::before {
+          content: counter(sources) '.';
+          position: absolute;
+          left: 0;
+          font-weight: 700;
+          color: #7C2A3C;
         }
 
         .post-block-figure {
           margin: 24px 0;
+          text-align: center;
         }
         .post-block-figure img {
           max-width: 100%;
+          width: auto;
+          height: auto;
+          max-height: 70vh;
+          object-fit: contain;
           border-radius: 12px;
           display: block;
+          margin: 0 auto;
           border: 1px solid rgba(33, 46, 80, 0.1);
         }
         .post-block-figure figcaption {
@@ -453,7 +586,7 @@ export default function BlogPostPage() {
           }
 
           .post-hero-image {
-            height: 250px;
+            min-height: 200px;
           }
 
           .post-body {

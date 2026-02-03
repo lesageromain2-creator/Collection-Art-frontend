@@ -212,7 +212,7 @@ export default function ArticlesPage() {
       <style jsx>{`
         .articles-page {
           min-height: 100vh;
-          background: #F8F8F0;
+          background: #F9F6F0;
         }
         .articles-main {
           padding-top: 80px;
@@ -302,7 +302,7 @@ export default function ArticlesPage() {
                       0 20px 56px rgba(33, 46, 80, 0.1);
         }
         .card-mat {
-          background: #F8F8F0;
+          background: #F9F6F0;
           border-radius: 12px;
           overflow: hidden;
           border: none;
@@ -312,11 +312,14 @@ export default function ArticlesPage() {
           aspect-ratio: 16/10;
           background: #212E50;
           overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .card-cover-img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           transition: transform 0.4s ease;
         }
         .article-card:hover .card-cover-img {

@@ -175,21 +175,23 @@ export default function Header({ settings = {} }) {
           z-index: 50;
           background: #212E50;
           color: #F8F8F0;
-          border-bottom: 3px solid #C7A11E;
+          border-bottom: 4px solid #C7A11E;
           box-shadow: 0 2px 16px rgba(0,0,0,0.2);
         }
         .hdr-inner {
           max-width: 80rem;
           margin: 0 auto;
-          padding: 0.75rem 1rem 0.75rem 0.5rem;
+          padding: 1rem 1rem 1rem 0.5rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
+          min-height: 72px;
         }
         @media (min-width: 768px) {
           .hdr-inner {
-            padding: 0.875rem 1.5rem 0.875rem 0.75rem;
+            padding: 1.25rem 1.5rem 1.25rem 0.75rem;
+            min-height: 84px;
           }
         }
 
@@ -208,25 +210,38 @@ export default function Header({ settings = {} }) {
         }
         .hdr-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1rem;
+          font-size: 1.25rem;
           font-weight: 600;
           color: #F8F8F0;
           line-height: 1.2;
         }
         .hdr-subtitle {
-          font-size: 9px;
+          font-size: 11px;
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.2em;
           color: rgba(248,248,240,0.9);
         }
+        @media (min-width: 768px) {
+          .hdr-title {
+            font-size: 1.4rem;
+          }
+          .hdr-subtitle {
+            font-size: 12px;
+          }
+        }
 
         .hdr-nav {
           display: none;
           align-items: center;
-          gap: 1.5rem;
-          font-size: 0.9375rem;
+          gap: 1.75rem;
+          font-size: 1.0625rem;
           font-weight: 500;
+        }
+        @media (min-width: 1024px) {
+          .hdr-nav {
+            font-size: 1.125rem;
+          }
         }
         @media (min-width: 768px) {
           .hdr-nav {
@@ -268,8 +283,8 @@ export default function Header({ settings = {} }) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 0.375rem 0.875rem;
-          font-size: 0.8125rem;
+          padding: 0.5rem 1rem;
+          font-size: 0.9375rem;
           font-weight: 600;
           border-radius: 9999px;
           text-decoration: none;
@@ -299,9 +314,9 @@ export default function Header({ settings = {} }) {
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          gap: 5px;
-          width: 44px;
-          height: 44px;
+          gap: 6px;
+          width: 48px;
+          height: 48px;
           padding: 0;
           border: none;
           border-radius: 12px;
@@ -316,20 +331,20 @@ export default function Header({ settings = {} }) {
         }
         .hdr-burger-line {
           display: block;
-          width: 20px;
-          height: 2px;
+          width: 22px;
+          height: 2.5px;
           border-radius: 2px;
           background: currentColor;
           transition: transform 0.25s, opacity 0.25s;
         }
         .hdr-burger--open .hdr-burger-line:nth-child(1) {
-          transform: translateY(7px) rotate(45deg);
+          transform: translateY(8.5px) rotate(45deg);
         }
         .hdr-burger--open .hdr-burger-line:nth-child(2) {
           opacity: 0;
         }
         .hdr-burger--open .hdr-burger-line:nth-child(3) {
-          transform: translateY(-7px) rotate(-45deg);
+          transform: translateY(-8.5px) rotate(-45deg);
         }
 
         .hdr-overlay {
@@ -367,7 +382,7 @@ export default function Header({ settings = {} }) {
           }
         }
         .hdr-drawer-inner {
-          padding: 1.5rem 1.25rem;
+          padding: 1.75rem 1.5rem;
           min-height: 100%;
           display: flex;
           flex-direction: column;
@@ -386,13 +401,13 @@ export default function Header({ settings = {} }) {
         }
         .hdr-drawer-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1.125rem;
+          font-size: 1.35rem;
           font-weight: 600;
           color: #212E50;
         }
         .hdr-drawer-close {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -413,8 +428,8 @@ export default function Header({ settings = {} }) {
         }
         .hdr-drawer-link {
           display: block;
-          padding: 0.875rem 1rem;
-          font-size: 1rem;
+          padding: 1rem 1.125rem;
+          font-size: 1.125rem;
           font-weight: 500;
           color: #212E50;
           text-decoration: none;
@@ -442,8 +457,8 @@ export default function Header({ settings = {} }) {
         .hdr-drawer-btn {
           display: block;
           width: 100%;
-          padding: 0.875rem 1rem;
-          font-size: 0.9375rem;
+          padding: 1rem 1.125rem;
+          font-size: 1.0625rem;
           font-weight: 600;
           text-align: center;
           border-radius: 12px;

@@ -9,8 +9,8 @@
    Idées couleurs de l'association
    ============================================ */
 :root {
-  /* Palette principale */
-  --creme: #F8F8F0;           /* Off-white / Crème - fonds, zones claires */
+  /* Palette principale - fond logo final #F9F6F0 */
+  --creme: #F9F6F0;           /* Beige clair logo - fonds, zones claires */
   --olive: #6C8157;          /* Vert olive - nature, sérénité */
   --burgundy: #7C2A3C;       /* Bordeaux / Bourgogne - profondeur, art */
   --gold: #C7A11E;           /* Or / Moutarde - accent, prestige */
@@ -22,7 +22,7 @@
   --secondary: #6C8157;
   --accent: #C7A11E;
   --accent-soft: #F1B2C8;
-  --light: #F8F8F0;
+  --light: #F9F6F0;
   --dark: #212E50;
   --anthracite: #212E50;
   --gris: #5A5A5A;

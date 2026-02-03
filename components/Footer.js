@@ -17,7 +17,7 @@ export default function Footer({ settings = {} }) {
   const email = settings.email || 'collection.aurart@gmail.com';
 
   return (
-    <footer className="border-t border-navy/10 bg-white">
+    <footer className="border-t border-navy/10 bg-creme">
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">

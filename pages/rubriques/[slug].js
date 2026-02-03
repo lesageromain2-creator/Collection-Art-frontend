@@ -307,7 +307,7 @@ export default function RubriquePage() {
         <Footer settings={settings} />
 
         <style jsx>{`
-          .rubrique-page { background: #F8F8F0; }
+          .rubrique-page { background: #F9F6F0; }
           .rubrique-feed .feed-loading {
             text-align: center;
             padding: 64px 20px;
@@ -353,7 +353,7 @@ export default function RubriquePage() {
                         0 20px 56px rgba(33, 46, 80, 0.1);
           }
           .rubrique-feed .card-mat {
-            background: #F8F8F0;
+            background: #F9F6F0;
             border-radius: 12px;
             overflow: hidden;
             border: none;
@@ -367,7 +367,7 @@ export default function RubriquePage() {
           .rubrique-feed .card-cover-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             transition: transform 0.4s ease;
           }
           .rubrique-feed .article-card:hover .card-cover-img {

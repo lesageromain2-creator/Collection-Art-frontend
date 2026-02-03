@@ -88,50 +88,206 @@ export default function Home() {
       <div className="min-h-screen bg-creme">
         <Header settings={demoSettings} />
 
-        {/* Image d'accueil — logo centré, animation d'entrée artistique */}
-        <section
-          className="relative min-h-screen w-full flex items-center justify-center overflow-hidden"
-          style={{
-            paddingTop: '0.5rem',
-            background: 'linear-gradient(165deg, #15182a 0%, #1a1f38 35%, #212E50 70%, #161b2e 100%)',
-          }}
-        >
-          <div
-            className="logo-hero-reveal relative aspect-square flex items-center justify-center"
-            style={{ width: 'min(100vw, calc(100vh - 1rem))' }}
-          >
-            <Image
-              src="/images/logo avec fond.png"
-              alt="Collection Aur'art"
-              fill
-              className="object-contain object-center"
-              priority
-              sizes="100vw"
-            />
+        {/* Hero d'accueil — logo transparent sur fond beige artistique */}
+        <section className="hero-welcome">
+          <div className="hero-welcome-bg">
+            <div className="hero-art-bg" aria-hidden />
+            <div className="hero-orb hero-orb--olive" aria-hidden />
+            <div className="hero-orb hero-orb--burgundy" aria-hidden />
+            <div className="hero-orb hero-orb--gold" aria-hidden />
+            <div className="hero-orb hero-orb--pink" aria-hidden />
+          </div>
+          <div className="hero-welcome-inner">
+            <div className="hero-logo-frame">
+              <div className="hero-logo-border hero-logo-border--1" />
+              <div className="hero-logo-border hero-logo-border--2" />
+              <div className="hero-logo-wrap logo-hero-reveal">
+                <Image
+                  src="/images/Logo final transparent.png"
+                  alt="Collection Aur'art"
+                  fill
+                  className="object-contain object-center"
+                  priority
+                  sizes="(max-width: 768px) 90vw, min(70vmin, 520px)"
+                />
+              </div>
+            </div>
+            <p className="hero-subtitle">Esquisses de l&apos;Art & son marché</p>
           </div>
         </section>
 
-        <style jsx global>{`
+        <style jsx>{`
+          .hero-welcome {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(
+              135deg,
+              #F9F6F0 0%,
+              #F5F0E8 25%,
+              #EDE6DC 50%,
+              #F0EBE3 75%,
+              #F9F6F0 100%
+            );
+          }
+          .hero-welcome-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+          .hero-art-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+              radial-gradient(circle at 20% 30%, rgba(199, 161, 30, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, rgba(124, 42, 60, 0.03) 0%, transparent 35%),
+              repeating-linear-gradient(
+                105deg,
+                transparent,
+                transparent 60px,
+                rgba(108, 129, 87, 0.02) 60px,
+                rgba(108, 129, 87, 0.02) 61px
+              );
+          }
+          .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.1;
+            animation: heroOrbFloat 25s ease-in-out infinite;
+          }
+          .hero-orb--olive {
+            width: 400px;
+            height: 400px;
+            background: #6C8157;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+          }
+          .hero-orb--burgundy {
+            width: 350px;
+            height: 350px;
+            background: #7C2A3C;
+            top: 60%;
+            right: 10%;
+            animation-delay: -6s;
+          }
+          .hero-orb--gold {
+            width: 300px;
+            height: 300px;
+            background: #C7A11E;
+            bottom: 15%;
+            left: 15%;
+            animation-delay: -12s;
+          }
+          .hero-orb--pink {
+            width: 320px;
+            height: 320px;
+            background: #F1B2C8;
+            top: 20%;
+            right: 20%;
+            animation-delay: -18s;
+          }
+          @keyframes heroOrbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -30px) scale(1.05); }
+            50% { transform: translate(-15px, 20px) scale(0.98); }
+            75% { transform: translate(25px, 15px) scale(1.02); }
+          }
+          .hero-welcome-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem 3rem;
+            text-align: center;
+          }
+          .hero-logo-frame {
+            position: relative;
+            width: min(90vw, min(75vmin, 560px));
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .hero-logo-border {
+            position: absolute;
+            border-radius: 24px;
+            border: 2px solid;
+            pointer-events: none;
+          }
+          .hero-logo-border--1 {
+            inset: -10px;
+            border-color: rgba(108, 129, 87, 0.35);
+            animation: heroBorderPulse 4s ease-in-out infinite;
+          }
+          .hero-logo-border--2 {
+            inset: -20px;
+            border-color: rgba(199, 161, 30, 0.25);
+            animation: heroBorderPulse 4s ease-in-out infinite 0.5s;
+          }
+          .hero-logo-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: visible;
+            background: transparent;
+            box-shadow: none;
+          }
+          @keyframes heroBorderPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+          }
+          .logo-hero-reveal {
+            opacity: 0;
+            transform: scale(0.85);
+            animation: logoHeroReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+          }
           @keyframes logoHeroReveal {
             0% {
               opacity: 0;
-              transform: scale(0.72);
+              transform: scale(0.85);
             }
             100% {
               opacity: 1;
               transform: scale(1);
             }
           }
-          .logo-hero-reveal {
-            animation: logoHeroReveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          .hero-subtitle {
+            margin-top: 1.5rem;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.125rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #7C2A3C;
+          }
+          @media (min-width: 768px) {
+            .hero-subtitle {
+              font-size: 1.25rem;
+              letter-spacing: 0.25em;
+              margin-top: 2rem;
+            }
           }
         `}</style>
 
         {/* Statue 3D + titre + contenu */}
         <main id="main-content" className="relative z-10">
           <HermesSection rubriques={rubriques}>
-          {/* Section présentation */}
+          {/* Section présentation — palette beige + quatre couleurs */}
           <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-24 pb-16 px-6 bg-creme">
+            <div className="absolute top-0 left-0 right-0 h-1 flex" aria-hidden>
+              <span className="flex-1 bg-olive/40" />
+              <span className="flex-1 bg-burgundy/40" />
+              <span className="flex-1 bg-gold/40" />
+              <span className="flex-1 bg-pink/40" />
+            </div>
             <div className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <h1 className="font-heading text-4xl md:text-6xl font-bold text-navy mb-4 leading-tight">
                 Collection Aur'art
@@ -161,13 +317,18 @@ export default function Home() {
           </section>
 
           {/* PRÉSENTATION DE L'ASSOCIATION */}
-          <section className="py-20 md:py-32 px-6 bg-white">
+          <section className="py-20 md:py-32 px-6 bg-creme">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-16">
                 <h2 className="font-heading text-3xl md:text-5xl font-bold text-navy mb-6">
                   Notre mission
                 </h2>
-                <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full" />
+                <div className="w-32 h-1 flex mx-auto rounded-full overflow-hidden">
+                  <span className="flex-1 bg-olive" />
+                  <span className="flex-1 bg-burgundy" />
+                  <span className="flex-1 bg-gold" />
+                  <span className="flex-1 bg-pink" />
+                </div>
               </div>
               <div className="space-y-6 text-justify">
                 <p className="text-base md:text-lg text-gris leading-relaxed">
@@ -196,7 +357,12 @@ export default function Home() {
                 <p className="text-lg text-gris max-w-2xl mx-auto">
                   Parcourez nos thématiques artistiques et découvrez nos analyses approfondies
                 </p>
-                <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full mt-6" />
+                <div className="w-32 h-1 flex mx-auto rounded-full overflow-hidden mt-6">
+                  <span className="flex-1 bg-olive" />
+                  <span className="flex-1 bg-burgundy" />
+                  <span className="flex-1 bg-gold" />
+                  <span className="flex-1 bg-pink" />
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
@@ -265,10 +431,10 @@ export default function Home() {
           </section>
 
           {/* SECTION CTA */}
-          <section className="py-20 md:py-32 px-6 bg-white">
+          <section className="py-20 md:py-32 px-6 bg-creme">
             <div className="max-w-4xl mx-auto text-center">
               <div className="mb-8">
-                <div className="inline-flex h-16 w-16 rounded-full bg-primary-gradient items-center justify-center shadow-lg">
+                <div className="inline-flex h-16 w-16 rounded-full items-center justify-center shadow-lg overflow-hidden" style={{ background: 'linear-gradient(135deg, #6C8157, #7C2A3C, #C7A11E, #F1B2C8)' }}>
                   <BookOpen className="h-8 w-8 text-creme" />
                 </div>
               </div>

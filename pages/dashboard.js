@@ -19,6 +19,8 @@ import {
   ChevronDown,
   Search,
   ExternalLink,
+  Hash,
+  ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import Header from '../components/Header';
@@ -51,34 +53,42 @@ const slugify = (text) =>
 
 const blockId = () => `b-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-function parseContentBlocks(content) {
+function parseContentBlocks(content, outSources = {}) {
   if (!content || typeof content !== 'string') return [{ id: blockId(), type: 'text', content: '' }];
   const t = content.trim();
-  if (t.startsWith('[')) {
-    try {
-      const arr = JSON.parse(content);
-      if (Array.isArray(arr) && arr.length > 0)
-        return arr.map((b) => ({
-          id: b.id || blockId(),
-          type: b.type === 'image' ? 'image' : 'text',
-          content: b.content ?? '',
-          url: b.url ?? '',
-          alt: b.alt ?? '',
-        }));
-    } catch (_) {}
-  }
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.blocks) {
+      if (parsed.sources && Array.isArray(parsed.sources)) outSources.sources = parsed.sources;
+      return (parsed.blocks || []).map((b) => ({
+        id: b.id || blockId(),
+        type: b.type === 'image' ? 'image' : 'text',
+        content: b.content ?? '',
+        url: b.url ?? '',
+        alt: b.alt ?? '',
+      }));
+    }
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((b) => ({
+        id: b.id || blockId(),
+        type: b.type === 'image' ? 'image' : 'text',
+        content: b.content ?? '',
+        url: b.url ?? '',
+        alt: b.alt ?? '',
+      }));
+    }
+  } catch (_) {}
   return [{ id: blockId(), type: 'text', content: content }];
 }
 
-function serializeContentBlocks(blocks) {
-  if (!blocks?.length) return '';
-  return JSON.stringify(
-    blocks.map((b) =>
-      b.type === 'image'
-        ? { type: 'image', url: b.url || '', alt: b.alt || '' }
-        : { type: 'text', content: b.content || '' }
-    )
+function serializeContentBlocks(blocks, sources = []) {
+  const blocksJson = (blocks || []).map((b) =>
+    b.type === 'image'
+      ? { type: 'image', url: b.url || '', alt: b.alt || '' }
+      : { type: 'text', content: b.content || '' }
   );
+  if (!blocksJson.length && !sources.length) return '';
+  return JSON.stringify({ blocks: blocksJson, sources: sources || [] });
 }
 
 export default function Dashboard() {
@@ -106,6 +116,8 @@ export default function Dashboard() {
   });
   const [articleSubmitLoading, setArticleSubmitLoading] = useState(false);
   const [contentBlocks, setContentBlocks] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [uploadingForBlockId, setUploadingForBlockId] = useState(null);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const fileInputRef = useRef(null);
@@ -213,6 +225,7 @@ export default function Dashboard() {
       is_featured: false,
     });
     setContentBlocks([{ id: blockId(), type: 'text', content: '' }]);
+    setSources([]);
     setUploadedImages([]);
     setCoverImageUrl('');
     setShowArticleForm(true);
@@ -233,7 +246,9 @@ export default function Dashboard() {
         status: article.status || 'draft',
         is_featured: article.is_featured || false,
       });
-      setContentBlocks(parseContentBlocks(article.content || ''));
+      const outSources = {};
+      setContentBlocks(parseContentBlocks(article.content || '', outSources));
+      setSources(outSources.sources || []);
       setCoverImageUrl(article.featured_image_url || '');
       setUploadedImages([]);
       setShowArticleForm(true);
@@ -269,6 +284,31 @@ export default function Dashboard() {
     setContentBlocks((prev) => [...prev, { id: blockId(), type: 'text', content: '' }]);
   };
 
+  const addSource = () => {
+    const num = sources.length + 1;
+    setSources((prev) => [...prev, { num, text: '' }]);
+    return num;
+  };
+
+  const updateSource = (idx, text) => {
+    setSources((prev) => prev.map((s, i) => (i === idx ? { ...s, text } : s)));
+  };
+
+  const removeSource = (idx) => {
+    setSources((prev) => prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, num: i + 1 })));
+  };
+
+  const insertRefInBlock = (blockIdRef) => {
+    const num = sources.length + 1;
+    setSources((prev) => [...prev, { num, text: '' }]);
+    setContentBlocks((prev) =>
+      prev.map((b) => {
+        if (b.id !== blockIdRef || b.type !== 'text') return b;
+        return { ...b, content: (b.content || '') + ` [${num}]` };
+      })
+    );
+  };
+
   const addImageBlock = (url, alt = '') => {
     setContentBlocks((prev) => [...prev, { id: blockId(), type: 'image', url: url || '', alt }]);
   };
@@ -296,10 +336,16 @@ export default function Dashboard() {
   const handleBlockImageUpload = async (e) => {
     const files = e.target.files;
     if (!files?.length) return;
+    const forBlock = uploadingForBlockId;
+    setUploadingForBlockId(null);
     try {
       const data = await uploadArticleImages(Array.from(files));
       const urls = data.map((img) => img.urls?.featured || img.urls?.original || img.url).filter(Boolean);
-      urls.forEach((url) => addImageBlock(url));
+      if (forBlock && urls[0]) {
+        updateBlock(forBlock, { url: urls[0] });
+      } else {
+        urls.forEach((url) => addImageBlock(url));
+      }
       if (!coverImageUrl && urls[0]) setCoverImageUrl(urls[0]);
       if (!articleForm.featured_image_url && urls[0]) handleArticleFieldChange('featured_image_url', urls[0]);
     } catch (err) {
@@ -317,7 +363,7 @@ export default function Dashboard() {
         title: articleForm.title,
         slug: articleForm.slug || slugify(articleForm.title),
         excerpt: articleForm.excerpt,
-        content: serializeContentBlocks(contentBlocks),
+        content: serializeContentBlocks(contentBlocks, sources),
         featured_image_url: coverImageUrl || articleForm.featured_image_url,
         rubrique_id: articleForm.rubrique_id || null,
         status: articleForm.status,
@@ -876,230 +922,166 @@ export default function Dashboard() {
       </div>
 
       {showArticleForm && (
-        <div className="modal-overlay" onClick={() => setShowArticleForm(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-head">
-              <h2>{editingArticleId ? 'Modifier l\'article' : 'Nouvel article'}</h2>
-              <button type="button" className="btn-icon" onClick={() => setShowArticleForm(false)}>
-                <X size={24} />
+        <div className="article-editor-full">
+          <form onSubmit={handleArticleSubmit} className="article-editor-form">
+            <header className="editor-header">
+              <button type="button" className="editor-back" onClick={() => setShowArticleForm(false)}>
+                <ArrowLeft size={20} />
+                Retour
               </button>
-            </div>
-            <form onSubmit={handleArticleSubmit} className="article-form">
-              <div className="form-row">
-                <div className="form-group flex-2">
-                  <label>Titre *</label>
-                  <input
-                    value={articleForm.title}
-                    onChange={(e) => handleArticleFieldChange('title', e.target.value)}
-                    required
-                    placeholder="Titre de l'article"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Slug (URL)</label>
-                  <input
-                    value={articleForm.slug}
-                    onChange={(e) => handleArticleFieldChange('slug', e.target.value)}
-                    placeholder="titre-article"
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Rubrique</label>
+              <div className="editor-meta-row">
                 <select
                   value={articleForm.rubrique_id}
                   onChange={(e) => handleArticleFieldChange('rubrique_id', e.target.value)}
+                  className="editor-select"
                 >
-                  <option value="">— Choisir —</option>
+                  <option value="">Rubrique</option>
                   {rubriques.map((r) => (
                     <option key={r.id} value={r.id}>{r.name}</option>
                   ))}
                 </select>
+                <select
+                  value={articleForm.status}
+                  onChange={(e) => handleArticleFieldChange('status', e.target.value)}
+                  className="editor-select"
+                >
+                  <option value="draft">Brouillon</option>
+                  <option value="published">Publié</option>
+                </select>
+                <label className="editor-featured">
+                  <input type="checkbox" checked={articleForm.is_featured} onChange={(e) => handleArticleFieldChange('is_featured', e.target.checked)} />
+                  <span>À la une</span>
+                </label>
+                <button type="submit" className="editor-save" disabled={articleSubmitLoading}>
+                  {articleSubmitLoading ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
+                  Enregistrer
+                </button>
               </div>
-              <div className="form-group">
-                <label>Résumé (court)</label>
-                <textarea
-                  value={articleForm.excerpt}
-                  onChange={(e) => handleArticleFieldChange('excerpt', e.target.value)}
-                  rows={2}
-                  placeholder="Résumé affiché dans les listes"
-                />
-              </div>
-              <div className="form-group">
-                <label>Image de couverture</label>
-                <div className="cover-zone">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleArticleImagesUpload}
-                  />
-                  <button
-                    type="button"
-                    className="btn-upload"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <ImageIcon size={24} />
-                    Ajouter des photos pour la couverture
-                  </button>
-                  {coverImageUrl && (
-                    <div className="cover-preview">
-                      <img src={coverImageUrl} alt="Couverture" />
-                      <span>Image de couverture</span>
-                    </div>
-                  )}
-                  {uploadedImages.length > 0 && (
-                    <div className="uploaded-list">
-                      {uploadedImages.map((url, i) => (
-                        <div key={i} className="thumb-wrap">
+            </header>
+
+            <div className="editor-body">
+              <input
+                type="text"
+                value={articleForm.title}
+                onChange={(e) => handleArticleFieldChange('title', e.target.value)}
+                required
+                placeholder="Titre de l'article"
+                className="editor-title"
+              />
+              <input
+                type="text"
+                value={articleForm.excerpt}
+                onChange={(e) => handleArticleFieldChange('excerpt', e.target.value)}
+                placeholder="Résumé (optionnel)"
+                className="editor-excerpt"
+              />
+
+              <div className="editor-cover-row">
+                <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleArticleImagesUpload} />
+                <button type="button" className="editor-cover-btn" onClick={() => fileInputRef.current?.click()}>
+                  <ImageIcon size={20} />
+                  {coverImageUrl ? 'Changer la couverture' : 'Image de couverture'}
+                </button>
+                {coverImageUrl && (
+                  <div className="editor-cover-thumb">
+                    <img src={coverImageUrl} alt="" />
+                  </div>
+                )}
+                {uploadedImages.length > 0 && (
+                  <div className="editor-uploaded-mini">
+                    {uploadedImages.map((url, i) => (
+                      <div key={i} className="editor-thumb-group">
+                        <button
+                          type="button"
+                          className={`editor-thumb-btn ${url === coverImageUrl ? 'active' : ''}`}
+                          onClick={() => { setCoverImageUrl(url); handleArticleFieldChange('featured_image_url', url); }}
+                        >
                           <img src={url} alt="" />
-                          <button
-                            type="button"
-                            className="set-cover"
-                            onClick={() => {
-                              setCoverImageUrl(url);
-                              handleArticleFieldChange('featured_image_url', url);
-                            }}
-                          >
-                            {url === coverImageUrl ? 'Couverture' : 'Définir couverture'}
-                          </button>
-                          <button
-                            type="button"
-                            className="insert-in-content"
-                            onClick={() => addImageBlock(url)}
-                          >
-                            Ajouter dans l&apos;article
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Contenu — blocs texte et images</label>
-                <div className="blocks-toolbar">
-                  <button type="button" className="btn-block-add" onClick={addTextBlock}>
-                    <FileText size={18} />
-                    Ajouter un paragraphe
-                  </button>
-                  <input
-                    ref={blockImageInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handleBlockImageUpload}
-                  />
-                  <button
-                    type="button"
-                    className="btn-block-add"
-                    onClick={() => blockImageInputRef.current?.click()}
-                  >
-                    <ImageIcon size={18} />
-                    Ajouter une image
-                  </button>
-                </div>
-                <div className="content-blocks">
-                  {contentBlocks.map((block, index) => (
-                    <div key={block.id} className="content-block">
-                      <div className="block-actions">
-                        <button
-                          type="button"
-                          className="btn-icon small"
-                          onClick={() => moveBlock(block.id, -1)}
-                          disabled={index === 0}
-                          title="Monter"
-                        >
-                          <ChevronUp size={16} />
                         </button>
-                        <button
-                          type="button"
-                          className="btn-icon small"
-                          onClick={() => moveBlock(block.id, 1)}
-                          disabled={index === contentBlocks.length - 1}
-                          title="Descendre"
-                        >
-                          <ChevronDown size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-icon small danger"
-                          onClick={() => removeBlock(block.id)}
-                          title="Supprimer le bloc"
-                        >
-                          <Trash2 size={16} />
+                        <button type="button" className="editor-insert-btn" onClick={() => addImageBlock(url)}>
+                          Insérer
                         </button>
                       </div>
-                      {block.type === 'text' ? (
-                        <textarea
-                          className="block-text"
-                          value={block.content}
-                          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                          placeholder="Paragraphe de texte…"
-                          rows={4}
-                        />
-                      ) : (
-                        <div className="block-image-wrap">
-                          {block.url ? (
-                            <>
-                              <img src={block.url} alt={block.alt || ''} className="block-image-preview" />
-                              <input
-                                type="text"
-                                className="block-image-alt"
-                                placeholder="Légende (optionnel)"
-                                value={block.alt || ''}
-                                onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
-                              />
-                            </>
-                          ) : (
-                            <span className="block-image-placeholder">Image</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {contentBlocks.length === 0 && (
-                  <p className="blocks-hint">Cliquez sur « Ajouter un paragraphe » ou « Ajouter une image » pour construire l&apos;article.</p>
+                    ))}
+                  </div>
                 )}
               </div>
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Statut</label>
-                  <select
-                    value={articleForm.status}
-                    onChange={(e) => handleArticleFieldChange('status', e.target.value)}
-                  >
-                    <option value="draft">Brouillon</option>
-                    <option value="published">Publié</option>
-                    <option value="archived">Archivé</option>
-                  </select>
+
+              <div className="editor-blocks">
+                {contentBlocks.map((block, index) => (
+                  <div key={block.id} className="editor-block">
+                    <div className="editor-block-actions">
+                      <button type="button" onClick={() => moveBlock(block.id, -1)} disabled={index === 0} title="Monter"><ChevronUp size={16} /></button>
+                      <button type="button" onClick={() => moveBlock(block.id, 1)} disabled={index === contentBlocks.length - 1} title="Descendre"><ChevronDown size={16} /></button>
+                      <button type="button" className="danger" onClick={() => removeBlock(block.id)} title="Supprimer"><Trash2 size={16} /></button>
+                    </div>
+                    {block.type === 'text' ? (
+                      <div className="editor-block-text-wrap">
+                        <textarea
+                          value={block.content}
+                          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                          placeholder="Écrivez ici… **gras** *italique* [1] référence"
+                          rows={8}
+                          className="editor-block-text"
+                        />
+                        <button type="button" className="editor-ref-btn" onClick={() => insertRefInBlock(block.id)}>
+                          <Hash size={14} /> Réf
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="editor-block-image">
+                        {block.url ? (
+                          <>
+                            <img src={block.url} alt={block.alt || ''} />
+                            <input
+                              type="text"
+                              placeholder="Légende"
+                              value={block.alt || ''}
+                              onChange={(e) => updateBlock(block.id, { alt: e.target.value })}
+                              className="editor-block-caption"
+                            />
+                          </>
+                        ) : (
+                          <button type="button" className="editor-add-img-btn" onClick={() => { setUploadingForBlockId(block.id); blockImageInputRef.current?.click(); }}>
+                            <ImageIcon size={32} /> Ajouter une image
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="editor-blocks-add">
+                  <input ref={blockImageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleBlockImageUpload} />
+                  <button type="button" className="editor-add-btn" onClick={addTextBlock}>
+                    <Plus size={20} /> Paragraphe
+                  </button>
+                  <button type="button" className="editor-add-btn" onClick={() => { setUploadingForBlockId(null); blockImageInputRef.current?.click(); }}>
+                    <ImageIcon size={20} /> Image
+                  </button>
                 </div>
-                <div className="form-group checkbox-wrap">
-                  <label>
+              </div>
+
+              <div className="editor-sources">
+                <h4>Sources</h4>
+                {sources.map((s, idx) => (
+                  <div key={idx} className="editor-source-row">
+                    <span className="editor-source-num">[{s.num || idx + 1}]</span>
                     <input
-                      type="checkbox"
-                      checked={articleForm.is_featured}
-                      onChange={(e) => handleArticleFieldChange('is_featured', e.target.checked)}
+                      type="text"
+                      value={s.text || ''}
+                      onChange={(e) => updateSource(idx, e.target.value)}
+                      placeholder="Auteur, Titre, Éditeur, Année…"
+                      className="editor-source-input"
                     />
-                    <span>À la une</span>
-                  </label>
-                </div>
-              </div>
-              <div className="form-actions">
-                <button type="submit" className="btn-primary" disabled={articleSubmitLoading}>
-                  {articleSubmitLoading ? <Loader2 size={20} className="spin" /> : <Save size={20} />}
-                  {editingArticleId ? 'Enregistrer' : 'Créer l\'article'}
-                </button>
-                <button type="button" className="btn-secondary" onClick={() => setShowArticleForm(false)}>
-                  Annuler
+                    <button type="button" className="editor-source-del" onClick={() => removeSource(idx)}><X size={14} /></button>
+                  </div>
+                ))}
+                <button type="button" className="editor-add-source-btn" onClick={() => addSource()}>
+                  <Plus size={16} /> Ajouter une source
                 </button>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
 
@@ -1360,6 +1342,9 @@ export default function Dashboard() {
           border-color: rgba(199,161,30,0.35);
         }
         .article-cover {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           width: 120px;
           height: 80px;
           border-radius: 10px;
@@ -1369,7 +1354,7 @@ export default function Dashboard() {
         .article-cover img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
         }
         .no-cover {
           width: 100%;
@@ -1586,60 +1571,364 @@ export default function Dashboard() {
           gap: 12px;
           margin-top: 20px;
         }
-        .modal-overlay {
+        .article-editor-full {
           position: fixed;
           inset: 0;
-          background: rgba(0,0,0,0.6);
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          padding: 40px 20px 20px;
           z-index: 1000;
+          background: #F9F6F0;
           overflow-y: auto;
         }
-        .modal {
-          background: #212E50;
-          border: 1px solid rgba(199,161,30,0.25);
-          border-radius: 20px;
-          padding: 24px;
-          width: 100%;
-          max-width: 720px;
-          margin-bottom: 40px;
-        }
-        .modal-head {
+        .article-editor-form {
+          min-height: 100vh;
           display: flex;
-          justify-content: space-between;
+          flex-direction: column;
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 32px 48px 80px;
+        }
+        .editor-header {
+          display: flex;
           align-items: center;
-          margin-bottom: 24px;
+          justify-content: space-between;
+          gap: 24px;
+          padding-bottom: 32px;
+          border-bottom: 1px solid rgba(33, 46, 80, 0.08);
+          flex-wrap: wrap;
         }
-        .modal-head h2 {
-          color: #F8F8F0;
-          font-size: 1.35rem;
+        .editor-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 0;
+          background: none;
+          border: none;
+          color: #6C8157;
+          font-size: 1rem;
+          font-weight: 500;
+          cursor: pointer;
         }
-        .article-form .form-group {
+        .editor-back:hover { color: #212E50; }
+        .editor-meta-row {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .editor-select {
+          padding: 10px 16px;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.12);
+          border-radius: 12px;
+          color: #212E50;
+          font-size: 0.95rem;
+          cursor: pointer;
+        }
+        .editor-featured {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.9rem;
+          color: #212E50;
+          cursor: pointer;
+        }
+        .editor-featured input { width: auto; margin: 0; }
+        .editor-save {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 24px;
+          background: #6C8157;
+          border: none;
+          border-radius: 12px;
+          color: #fff;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .editor-save:hover:not(:disabled) { background: #5a7049; }
+        .editor-save:disabled { opacity: 0.7; cursor: wait; }
+        .editor-body { flex: 1; }
+        .editor-title {
+          width: 100%;
+          padding: 0 0 16px;
+          margin-bottom: 8px;
+          background: none;
+          border: none;
+          border-bottom: 1px solid rgba(33, 46, 80, 0.1);
+          color: #212E50;
+          font-size: 2.25rem;
+          font-weight: 700;
+          line-height: 1.2;
+          outline: none;
+        }
+        .editor-title::placeholder { color: #999; }
+        .editor-excerpt {
+          width: 100%;
+          padding: 12px 0;
+          margin-bottom: 32px;
+          background: none;
+          border: none;
+          color: #5a6578;
+          font-size: 1.1rem;
+          outline: none;
+        }
+        .editor-excerpt::placeholder { color: #aaa; }
+        .editor-cover-row {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          margin-bottom: 48px;
+          flex-wrap: wrap;
+        }
+        .editor-cover-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 20px;
+          background: #fff;
+          border: 1px dashed rgba(108, 129, 87, 0.4);
+          border-radius: 12px;
+          color: #6C8157;
+          font-size: 0.95rem;
+          cursor: pointer;
+        }
+        .editor-cover-btn:hover { background: rgba(108, 129, 87, 0.06); }
+        .editor-cover-thumb {
+          width: 80px;
+          height: 56px;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid rgba(33, 46, 80, 0.1);
+        }
+        .editor-cover-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .editor-uploaded-mini {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .editor-thumb-btn {
+          width: 48px;
+          height: 36px;
+          padding: 0;
+          border: 2px solid transparent;
+          border-radius: 8px;
+          overflow: hidden;
+          cursor: pointer;
+          background: #fff;
+        }
+        .editor-thumb-btn.active { border-color: #6C8157; }
+        .editor-thumb-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+        }
+        .editor-insert-btn {
+          font-size: 0.7rem;
+          padding: 4px 8px;
+          background: none;
+          border: none;
+          color: #6C8157;
+          cursor: pointer;
+        }
+        .editor-insert-btn:hover { text-decoration: underline; }
+        .editor-thumb-btn img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .editor-blocks { margin-bottom: 48px; }
+        .editor-block {
+          display: flex;
+          gap: 16px;
+          margin-bottom: 32px;
+          align-items: flex-start;
+        }
+        .editor-block-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          flex-shrink: 0;
+        }
+        .editor-block-actions button {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.12);
+          border-radius: 10px;
+          color: #5a6578;
+          cursor: pointer;
+        }
+        .editor-block-actions button:hover:not(:disabled) {
+          background: rgba(108, 129, 87, 0.08);
+          color: #6C8157;
+        }
+        .editor-block-actions button.danger:hover { background: rgba(124, 42, 60, 0.1); color: #7C2A3C; }
+        .editor-block-actions button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .editor-block-text-wrap { flex: 1; position: relative; }
+        .editor-block-text {
+          width: 100%;
+          padding: 24px 28px;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.08);
+          border-radius: 16px;
+          color: #212E50;
+          font-size: 1.1rem;
+          line-height: 1.75;
+          resize: vertical;
+          min-height: 180px;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .editor-block-text:focus {
+          border-color: rgba(108, 129, 87, 0.4);
+          box-shadow: 0 0 0 3px rgba(108, 129, 87, 0.08);
+        }
+        .editor-block-text::placeholder { color: #aaa; }
+        .editor-ref-btn {
+          position: absolute;
+          bottom: 12px;
+          right: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          background: rgba(108, 129, 87, 0.1);
+          border: none;
+          border-radius: 10px;
+          color: #6C8157;
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+        .editor-ref-btn:hover { background: rgba(108, 129, 87, 0.2); }
+        .editor-block-image {
+          flex: 1;
+          padding: 24px;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.08);
+          border-radius: 16px;
+        }
+        .editor-block-image img {
+          max-width: 100%;
+          max-height: 400px;
+          object-fit: contain;
+          border-radius: 12px;
+          display: block;
           margin-bottom: 16px;
         }
-        .article-form label {
-          display: block;
-          color: rgba(248,248,240,0.9);
-          font-size: 0.9rem;
-          margin-bottom: 6px;
-        }
-        .article-form input,
-        .article-form select,
-        .article-form textarea {
+        .editor-block-caption {
           width: 100%;
-          padding: 10px 14px;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.25);
+          padding: 12px 16px;
+          background: rgba(249, 246, 240, 0.8);
+          border: 1px solid rgba(33, 46, 80, 0.08);
           border-radius: 10px;
-          color: #F8F8F0;
-          font-size: 1rem;
+          color: #5a6578;
+          font-size: 0.95rem;
         }
-        .article-form textarea { min-height: 120px; resize: vertical; }
+        .editor-add-img-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          width: 100%;
+          padding: 48px 24px;
+          background: rgba(108, 129, 87, 0.06);
+          border: 1px dashed rgba(108, 129, 87, 0.4);
+          border-radius: 12px;
+          color: #6C8157;
+          font-size: 1rem;
+          cursor: pointer;
+        }
+        .editor-add-img-btn:hover { background: rgba(108, 129, 87, 0.12); }
+        .editor-blocks-add {
+          display: flex;
+          gap: 12px;
+          margin-top: 24px;
+          flex-wrap: wrap;
+        }
+        .editor-add-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 14px 24px;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.12);
+          border-radius: 12px;
+          color: #5a6578;
+          font-size: 1rem;
+          cursor: pointer;
+        }
+        .editor-add-btn:hover {
+          background: rgba(108, 129, 87, 0.06);
+          color: #6C8157;
+          border-color: rgba(108, 129, 87, 0.3);
+        }
+        .editor-sources {
+          padding-top: 40px;
+          border-top: 1px solid rgba(33, 46, 80, 0.08);
+        }
+        .editor-sources h4 {
+          font-size: 1.1rem;
+          color: #212E50;
+          margin-bottom: 20px;
+        }
+        .editor-source-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .editor-source-num {
+          flex-shrink: 0;
+          font-weight: 600;
+          color: #6C8157;
+          min-width: 36px;
+        }
+        .editor-source-input {
+          flex: 1;
+          padding: 12px 18px;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.1);
+          border-radius: 12px;
+          color: #212E50;
+          font-size: 0.95rem;
+        }
+        .editor-source-del {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+          border: 1px solid rgba(33, 46, 80, 0.1);
+          border-radius: 10px;
+          color: #999;
+          cursor: pointer;
+        }
+        .editor-source-del:hover { color: #7C2A3C; }
+        .editor-add-source-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          margin-top: 8px;
+          background: #fff;
+          border: 1px dashed rgba(108, 129, 87, 0.4);
+          border-radius: 12px;
+          color: #6C8157;
+          font-size: 0.95rem;
+          cursor: pointer;
+        }
+        .editor-add-source-btn:hover { background: rgba(108,129,87,0.06); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-row .flex-2 { grid-column: span 1; }
-        .cover-zone { margin-top: 8px; }
         .btn-upload {
           display: inline-flex;
           align-items: center;
@@ -1658,9 +1947,9 @@ export default function Dashboard() {
         }
         .cover-preview img {
           max-width: 100%;
-          max-height: 200px;
+          max-height: 280px;
           border-radius: 10px;
-          object-fit: cover;
+          object-fit: contain;
         }
         .cover-preview span {
           display: block;
@@ -1679,9 +1968,10 @@ export default function Dashboard() {
         }
         .thumb-wrap img {
           width: 100%;
-          height: 70px;
-          object-fit: cover;
+          height: 90px;
+          object-fit: contain;
           border-radius: 8px;
+          background: rgba(0,0,0,0.2);
         }
         .set-cover, .insert-in-content {
           display: block;
@@ -1758,6 +2048,76 @@ export default function Dashboard() {
         .block-text::placeholder {
           color: rgba(248,248,240,0.5);
         }
+        .block-toolbar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 8px;
+        }
+        .toolbar-hint {
+          font-size: 0.8rem;
+          color: rgba(248,248,240,0.6);
+        }
+        .btn-toolbar {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: rgba(124,42,60,0.3);
+          border: 1px solid rgba(199,161,30,0.4);
+          border-radius: 8px;
+          color: #F1B2C8;
+          font-size: 0.85rem;
+          cursor: pointer;
+        }
+        .btn-toolbar:hover {
+          background: rgba(124,42,60,0.45);
+        }
+        .sources-hint {
+          font-size: 0.85rem;
+          color: rgba(248,248,240,0.6);
+          margin-bottom: 12px;
+        }
+        .sources-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .source-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .source-num {
+          flex-shrink: 0;
+          font-weight: 700;
+          color: #C7A11E;
+          min-width: 32px;
+        }
+        .source-input {
+          flex: 1;
+          padding: 10px 14px;
+          background: rgba(248,248,240,0.08);
+          border: 1px solid rgba(199,161,30,0.25);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 0.95rem;
+        }
+        .btn-add-source {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+          background: rgba(108,129,87,0.2);
+          border: 1px dashed rgba(199,161,30,0.4);
+          border-radius: 10px;
+          color: #F8F8F0;
+          font-size: 0.9rem;
+          cursor: pointer;
+        }
+        .btn-add-source:hover {
+          background: rgba(108,129,87,0.3);
+        }
         .block-image-wrap {
           flex: 1;
           display: flex;
@@ -1766,7 +2126,9 @@ export default function Dashboard() {
         }
         .block-image-preview {
           max-width: 100%;
-          max-height: 200px;
+          max-height: 320px;
+          width: auto;
+          height: auto;
           object-fit: contain;
           border-radius: 8px;
         }
@@ -1806,6 +2168,13 @@ export default function Dashboard() {
         @media (max-width: 600px) {
           .form-row { grid-template-columns: 1fr; }
           .article-card { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+          .article-editor-form { padding: 24px 20px 60px; }
+          .editor-title { font-size: 1.75rem; }
+          .editor-header { flex-direction: column; align-items: flex-start; }
+          .editor-block { flex-direction: column; }
+          .editor-block-actions { flex-direction: row; }
         }
       `}</style>
     </>
