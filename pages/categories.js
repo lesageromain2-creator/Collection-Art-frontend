@@ -16,7 +16,7 @@ export default function Categories() {
   
   // États de base
   const [settings, setSettings] = useState({
-    site_name: "Le Gourmet Parisien",
+    site_name: "Collection Aur'art",
     show_prices: "1",
     show_allergens: "1"
   });

@@ -204,7 +204,7 @@ export default function MenuDetail() {
   return (
     <>
       <Head>
-        <title>{menu.title} - {settings.site_name || 'Restaurant'}</title>
+        <title>{menu.title} - {settings.site_name || "Collection Aur'art"}</title>
       </Head>
 
       <Header settings={settings} />

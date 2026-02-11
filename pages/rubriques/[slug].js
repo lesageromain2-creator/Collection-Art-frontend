@@ -23,7 +23,7 @@ const RUBRIQUES_IMAGES = {
   'fil-oeuvres': '/images/au fil des oeuvres.png',
   'art-contemporain': '/images/art contempo.jpg.jpeg',
   'tribunal-arts': '/images/tribunal des arts.jpeg',
-  'marche-art': '/images/marche-art.jpg',
+  'marche-art': '/images/marche.jpeg',
 };
 
 const rubriquesConfig = {
@@ -151,7 +151,6 @@ export default function RubriquePage() {
                   priority
                   sizes="100vw"
                   onError={() => setHeroImageError(true)}
-                  unoptimized={imageSrc?.includes('marche-art')}
                 />
                 <div
                   className="absolute inset-0"
@@ -191,7 +190,7 @@ export default function RubriquePage() {
           </section>
 
           {/* Contenu */}
-          <section className="mx-auto max-w-4xl px-6 -mt-16 relative z-10">
+          <section className="mx-auto max-w-4xl px-6 mt-6 md:mt-8 relative z-10">
             <div className="bg-white rounded-2xl shadow-xl border border-navy/5 p-8 md:p-12">
               <p className="text-lg md:text-xl text-gris leading-relaxed mb-6">
                 {rubrique.description}
@@ -219,6 +218,14 @@ export default function RubriquePage() {
                   >
                     <div className="card-frame">
                       <div className="card-mat">
+                        <span
+                          className="card-rubrique-label"
+                          style={{
+                            color: rubrique.hex,
+                          }}
+                        >
+                          {rubrique.title}
+                        </span>
                         <div className="card-cover">
                           {article.featured_image_url ? (
                             <img
@@ -231,15 +238,6 @@ export default function RubriquePage() {
                               <Icon size={56} />
                             </div>
                           )}
-                          <span
-                            className="card-badge"
-                            style={{
-                              backgroundColor: rubrique.hex + '22',
-                              color: rubrique.hex,
-                            }}
-                          >
-                            {rubrique.title}
-                          </span>
                         </div>
                         <div className="card-body">
                           <h2 className="card-title">{article.title}</h2>
@@ -307,7 +305,7 @@ export default function RubriquePage() {
         <Footer settings={settings} />
 
         <style jsx>{`
-          .rubrique-page { background: #F8F8F0; }
+          .rubrique-page { background: #F9F6F0; }
           .rubrique-feed .feed-loading {
             text-align: center;
             padding: 64px 20px;
@@ -338,36 +336,40 @@ export default function RubriquePage() {
             transform: translateY(-6px);
           }
           .rubrique-feed .card-frame {
-            background: linear-gradient(145deg, #fff 0%, #fafaf8 100%);
+            background: #F9F6F0;
             border: none;
             border-radius: 12px;
             padding: 0;
-            box-shadow: 0 4px 20px rgba(33, 46, 80, 0.08),
-                        0 12px 40px rgba(33, 46, 80, 0.06);
-            position: relative;
+            box-shadow: 0 2px 12px rgba(33, 46, 80, 0.06);
             overflow: hidden;
             transition: box-shadow 0.35s ease;
           }
           .rubrique-feed .article-card:hover .card-frame {
-            box-shadow: 0 8px 28px rgba(33, 46, 80, 0.12),
-                        0 20px 56px rgba(33, 46, 80, 0.1);
+            box-shadow: 0 4px 20px rgba(33, 46, 80, 0.1);
           }
           .rubrique-feed .card-mat {
-            background: #F8F8F0;
+            background: #F9F6F0;
             border-radius: 12px;
             overflow: hidden;
             border: none;
           }
+          .rubrique-feed .card-rubrique-label {
+            display: block;
+            padding: 8px 16px 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+          }
           .rubrique-feed .card-cover {
             position: relative;
             aspect-ratio: 16/10;
-            background: #212E50;
+            background: #F9F6F0;
             overflow: hidden;
           }
           .rubrique-feed .card-cover-img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             transition: transform 0.4s ease;
           }
           .rubrique-feed .article-card:hover .card-cover-img {
@@ -380,16 +382,6 @@ export default function RubriquePage() {
             align-items: center;
             justify-content: center;
             color: rgba(248, 248, 240, 0.35);
-          }
-          .rubrique-feed .card-badge {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            padding: 8px 14px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.02em;
           }
           .rubrique-feed .card-body {
             padding: 24px 28px 20px;

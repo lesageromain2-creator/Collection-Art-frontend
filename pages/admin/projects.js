@@ -91,7 +91,7 @@ export default function AdminProjects() {
   return (
     <>
       <Head>
-        <title>Gestion Projets - Admin LE SAGE DEV</title>
+        <title>Gestion Projets - Admin Collection Aur'art</title>
       </Head>
 
       <div className="admin-layout">

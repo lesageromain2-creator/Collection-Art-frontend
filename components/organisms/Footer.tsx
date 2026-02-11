@@ -45,20 +45,20 @@ const Footer: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">LS</span>
+                <span className="text-white font-bold text-xl">CA</span>
               </div>
-              <span className="text-xl font-bold text-white">Le Sage Dev</span>
+              <span className="text-xl font-bold text-white">Collection Aur&apos;art</span>
             </div>
             <p className="text-sm mb-4">
               Votre partenaire de confiance pour tous vos projets de développement web et mobile.
             </p>
             <div className="space-y-2">
               <a
-                href="mailto:contact@lesagedev.com"
+                href="mailto:collection.aurart@gmail.com"
                 className="flex items-center text-sm hover:text-primary transition-colors"
               >
                 <Mail className="w-4 h-4 mr-2" />
-                contact@lesagedev.com
+                collection.aurart@gmail.com
               </a>
               <a
                 href="tel:+33123456789"
@@ -130,7 +130,7 @@ const Footer: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-sm">
-              © {currentYear} Le Sage Dev. Tous droits réservés.
+              © {currentYear} Collection Aur&apos;art. Tous droits réservés.
             </p>
 
             {/* Social Links */}

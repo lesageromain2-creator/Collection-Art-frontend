@@ -11,7 +11,7 @@ export default function Login() {
   const router = useRouter();
   const { redirect, message } = router.query; // 🔥 Ajout de 'message'
   const [settings, setSettings] = useState({
-    site_name: 'LE SAGE' // Valeur par défaut
+    site_name: "Collection Aur'art"
   });
   const [formData, setFormData] = useState({
     email: '',
@@ -140,7 +140,7 @@ export default function Login() {
   return (
     <>
       <Head>
-        <title>Connexion - {settings.site_name || 'LE SAGE'}</title>
+        <title>Connexion - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 

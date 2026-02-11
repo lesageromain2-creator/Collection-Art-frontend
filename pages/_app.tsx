@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { useEffect } from 'react';
 import type { AppProps } from 'next/app';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import CookieBanner from '@/components/CookieBanner';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <Component {...pageProps} />
+      <CookieBanner />
       <ToastContainer
         position="top-right"
         autoClose={3000}

@@ -4,13 +4,13 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 
 const demoSettings = {
-  site_name: 'LE SAGE',
+  site_name: "Collection Aur'art",
   site_description:
     'Création de sites web professionnels sur-mesure — design moderne, performance et maintenance continue.',
   email: 'lesage.pro.dev@gmail.com',
   phone_number: '+33 07 86 18 18 40',
   city: 'Lyon',
-  website: 'www.LeSageDev.com',
+  website: '',
 };
 
 const portfolioProjects = [

@@ -8,13 +8,17 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getArticleBySlug, fetchSettings } from '../../utils/api';
 
-function parseArticleContent(content) {
+function parseArticleContent(content, outSources = {}) {
   if (!content || typeof content !== 'string') return null;
   const t = content.trim();
-  if (!t.startsWith('[')) return null;
+  if (!t.startsWith('[') && !t.startsWith('{')) return null;
   try {
-    const arr = JSON.parse(content);
-    return Array.isArray(arr) ? arr : null;
+    const parsed = JSON.parse(content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.blocks) {
+      outSources.sources = parsed.sources || [];
+      return parsed.blocks;
+    }
+    return Array.isArray(parsed) ? parsed : null;
   } catch (_) {
     return null;
   }
@@ -108,7 +112,7 @@ export default function BlogPostPage() {
   return (
     <>
       <Head>
-        <title>{post.title} - Blog - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>{post.title} - Blog - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content={post.excerpt || post.content?.substring(0, 160)} />
       </Head>
 
@@ -161,24 +165,48 @@ export default function BlogPostPage() {
 
             <div className="post-body">
               {(() => {
-                const blocks = parseArticleContent(post.content);
+                const articleSources = {};
+                const blocks = parseArticleContent(post.content, articleSources);
+                const sourcesList = articleSources.sources || [];
                 if (blocks && blocks.length > 0) {
-                  return blocks.map((block, i) => {
-                    if (block.type === 'text') {
-                      const text = (block.content || '').trim();
-                      if (!text) return null;
-                      return <p key={i} className="post-block-text">{text}</p>;
-                    }
-                    if (block.type === 'image' && block.url) {
-                      return (
-                        <figure key={i} className="post-block-figure">
-                          <img src={block.url} alt={block.alt || ''} />
-                          {block.alt && <figcaption>{block.alt}</figcaption>}
-                        </figure>
-                      );
-                    }
-                    return null;
-                  });
+                  return (
+                    <>
+                      {blocks.map((block, i) => {
+                        if (block.type === 'text') {
+                          const html = (block.content || '').trim();
+                          if (!html) return null;
+                          return (
+                            <div
+                              key={i}
+                              className="post-block-text"
+                              dangerouslySetInnerHTML={{ __html: html }}
+                            />
+                          );
+                        }
+                        if (block.type === 'image' && block.url) {
+                          return (
+                            <figure key={i} className="post-block-figure">
+                              <img src={block.url} alt={block.alt || ''} />
+                              {block.alt && <figcaption>{block.alt}</figcaption>}
+                            </figure>
+                          );
+                        }
+                        return null;
+                      })}
+                      {sourcesList.length > 0 && (
+                        <section className="post-sources">
+                          <h3>Sources</h3>
+                          <ol>
+                            {sourcesList.map((s, idx) => (
+                              <li key={idx} id={`source-${s.num || idx + 1}`}>
+                                {s.text || s}
+                              </li>
+                            ))}
+                          </ol>
+                        </section>
+                      )}
+                    </>
+                  );
                 }
                 return <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />;
               })()}
@@ -204,7 +232,7 @@ export default function BlogPostPage() {
       <style jsx>{`
         .post-page {
           min-height: 100vh;
-          background: #F8F8F0;
+          background: #F9F6F0;
           padding: 120px 20px 80px;
         }
 
@@ -231,18 +259,25 @@ export default function BlogPostPage() {
 
         .post-hero-image {
           width: 100%;
-          height: 400px;
+          min-height: 280px;
+          max-height: 70vh;
           border-radius: 12px;
           overflow: hidden;
           margin-bottom: 40px;
           border: 3px solid #212E50;
           box-shadow: 0 8px 32px rgba(33, 46, 80, 0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f5f3ee;
         }
 
         .post-hero-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
+          max-width: 100%;
+          max-height: 70vh;
+          width: auto;
+          height: auto;
+          object-fit: contain;
         }
 
         .post-article {
@@ -338,6 +373,7 @@ export default function BlogPostPage() {
           color: #212E50;
           font-size: 1.1em;
           line-height: 1.8;
+          text-align: justify;
         }
 
         .post-body :global(h2) {
@@ -386,22 +422,81 @@ export default function BlogPostPage() {
 
         .post-body :global(img) {
           max-width: 100%;
+          width: auto;
+          height: auto;
+          max-height: 70vh;
+          object-fit: contain;
           border-radius: 12px;
           margin: 30px 0;
           border: 1px solid rgba(33, 46, 80, 0.1);
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
         }
 
         .post-block-text {
           margin-bottom: 20px;
+          text-align: justify;
+        }
+        .post-block-text :global(.article-ref) {
+          font-size: 0.75em;
+          vertical-align: super;
+          line-height: 0;
+        }
+        .post-block-text :global(.article-ref a),
+        .post-block-text :global(a.article-ref) {
+          color: #7C2A3C;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .post-block-text :global(.article-ref a:hover) {
+          text-decoration: underline;
+        }
+        .post-sources {
+          margin-top: 48px;
+          padding-top: 32px;
+          border-top: 2px solid rgba(33, 46, 80, 0.12);
+        }
+        .post-sources h3 {
+          font-size: 1.4em;
+          color: #212E50;
+          margin-bottom: 20px;
+        }
+        .post-sources ol {
+          list-style: none;
+          counter-reset: sources;
+          padding: 0;
+        }
+        .post-sources li {
+          counter-increment: sources;
+          margin-bottom: 12px;
+          padding-left: 2em;
+          position: relative;
+          font-size: 0.95em;
+          color: #212E50;
+          line-height: 1.6;
+        }
+        .post-sources li::before {
+          content: counter(sources) '.';
+          position: absolute;
+          left: 0;
+          font-weight: 700;
+          color: #7C2A3C;
         }
 
         .post-block-figure {
           margin: 24px 0;
+          text-align: center;
         }
         .post-block-figure img {
           max-width: 100%;
+          width: auto;
+          height: auto;
+          max-height: 70vh;
+          object-fit: contain;
           border-radius: 12px;
           display: block;
+          margin: 0 auto;
           border: 1px solid rgba(33, 46, 80, 0.1);
         }
         .post-block-figure figcaption {
@@ -453,7 +548,7 @@ export default function BlogPostPage() {
           }
 
           .post-hero-image {
-            height: 250px;
+            min-height: 200px;
           }
 
           .post-body {

@@ -1,4 +1,4 @@
-// frontend/pages/reservation.js - Page Réservation LE SAGE
+// frontend/pages/reservation.js - Page Réservation Collection Aur'art
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -144,7 +144,7 @@ export default function Reservation() {
     return (
       <>
         <Head>
-          <title>Rendez-vous confirmé - {settings.site_name || 'LE SAGE'}</title>
+          <title>Rendez-vous confirmé - {settings.site_name || "Collection Aur'art"}</title>
         </Head>
 
         <Header settings={settings} />
@@ -414,7 +414,7 @@ export default function Reservation() {
   return (
     <>
       <Head>
-        <title>Prendre rendez-vous - {settings.site_name || 'LE SAGE'}</title>
+        <title>Prendre rendez-vous - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content="Réservez une consultation gratuite pour discuter de votre projet web" />
       </Head>
 

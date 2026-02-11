@@ -46,7 +46,7 @@ export default function TestimonialsPage() {
   return (
     <>
       <Head>
-        <title>Témoignages Clients - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>Témoignages Clients - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content="Découvrez ce que nos clients pensent de nos services." />
       </Head>
 

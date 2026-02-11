@@ -117,7 +117,7 @@ export default function AdminMessages() {
   return (
     <>
       <Head>
-        <title>Gestion Messages - Admin LE SAGE DEV</title>
+        <title>Gestion Messages - Admin Collection Aur'art</title>
       </Head>
 
       <div className="admin-layout">

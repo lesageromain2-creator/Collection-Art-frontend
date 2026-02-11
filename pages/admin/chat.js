@@ -223,7 +223,7 @@ export default function AdminChat() {
   return (
     <>
       <Head>
-        <title>Chat - Admin LE SAGE DEV</title>
+        <title>Chat - Admin Collection Aur'art</title>
       </Head>
 
       <div className="admin-layout">

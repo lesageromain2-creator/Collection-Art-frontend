@@ -3,11 +3,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Scale, TrendingUp, Palette, Sparkles } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-const HermesSection = dynamic(() => import('../components/HermesSection'), { ssr: false });
+// Statue 3D conservée dans les fichiers HermesSection.tsx et HermesScene.tsx mais non affichée.
 
 // Mapping rubriques → images (dossier public/images)
 const RUBRIQUES_IMAGES = {
@@ -15,7 +14,7 @@ const RUBRIQUES_IMAGES = {
   'fil-oeuvres': '/images/au fil des oeuvres.png',
   'art-contemporain': '/images/art contempo.jpg.jpeg',
   'tribunal-arts': '/images/tribunal des arts.jpeg',
-  'marche-art': '/images/marche-art.jpg',
+  'marche-art': '/images/marche.jpeg',
 };
 
 const rubriques = [
@@ -88,55 +87,268 @@ export default function Home() {
       <div className="min-h-screen bg-creme">
         <Header settings={demoSettings} />
 
-        {/* Image d'accueil — logo centré, animation d'entrée artistique */}
-        <section
-          className="relative min-h-screen w-full flex items-center justify-center overflow-hidden"
-          style={{
-            paddingTop: '0.5rem',
-            background: 'linear-gradient(165deg, #15182a 0%, #1a1f38 35%, #212E50 70%, #161b2e 100%)',
-          }}
+        {/* Menu rubriques — collé sous le header bleu */}
+        <nav
+          className="sticky z-40 nav-rubriques"
+          aria-label="Rubriques"
         >
-          <div
-            className="logo-hero-reveal relative aspect-square flex items-center justify-center"
-            style={{ width: 'min(100vw, calc(100vh - 1rem))' }}
-          >
-            <Image
-              src="/images/logo avec fond.png"
-              alt="Collection Aur'art"
-              fill
-              className="object-contain object-center"
-              priority
-              sizes="100vw"
-            />
+          <div className="max-w-6xl mx-auto px-6 py-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:gap-x-5">
+              {rubriques.map((rubrique) => (
+                <Link
+                  key={rubrique.id}
+                  href={`/rubriques/${rubrique.id}`}
+                  className="nav-rubriques-link"
+                >
+                  {rubrique.title}
+                </Link>
+              ))}
+              <Link
+                href="/rubriques"
+                className="nav-rubriques-link nav-rubriques-link--all"
+              >
+                Toutes les rubriques
+              </Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero d'accueil — palette officielle : crème, olive, bordeaux, or, navy */}
+        <section className="hero-welcome">
+          <div className="hero-welcome-bg">
+            <div className="hero-orb hero-orb--olive" aria-hidden />
+            <div className="hero-orb hero-orb--burgundy" aria-hidden />
+            <div className="hero-orb hero-orb--gold" aria-hidden />
+            <div className="hero-orb hero-orb--navy" aria-hidden />
+          </div>
+          <div className="hero-welcome-inner">
+            <div className="hero-logo-frame">
+              <div className="hero-logo-border hero-logo-border--1" />
+              <div className="hero-logo-border hero-logo-border--2" />
+              <div className="hero-logo-wrap logo-hero-reveal">
+                <Image
+                  src="/images/logo final.PNG"
+                  alt="Collection Aur'art"
+                  fill
+                  className="object-contain object-center"
+                  priority
+                  sizes="(max-width: 768px) 90vw, min(70vmin, 520px)"
+                />
+              </div>
+            </div>
+            <p className="hero-subtitle">Esquisses de l&apos;Art & son marché</p>
           </div>
         </section>
 
-        <style jsx global>{`
+        <style jsx>{`
+          .hero-welcome {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #F9F6F0;
+          }
+          .hero-welcome-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+          .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.12;
+            animation: heroOrbFloat 25s ease-in-out infinite;
+          }
+          .hero-orb--olive {
+            width: 400px;
+            height: 400px;
+            background: #6C8157;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+          }
+          .hero-orb--burgundy {
+            width: 350px;
+            height: 350px;
+            background: #7C2A3C;
+            top: 60%;
+            right: 10%;
+            animation-delay: -6s;
+          }
+          .hero-orb--gold {
+            width: 300px;
+            height: 300px;
+            background: #C7A11E;
+            bottom: 15%;
+            left: 15%;
+            animation-delay: -12s;
+          }
+          .hero-orb--navy {
+            width: 320px;
+            height: 320px;
+            background: #212E50;
+            top: 20%;
+            right: 20%;
+            animation-delay: -18s;
+          }
+          @keyframes heroOrbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -30px) scale(1.05); }
+            50% { transform: translate(-15px, 20px) scale(0.98); }
+            75% { transform: translate(25px, 15px) scale(1.02); }
+          }
+          .hero-welcome-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem 3rem;
+            text-align: center;
+          }
+          .nav-rubriques {
+            top: calc(5px + 88px);
+            margin-top: calc(5px + 88px);
+            background: linear-gradient(180deg, #F5C6D2 0%, #f0b8c6 100%);
+            box-shadow: 0 2px 20px rgba(124, 42, 60, 0.08);
+            border-top: 1px solid rgba(124, 42, 60, 0.06);
+          }
+          @media (min-width: 768px) {
+            .nav-rubriques {
+              top: calc(5px + 104px);
+              margin-top: calc(5px + 104px);
+            }
+          }
+          .nav-rubriques-link {
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            color: #212E50;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+          }
+          .nav-rubriques-link::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 2px;
+            width: 0;
+            height: 2px;
+            background: #7C2A3C;
+            border-radius: 2px;
+            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), left 0.25s ease;
+          }
+          .nav-rubriques-link:hover {
+            background: #7C2A3C;
+            color: #F9F6F0;
+            transform: translateY(-1px);
+          }
+          .nav-rubriques-link:hover::after {
+            width: 70%;
+            left: 15%;
+            background: #F9F6F0;
+          }
+          .nav-rubriques-link--all {
+            font-weight: 600;
+            color: #1A2B64;
+          }
+          .nav-rubriques-link--all:hover {
+            background: #1A2B64;
+            color: #F9F6F0;
+          }
+          .nav-rubriques-link--all:hover::after {
+            background: #C7A11E;
+          }
+          .hero-logo-frame {
+            position: relative;
+            width: min(65vw, min(48vmin, 380px));
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .hero-logo-border {
+            position: absolute;
+            border-radius: 24px;
+            border: 2px solid;
+            pointer-events: none;
+          }
+          .hero-logo-border--1 {
+            inset: -10px;
+            border-color: rgba(108, 129, 87, 0.35);
+            animation: heroBorderPulse 4s ease-in-out infinite;
+          }
+          .hero-logo-border--2 {
+            inset: -20px;
+            border-color: rgba(33, 46, 80, 0.2);
+            animation: heroBorderPulse 4s ease-in-out infinite 0.5s;
+          }
+          .hero-logo-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #F9F6F0;
+            box-shadow: 0 8px 32px rgba(33, 46, 80, 0.08);
+          }
+          @keyframes heroBorderPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+          }
+          .logo-hero-reveal {
+            opacity: 0;
+            transform: scale(0.85);
+            animation: logoHeroReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+          }
           @keyframes logoHeroReveal {
             0% {
               opacity: 0;
-              transform: scale(0.72);
+              transform: scale(0.85);
             }
             100% {
               opacity: 1;
               transform: scale(1);
             }
           }
-          .logo-hero-reveal {
-            animation: logoHeroReveal 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          .hero-subtitle {
+            margin-top: 1.5rem;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.125rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #212E50;
+          }
+          @media (min-width: 768px) {
+            .hero-subtitle {
+              font-size: 1.25rem;
+              letter-spacing: 0.25em;
+              margin-top: 2rem;
+            }
           }
         `}</style>
 
-        {/* Statue 3D + titre + contenu */}
         <main id="main-content" className="relative z-10">
-          <HermesSection rubriques={rubriques}>
-          {/* Section présentation */}
+          {/* Section présentation — 5 couleurs identité */}
           <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-24 pb-16 px-6 bg-creme">
+            <div className="absolute top-0 left-0 right-0 h-1.5 flex" aria-hidden>
+              <span className="flex-1 bg-olive" />
+              <span className="flex-1 bg-burgundy" />
+              <span className="flex-1 bg-gold" />
+              <span className="flex-1 bg-navy" />
+            </div>
             <div className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <h1 className="font-heading text-4xl md:text-6xl font-bold text-navy mb-4 leading-tight">
                 Collection Aur'art
               </h1>
-              <p className="text-xl md:text-2xl text-burgundy/90 font-light tracking-wide mb-6">
+              <p className="text-xl md:text-2xl font-light tracking-wide mb-6" style={{ color: '#7C2A3C' }}>
                 Esquisses de l'Art & son marché
               </p>
               <p className="text-base md:text-lg text-gris max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -145,14 +357,15 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link
                   href="/articles"
-                  className="group inline-flex items-center justify-center gap-2 bg-primary-gradient text-creme px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  className="group inline-flex items-center justify-center gap-2 text-navy px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  style={{ backgroundColor: '#F5C6D2' }}
                 >
                   Découvrir nos articles
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   href="/about"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-navy/30 text-navy px-8 py-3 rounded-full font-medium hover:border-burgundy hover:text-burgundy transition-all"
+                  className="inline-flex items-center justify-center gap-2 border-2 border-navy text-navy px-8 py-3 rounded-full font-medium hover:bg-navy hover:text-creme transition-all"
                 >
                   Notre équipe
                 </Link>
@@ -161,13 +374,18 @@ export default function Home() {
           </section>
 
           {/* PRÉSENTATION DE L'ASSOCIATION */}
-          <section className="py-20 md:py-32 px-6 bg-white">
+          <section className="py-20 md:py-32 px-6 bg-creme">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-16">
                 <h2 className="font-heading text-3xl md:text-5xl font-bold text-navy mb-6">
                   Notre mission
                 </h2>
-                <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full" />
+                <div className="w-32 h-1.5 flex mx-auto rounded-full overflow-hidden">
+                  <span className="flex-1 bg-olive" />
+                  <span className="flex-1 bg-burgundy" />
+                  <span className="flex-1 bg-gold" />
+                  <span className="flex-1 bg-navy" />
+                </div>
               </div>
               <div className="space-y-6 text-justify">
                 <p className="text-base md:text-lg text-gris leading-relaxed">
@@ -196,7 +414,12 @@ export default function Home() {
                 <p className="text-lg text-gris max-w-2xl mx-auto">
                   Parcourez nos thématiques artistiques et découvrez nos analyses approfondies
                 </p>
-                <div className="w-24 h-1 bg-primary-gradient mx-auto rounded-full mt-6" />
+                <div className="w-32 h-1.5 flex mx-auto rounded-full overflow-hidden mt-6">
+                  <span className="flex-1 bg-olive" />
+                  <span className="flex-1 bg-burgundy" />
+                  <span className="flex-1 bg-gold" />
+                  <span className="flex-1 bg-navy" />
+                </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
@@ -207,7 +430,7 @@ export default function Home() {
                     <Link
                       key={rubrique.id}
                       href={`/rubriques/${rubrique.id}`}
-                      className="group block bg-white rounded-2xl overflow-hidden shadow-sm border border-navy/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      className="group block bg-creme rounded-2xl overflow-hidden shadow-md border border-navy/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                     >
                       <div className="relative h-48 md:h-56 overflow-hidden">
                         {imageSrc ? (
@@ -238,11 +461,11 @@ export default function Home() {
                           </h3>
                         </div>
                       </div>
-                      <div className="p-6">
+                      <div className="p-6 bg-creme border-t border-navy/5">
                         <p className="text-gris leading-relaxed mb-4 line-clamp-2">
                           {rubrique.description}
                         </p>
-                        <div className="inline-flex items-center gap-2 text-burgundy font-medium text-sm group-hover:gap-3 transition-all">
+                        <div className="inline-flex items-center gap-2 font-medium text-sm group-hover:gap-3 transition-all" style={{ color: '#7C2A3C' }}>
                           Découvrir
                           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </div>
@@ -264,11 +487,17 @@ export default function Home() {
             </div>
           </section>
 
-          {/* SECTION CTA */}
-          <section className="py-20 md:py-32 px-6 bg-white">
-            <div className="max-w-4xl mx-auto text-center">
+          {/* SECTION CTA — 5 couleurs identité */}
+          <section className="py-20 md:py-32 px-6 bg-creme relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1.5 flex" aria-hidden>
+              <span className="flex-1 bg-olive" />
+              <span className="flex-1 bg-burgundy" />
+              <span className="flex-1 bg-gold" />
+              <span className="flex-1 bg-navy" />
+            </div>
+            <div className="max-w-4xl mx-auto text-center relative">
               <div className="mb-8">
-                <div className="inline-flex h-16 w-16 rounded-full bg-primary-gradient items-center justify-center shadow-lg">
+                <div className="inline-flex h-16 w-16 rounded-full items-center justify-center shadow-lg overflow-hidden" style={{ background: 'linear-gradient(135deg, #6C8157 0%, #7C2A3C 33%, #C7A11E 66%, #212E50 100%)' }}>
                   <BookOpen className="h-8 w-8 text-creme" />
                 </div>
               </div>
@@ -281,21 +510,21 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/articles"
-                  className="inline-flex items-center justify-center gap-2 bg-primary-gradient text-creme px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 text-navy px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  style={{ backgroundColor: '#F5C6D2' }}
                 >
                   Lire nos articles
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-navy/20 text-navy px-8 py-3 rounded-full font-medium hover:border-burgundy hover:text-burgundy transition-all"
+                  className="inline-flex items-center justify-center gap-2 border-2 border-navy text-navy px-8 py-3 rounded-full font-medium hover:bg-navy hover:text-creme transition-all"
                 >
                   Nous contacter
                 </Link>
               </div>
             </div>
           </section>
-          </HermesSection>
         </main>
 
         <Footer settings={demoSettings} />

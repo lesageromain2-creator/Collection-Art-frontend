@@ -128,7 +128,7 @@ export default function Favorites() {
   return (
     <>
       <Head>
-        <title>Mes Favoris - {settings.site_name || 'Restaurant'}</title>
+        <title>Mes Favoris - {settings.site_name || "Collection Aur'art"}</title>
       </Head>
 
       <Header settings={settings} />

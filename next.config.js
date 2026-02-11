@@ -28,8 +28,6 @@ const nextConfig = {
     return {
       beforeFiles: [
         { source: '/models/hermes.glb', destination: '/model%203d/hermes/source/Angel.glb' },
-        // Image avec apostrophe dans le nom → URL sans apostrophe
-        { source: '/images/marche-art.jpg', destination: '/images/Marché de l\'art.jpg.jpeg' },
       ],
     };
   },

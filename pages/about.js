@@ -148,37 +148,40 @@ export default function AboutPage({ initialMembers = [], initialSettings = {} })
                       key={member.id}
                       className="bg-white rounded-2xl overflow-hidden shadow-sm border border-anthracite/5 hover:shadow-lg transition-all duration-300"
                     >
-                      <div className="grid md:grid-cols-[200px_1fr] gap-8 p-8">
-                        {/* Photo */}
-                        <div className="flex justify-center md:justify-start">
-                          <div className="relative">
+                      <div className="flex flex-col md:flex-row md:items-stretch">
+                        {/* Photo + nom + poste — bloc compact */}
+                        <div className="md:w-56 flex-shrink-0 p-6 md:py-8 md:pl-8 flex flex-col items-center md:items-start border-b md:border-b-0 md:border-r border-anthracite/5 bg-anthracite/[0.02]">
+                          <div className="mb-3">
                             {member.avatar_url ? (
                               <img
                                 src={member.avatar_url}
                                 alt={name}
-                                className="w-48 h-48 rounded-full object-cover border-4 border-anthracite/5"
+                                className="w-40 h-40 rounded-full object-cover border-4 border-white shadow-md"
                               />
                             ) : (
-                              <div className="w-48 h-48 rounded-full bg-primary-gradient flex items-center justify-center shadow-md">
-                                <span className="text-5xl font-bold text-white font-serif">{initials}</span>
-                              </div>
-                            )}
-                            {member.team_position && (
-                              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white px-4 py-1.5 rounded-full shadow-md border border-anthracite/10">
-                                <span className="text-sm font-semibold text-framboise">{member.team_position}</span>
+                              <div className="w-40 h-40 rounded-full bg-primary-gradient flex items-center justify-center shadow-md">
+                                <span className="text-4xl font-bold text-white font-serif">{initials}</span>
                               </div>
                             )}
                           </div>
-                        </div>
-
-                        {/* Informations */}
-                        <div className="flex flex-col justify-center">
-                          <h3 className="font-heading text-2xl md:text-3xl font-semibold text-anthracite mb-3">
+                          {member.team_position && (
+                            <p className="text-xs font-semibold text-framboise text-center md:text-left mb-2 px-1">
+                              {member.team_position}
+                            </p>
+                          )}
+                          <h3 className="font-heading text-xl md:text-2xl font-semibold text-anthracite text-center md:text-left">
                             {name}
                           </h3>
+                        </div>
 
+                        {/* Description + contact — espace dédié */}
+                        <div className="flex-1 flex flex-col min-w-0 p-6 md:p-8">
                           {member.bio && (
-                            <p className="text-gris leading-relaxed mb-4">{member.bio}</p>
+                            <div className="flex-1 mb-6">
+                              <p className="text-gris text-base md:text-lg leading-relaxed md:leading-loose max-w-2xl">
+                                {member.bio}
+                              </p>
+                            </div>
                           )}
 
                           {/* Contact */}

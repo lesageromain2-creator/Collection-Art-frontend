@@ -154,7 +154,7 @@ export default function Menus() {
   return (
     <>
       <Head>
-        <title>Nos Menus - {settings.site_name || 'Restaurant'}</title>
+        <title>Nos Menus - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content="Découvrez nos menus gastronomiques" />
       </Head>
 

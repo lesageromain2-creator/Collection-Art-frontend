@@ -78,7 +78,7 @@ export default function MesMessages() {
   return (
     <>
       <Head>
-        <title>Mes Messages - LE SAGE DEV</title>
+        <title>Mes Messages - Collection Aur'art</title>
       </Head>
 
       <Header settings={settings} user={user} />
@@ -136,7 +136,7 @@ export default function MesMessages() {
                           <div className="reply-header">
                             <div className="reply-badge">
                               <CheckCircle size={16} />
-                              Réponse de {reply.admin_name || 'LE SAGE DEV'}
+                              Réponse de {reply.admin_name || "Collection Aur'art"}
                             </div>
                             <span className="reply-date">
                               {new Date(reply.created_at).toLocaleDateString('fr-FR', {

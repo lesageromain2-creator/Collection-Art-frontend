@@ -19,6 +19,12 @@ import {
   ChevronDown,
   Search,
   ExternalLink,
+  Bold,
+  Italic,
+  AlignJustify,
+  Type,
+  CornerDownRight,
+  Hash,
 } from 'lucide-react';
 import Link from 'next/link';
 import Header from '../components/Header';
@@ -51,34 +57,42 @@ const slugify = (text) =>
 
 const blockId = () => `b-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
-function parseContentBlocks(content) {
+function parseContentBlocks(content, outSources = {}) {
   if (!content || typeof content !== 'string') return [{ id: blockId(), type: 'text', content: '' }];
   const t = content.trim();
-  if (t.startsWith('[')) {
-    try {
-      const arr = JSON.parse(content);
-      if (Array.isArray(arr) && arr.length > 0)
-        return arr.map((b) => ({
-          id: b.id || blockId(),
-          type: b.type === 'image' ? 'image' : 'text',
-          content: b.content ?? '',
-          url: b.url ?? '',
-          alt: b.alt ?? '',
-        }));
-    } catch (_) {}
-  }
+  try {
+    const parsed = JSON.parse(content);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.blocks) {
+      if (parsed.sources && Array.isArray(parsed.sources)) outSources.sources = parsed.sources;
+      return (parsed.blocks || []).map((b) => ({
+        id: b.id || blockId(),
+        type: b.type === 'image' ? 'image' : 'text',
+        content: b.content ?? '',
+        url: b.url ?? '',
+        alt: b.alt ?? '',
+      }));
+    }
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((b) => ({
+        id: b.id || blockId(),
+        type: b.type === 'image' ? 'image' : 'text',
+        content: b.content ?? '',
+        url: b.url ?? '',
+        alt: b.alt ?? '',
+      }));
+    }
+  } catch (_) {}
   return [{ id: blockId(), type: 'text', content: content }];
 }
 
-function serializeContentBlocks(blocks) {
-  if (!blocks?.length) return '';
-  return JSON.stringify(
-    blocks.map((b) =>
-      b.type === 'image'
-        ? { type: 'image', url: b.url || '', alt: b.alt || '' }
-        : { type: 'text', content: b.content || '' }
-    )
+function serializeContentBlocks(blocks, sources = []) {
+  const blocksJson = (blocks || []).map((b) =>
+    b.type === 'image'
+      ? { type: 'image', url: b.url || '', alt: b.alt || '' }
+      : { type: 'text', content: b.content || '' }
   );
+  if (!blocksJson.length && !sources.length) return '';
+  return JSON.stringify({ blocks: blocksJson, sources: sources.filter((s) => s.text?.trim()) });
 }
 
 export default function Dashboard() {
@@ -106,6 +120,7 @@ export default function Dashboard() {
   });
   const [articleSubmitLoading, setArticleSubmitLoading] = useState(false);
   const [contentBlocks, setContentBlocks] = useState([]);
+  const [sources, setSources] = useState([]);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const fileInputRef = useRef(null);
@@ -141,14 +156,14 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'articles' && user) {
+    if (activeTab === 'articles' && user?.is_team_member) {
       loadArticles();
       getRubriques().then(setRubriques);
     }
     if (activeTab === 'profile') {
       getRubriques().then(setRubriques);
     }
-    if (activeTab === 'team' && user) {
+    if (activeTab === 'team' && user?.is_team_member) {
       setTeamForm({
         team_position: user.team_position || '',
         bio: user.bio || '',
@@ -173,6 +188,9 @@ export default function Dashboard() {
         return;
       }
       setUser(authData.user);
+      if (!authData.user?.is_team_member) {
+        setActiveTab('profile');
+      }
       setSettings(settingsData);
       setProfileForm({
         firstname: authData.user.firstname || '',
@@ -213,6 +231,7 @@ export default function Dashboard() {
       is_featured: false,
     });
     setContentBlocks([{ id: blockId(), type: 'text', content: '' }]);
+    setSources([]);
     setUploadedImages([]);
     setCoverImageUrl('');
     setShowArticleForm(true);
@@ -233,7 +252,9 @@ export default function Dashboard() {
         status: article.status || 'draft',
         is_featured: article.is_featured || false,
       });
-      setContentBlocks(parseContentBlocks(article.content || ''));
+      const outSources = {};
+      setContentBlocks(parseContentBlocks(article.content || '', outSources));
+      setSources(outSources.sources || []);
       setCoverImageUrl(article.featured_image_url || '');
       setUploadedImages([]);
       setShowArticleForm(true);
@@ -267,6 +288,30 @@ export default function Dashboard() {
 
   const addTextBlock = () => {
     setContentBlocks((prev) => [...prev, { id: blockId(), type: 'text', content: '' }]);
+  };
+
+  const addSource = () => {
+    const num = sources.length + 1;
+    setSources((prev) => [...prev, { num, text: '' }]);
+    return num;
+  };
+
+  const updateSource = (idx, text) => {
+    setSources((prev) => prev.map((s, i) => (i === idx ? { ...s, text } : s)));
+  };
+
+  const removeSource = (idx) => {
+    setSources((prev) => prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, num: i + 1 })));
+  };
+
+  const insertRefInBlock = (blockIdRef, num) => {
+    const refHtml = `<sup class="article-ref"><a href="#source-${num}" id="ref-${num}">[${num}]</a></sup>`;
+    setContentBlocks((prev) =>
+      prev.map((b) => {
+        if (b.id !== blockIdRef || b.type !== 'text') return b;
+        return { ...b, content: (b.content || '') + refHtml };
+      })
+    );
   };
 
   const addImageBlock = (url, alt = '') => {
@@ -317,7 +362,7 @@ export default function Dashboard() {
         title: articleForm.title,
         slug: articleForm.slug || slugify(articleForm.title),
         excerpt: articleForm.excerpt,
-        content: serializeContentBlocks(contentBlocks),
+        content: serializeContentBlocks(contentBlocks, sources),
         featured_image_url: coverImageUrl || articleForm.featured_image_url,
         rubrique_id: articleForm.rubrique_id || null,
         status: articleForm.status,
@@ -457,7 +502,7 @@ export default function Dashboard() {
   return (
     <>
       <Head>
-        <title>Espace membre - {settings.site_name || "Collection Aur'Art"}</title>
+        <title>Espace membre - {settings.site_name || "Collection Aur'art"}</title>
       </Head>
       <Header settings={settings} />
       <div className={`dashboard-page ${mounted ? 'mounted' : ''}`}>
@@ -493,13 +538,15 @@ export default function Dashboard() {
               <span className="badge">{user?.role || 'member'}</span>
             </div>
             <nav className="sidebar-nav">
-              <button
-                className={`nav-btn ${activeTab === 'articles' ? 'active' : ''}`}
-                onClick={() => setActiveTab('articles')}
-              >
-                <FileText size={20} />
-                <span>Mes articles</span>
-              </button>
+              {user?.is_team_member && (
+                <button
+                  className={`nav-btn ${activeTab === 'articles' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('articles')}
+                >
+                  <FileText size={20} />
+                  <span>Mes articles</span>
+                </button>
+              )}
               <button
                 className={`nav-btn ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
@@ -507,13 +554,15 @@ export default function Dashboard() {
                 <User size={20} />
                 <span>Mon profil</span>
               </button>
-              <button
-                className={`nav-btn ${activeTab === 'team' ? 'active' : ''}`}
-                onClick={() => setActiveTab('team')}
-              >
-                <Users size={20} />
-                <span>Équipe associative</span>
-              </button>
+              {user?.is_team_member && (
+                <button
+                  className={`nav-btn ${activeTab === 'team' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('team')}
+                >
+                  <Users size={20} />
+                  <span>Équipe associative</span>
+                </button>
+              )}
               <div className="nav-divider" />
               <button className="nav-btn logout" onClick={handleLogout}>
                 <LogOut size={20} />
@@ -523,7 +572,7 @@ export default function Dashboard() {
           </aside>
 
           <main className="main">
-            {activeTab === 'articles' && (
+            {user?.is_team_member && activeTab === 'articles' && (
               <div className="section">
                 <div className="section-head">
                   <h1>Mes articles</h1>
@@ -597,7 +646,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'team' && (
+            {user?.is_team_member && activeTab === 'team' && (
               <div className="section">
                 <h1>Équipe associative</h1>
                 <p className="section-desc">
@@ -722,7 +771,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            {activeTab === 'profile' && (
+            {(activeTab === 'profile' || !user?.is_team_member) && (
               <div className="section">
                 <h1>Mon profil</h1>
 
@@ -1360,6 +1409,9 @@ export default function Dashboard() {
           border-color: rgba(199,161,30,0.35);
         }
         .article-cover {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           width: 120px;
           height: 80px;
           border-radius: 10px;
@@ -1369,7 +1421,7 @@ export default function Dashboard() {
         .article-cover img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
         }
         .no-cover {
           width: 100%;
@@ -1658,9 +1710,9 @@ export default function Dashboard() {
         }
         .cover-preview img {
           max-width: 100%;
-          max-height: 200px;
+          max-height: 280px;
           border-radius: 10px;
-          object-fit: cover;
+          object-fit: contain;
         }
         .cover-preview span {
           display: block;
@@ -1679,9 +1731,10 @@ export default function Dashboard() {
         }
         .thumb-wrap img {
           width: 100%;
-          height: 70px;
-          object-fit: cover;
+          height: 90px;
+          object-fit: contain;
           border-radius: 8px;
+          background: rgba(0,0,0,0.2);
         }
         .set-cover, .insert-in-content {
           display: block;

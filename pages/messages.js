@@ -145,7 +145,7 @@ export default function MessagesPage() {
   return (
     <>
       <Head>
-        <title>Messages - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>Messages - {settings.site_name || "Collection Aur'art"}</title>
       </Head>
 
       <Header settings={settings} />

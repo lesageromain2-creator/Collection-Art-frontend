@@ -8,16 +8,15 @@ const TikTokIcon = ({ className }) => (
   </svg>
 );
 
-export default function Footer({ settings = {} }) {
+const SITE_NAME = "Collection Aur'art";
+const SITE_DESCRIPTION = "Association de passionnés qui questionne, valorise et transmet l'histoire de l'art, le marché de l'art et les enjeux patrimoniaux à travers articles et analyses.";
+const EMAIL = "collection.aurart@gmail.com";
+
+export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const siteName = settings.site_name || "Collection Aur'art";
-  const siteDescription =
-    settings.site_description ||
-    "L'Association de passionnés qui s'engage à valoriser le patrimoine artistique sous toutes ses formes.";
-  const email = settings.email || 'collection.aurart@gmail.com';
 
   return (
-    <footer className="border-t border-navy/10 bg-white">
+    <footer className="border-t border-navy/10 bg-creme">
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
@@ -32,14 +31,14 @@ export default function Footer({ settings = {} }) {
                 />
               </div>
               <div>
-                <p className="font-heading text-lg font-semibold text-navy">{siteName}</p>
+                <p className="font-heading text-lg font-semibold text-navy">{SITE_NAME}</p>
                 <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gris">
                   Esquisses de l'Art & son marché
                 </p>
               </div>
             </div>
 
-            <p className="mt-4 max-w-xl text-sm text-gris leading-relaxed">{siteDescription}</p>
+            <p className="mt-4 max-w-xl text-sm text-gris leading-relaxed">{SITE_DESCRIPTION}</p>
 
             <p className="mt-4 text-xs text-gris italic">
               « L'art n'est pas un luxe réservé à quelques-uns : c'est un patrimoine commun qui façonne notre regard sur le monde. »
@@ -74,9 +73,9 @@ export default function Footer({ settings = {} }) {
                 <Mail className="mt-0.5 h-4 w-4 text-burgundy flex-shrink-0" />
                 <a
                   className="text-sm text-gris hover:text-burgundy transition-colors break-all"
-                  href={`mailto:${email}`}
+                  href={`mailto:${EMAIL}`}
                 >
-                  {email}
+                  {EMAIL}
                 </a>
               </li>
               <li className="pt-2">
@@ -116,8 +115,23 @@ export default function Footer({ settings = {} }) {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-navy/10 pt-6 text-xs text-gris md:flex-row">
-          <p>© {currentYear} {siteName}. Tous droits réservés.</p>
+          <p>© {currentYear} {SITE_NAME}. Tous droits réservés.</p>
           <p className="text-center md:text-right">Association de valorisation du patrimoine artistique</p>
+        </div>
+
+        {/* Mentions légales — informations essentielles */}
+        <div className="mt-8 border-t border-navy/10 pt-6 text-xs text-gris space-y-3">
+          <p className="font-medium text-navy">Mentions légales</p>
+          <p>
+            <strong>{SITE_NAME}</strong> — Association loi 1901. Association à but non lucratif régie par la loi du 1er juillet 1901.
+          </p>
+          <p>
+            Le contenu de ce site (textes, images, logos) est protégé par le droit d'auteur. Toute reproduction est interdite sans autorisation.
+          </p>
+          <p>
+            Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Contact :{' '}
+            <a href={`mailto:${EMAIL}`} className="text-burgundy hover:underline">{EMAIL}</a>
+          </p>
         </div>
       </div>
     </footer>

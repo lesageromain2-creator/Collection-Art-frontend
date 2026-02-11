@@ -156,7 +156,7 @@ export default function Register() {
   return (
     <>
       <Head>
-        <title>Inscription - {settings.site_name || 'LE SAGE'}</title>
+        <title>Inscription - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </Head>
 

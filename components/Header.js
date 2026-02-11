@@ -1,4 +1,4 @@
-// Header – Logo, titre, menu. Fond bleu marine. Menu mobile blanc fixe.
+// Header – Logo, titre, menu. Fond bordeaux (palette). Menu mobile crème.
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -12,12 +12,13 @@ const NAV_ITEMS = [
   { href: '/contact', label: 'Contact' },
 ];
 
+const SITE_NAME = "Collection Aur'art";
+
 export default function Header({ settings = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const router = useRouter();
-  const siteName = settings.site_name || "Collection Aur'art";
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -57,11 +58,13 @@ export default function Header({ settings = {} }) {
 
   return (
     <>
+      {/* Bandeau identité : 5 couleurs exactes crème, olive, bordeaux, or, navy */}
+      <div className="hdr-palette" aria-hidden />
       <header className="hdr" role="banner">
         <div className="hdr-inner">
           <Link href="/" className="hdr-logo-link">
             <span className="hdr-brand">
-              <span className="hdr-title">{siteName}</span>
+              <span className="hdr-title">{SITE_NAME}</span>
               <span className="hdr-subtitle">Esquisses de l&apos;Art & son marché</span>
             </span>
           </Link>
@@ -122,7 +125,7 @@ export default function Header({ settings = {} }) {
         <div className="hdr-drawer-inner">
           <div className="hdr-drawer-head">
             <div className="hdr-drawer-brand">
-              <span className="hdr-drawer-title">{siteName}</span>
+              <span className="hdr-drawer-title">{SITE_NAME}</span>
             </div>
             <button type="button" aria-label="Fermer" onClick={() => setMenuOpen(false)} className="hdr-drawer-close">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -167,29 +170,39 @@ export default function Header({ settings = {} }) {
       </aside>
 
       <style jsx>{`
-        .hdr {
+        .hdr-palette {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
+          z-index: 51;
+          height: 5px;
+          background: linear-gradient(90deg, #F9F6F0 0%, #F9F6F0 20%, #6C8157 20%, #6C8157 40%, #7C2A3C 40%, #7C2A3C 60%, #C7A11E 60%, #C7A11E 80%, #212E50 80%, #212E50 100%);
+        }
+        .hdr {
+          position: fixed;
+          top: 5px;
+          left: 0;
+          right: 0;
           z-index: 50;
-          background: #212E50;
-          color: #F8F8F0;
-          border-bottom: 3px solid #C7A11E;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+          background: #1A2B64;
+          color: #F9F6F0;
+          box-shadow: 0 4px 24px rgba(26,43,100,0.3);
         }
         .hdr-inner {
           max-width: 80rem;
           margin: 0 auto;
-          padding: 0.75rem 1rem 0.75rem 0.5rem;
+          padding: 1.25rem 1rem 1.25rem 0.5rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
+          min-height: 88px;
         }
         @media (min-width: 768px) {
           .hdr-inner {
-            padding: 0.875rem 1.5rem 0.875rem 0.75rem;
+            padding: 1.5rem 1.5rem 1.5rem 0.75rem;
+            min-height: 104px;
           }
         }
 
@@ -199,6 +212,14 @@ export default function Header({ settings = {} }) {
           text-decoration: none;
           color: inherit;
           flex-shrink: 0;
+          padding: 0.35rem 0.5rem;
+          margin: -0.35rem -0.5rem;
+          border-radius: 8px;
+          transition: opacity 0.25s ease, transform 0.2s ease;
+        }
+        .hdr-logo-link:hover {
+          opacity: 0.92;
+          transform: translateY(-1px);
         }
         .hdr-brand {
           display: flex;
@@ -208,25 +229,38 @@ export default function Header({ settings = {} }) {
         }
         .hdr-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1rem;
+          font-size: 1.25rem;
           font-weight: 600;
-          color: #F8F8F0;
+          color: #F9F6F0;
           line-height: 1.2;
         }
         .hdr-subtitle {
-          font-size: 9px;
+          font-size: 11px;
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.2em;
-          color: rgba(248,248,240,0.9);
+          color: rgba(249,246,240,0.92);
+        }
+        @media (min-width: 768px) {
+          .hdr-title {
+            font-size: 1.4rem;
+          }
+          .hdr-subtitle {
+            font-size: 12px;
+          }
         }
 
         .hdr-nav {
           display: none;
           align-items: center;
-          gap: 1.5rem;
-          font-size: 0.9375rem;
+          gap: 1.75rem;
+          font-size: 1.0625rem;
           font-weight: 500;
+        }
+        @media (min-width: 1024px) {
+          .hdr-nav {
+            font-size: 1.125rem;
+          }
         }
         @media (min-width: 768px) {
           .hdr-nav {
@@ -234,19 +268,27 @@ export default function Header({ settings = {} }) {
           }
         }
         .hdr-link {
-          color: #F8F8F0 !important;
-          -webkit-text-fill-color: #F8F8F0 !important;
+          color: #F9F6F0 !important;
+          -webkit-text-fill-color: #F9F6F0 !important;
           text-decoration: none !important;
-          padding: 0.35rem 0;
-          transition: opacity 0.2s;
+          padding: 0.4rem 0.6rem;
+          margin: 0 -0.6rem;
+          border-radius: 6px;
+          transition: color 0.25s ease, background 0.25s ease, transform 0.2s ease;
           font-weight: 600;
+          position: relative;
         }
         .hdr-link:hover {
-          opacity: 0.9;
+          color: #F5C6D2 !important;
+          -webkit-text-fill-color: #F5C6D2 !important;
+          background: rgba(245, 198, 210, 0.25);
+          transform: translateY(-1px);
         }
         .hdr-link--active {
           position: relative;
           font-weight: 700;
+          color: #F5C6D2 !important;
+          -webkit-text-fill-color: #F5C6D2 !important;
         }
         .hdr-link--active::after {
           content: '';
@@ -254,8 +296,8 @@ export default function Header({ settings = {} }) {
           left: 0;
           right: 0;
           bottom: 0;
-          height: 2px;
-          background: #C7A11E;
+          height: 3px;
+          background: #F5C6D2;
           border-radius: 2px;
         }
         .hdr-actions {
@@ -268,30 +310,34 @@ export default function Header({ settings = {} }) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 0.375rem 0.875rem;
-          font-size: 0.8125rem;
+          padding: 0.5rem 1rem;
+          font-size: 0.9375rem;
           font-weight: 600;
           border-radius: 9999px;
           text-decoration: none;
           border: none;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.25s ease;
+        }
+        .hdr-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
         .hdr-btn--admin {
-          background: rgba(199,161,30,0.2);
-          color: #F8F8F0;
-          border: 1px solid rgba(199,161,30,0.5);
+          background: rgba(199,161,30,0.25);
+          color: #F9F6F0;
+          border: 1px solid #C7A11E;
         }
         .hdr-btn--dash {
-          background: rgba(255,255,255,0.15);
-          color: #F8F8F0;
-          border: 1px solid rgba(255,255,255,0.4);
+          background: rgba(249,246,240,0.12);
+          color: #F9F6F0;
+          border: 1px solid rgba(249,246,240,0.35);
         }
         .hdr-btn--out,
         .hdr-btn--in {
-          background: linear-gradient(135deg, #7C2A3C, #212E50);
-          color: #F8F8F0 !important;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          color: #F9F6F0 !important;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.25);
         }
 
         .hdr-burger {
@@ -299,14 +345,14 @@ export default function Header({ settings = {} }) {
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          gap: 5px;
-          width: 44px;
-          height: 44px;
+          gap: 6px;
+          width: 48px;
+          height: 48px;
           padding: 0;
           border: none;
           border-radius: 12px;
-          background: rgba(248,248,240,0.12);
-          color: #F8F8F0;
+          background: rgba(249,246,240,0.1);
+          color: #F9F6F0;
           cursor: pointer;
         }
         @media (min-width: 768px) {
@@ -316,28 +362,28 @@ export default function Header({ settings = {} }) {
         }
         .hdr-burger-line {
           display: block;
-          width: 20px;
-          height: 2px;
+          width: 22px;
+          height: 2.5px;
           border-radius: 2px;
           background: currentColor;
           transition: transform 0.25s, opacity 0.25s;
         }
         .hdr-burger--open .hdr-burger-line:nth-child(1) {
-          transform: translateY(7px) rotate(45deg);
+          transform: translateY(8.5px) rotate(45deg);
         }
         .hdr-burger--open .hdr-burger-line:nth-child(2) {
           opacity: 0;
         }
         .hdr-burger--open .hdr-burger-line:nth-child(3) {
-          transform: translateY(-7px) rotate(-45deg);
+          transform: translateY(-8.5px) rotate(-45deg);
         }
 
         .hdr-overlay {
           position: fixed;
           inset: 0;
           z-index: 60;
-          background: rgba(33,46,80,0.7);
-          backdrop-filter: blur(4px);
+          background: rgba(124,42,60,0.75);
+          backdrop-filter: blur(6px);
         }
         @media (min-width: 768px) {
           .hdr-overlay {
@@ -352,8 +398,8 @@ export default function Header({ settings = {} }) {
           bottom: 0;
           width: min(320px, 88%);
           z-index: 70;
-          background: #ffffff;
-          box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+          background: #F9F6F0;
+          box-shadow: -8px 0 40px rgba(33,46,80,0.2);
           transform: translateX(100%);
           transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
           overflow-y: auto;
@@ -367,7 +413,7 @@ export default function Header({ settings = {} }) {
           }
         }
         .hdr-drawer-inner {
-          padding: 1.5rem 1.25rem;
+          padding: 1.75rem 1.5rem;
           min-height: 100%;
           display: flex;
           flex-direction: column;
@@ -378,7 +424,8 @@ export default function Header({ settings = {} }) {
           justify-content: space-between;
           margin-bottom: 1.5rem;
           padding-bottom: 1rem;
-          border-bottom: 1px solid rgba(33,46,80,0.1);
+          border-bottom: 3px solid transparent;
+          border-image: linear-gradient(90deg, #6C8157, #7C2A3C, #C7A11E, #212E50) 1;
         }
         .hdr-drawer-brand {
           display: flex;
@@ -386,13 +433,13 @@ export default function Header({ settings = {} }) {
         }
         .hdr-drawer-title {
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1.125rem;
+          font-size: 1.35rem;
           font-weight: 600;
           color: #212E50;
         }
         .hdr-drawer-close {
-          width: 40px;
-          height: 40px;
+          width: 44px;
+          height: 44px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -401,10 +448,11 @@ export default function Header({ settings = {} }) {
           background: rgba(33,46,80,0.08);
           color: #212E50;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: background 0.2s, color 0.2s;
         }
         .hdr-drawer-close:hover {
-          background: rgba(33,46,80,0.12);
+          background: #7C2A3C;
+          color: #F9F6F0;
         }
         .hdr-drawer-nav {
           display: flex;
@@ -413,8 +461,8 @@ export default function Header({ settings = {} }) {
         }
         .hdr-drawer-link {
           display: block;
-          padding: 0.875rem 1rem;
-          font-size: 1rem;
+          padding: 1rem 1.125rem;
+          font-size: 1.125rem;
           font-weight: 500;
           color: #212E50;
           text-decoration: none;
@@ -425,14 +473,15 @@ export default function Header({ settings = {} }) {
           background: rgba(33,46,80,0.06);
         }
         .hdr-drawer-link--active {
-          background: rgba(124,42,60,0.1);
+          background: rgba(124,42,60,0.12);
           color: #7C2A3C;
           font-weight: 600;
         }
         .hdr-drawer-footer {
           margin-top: auto;
           padding-top: 1.5rem;
-          border-top: 1px solid rgba(33,46,80,0.1);
+          border-top: 3px solid transparent;
+          border-image: linear-gradient(90deg, #6C8157, #7C2A3C, #C7A11E, #212E50) 1;
         }
         .hdr-drawer-actions {
           display: flex;
@@ -442,8 +491,8 @@ export default function Header({ settings = {} }) {
         .hdr-drawer-btn {
           display: block;
           width: 100%;
-          padding: 0.875rem 1rem;
-          font-size: 0.9375rem;
+          padding: 1rem 1.125rem;
+          font-size: 1.0625rem;
           font-weight: 600;
           text-align: center;
           border-radius: 12px;
@@ -453,14 +502,14 @@ export default function Header({ settings = {} }) {
           transition: all 0.2s;
         }
         .hdr-drawer-btn--pri {
-          background: linear-gradient(135deg, #7C2A3C, #212E50);
-          color: #F8F8F0;
-          box-shadow: 0 4px 12px rgba(33,46,80,0.2);
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          color: #F9F6F0;
+          box-shadow: 0 4px 12px rgba(33,46,80,0.25);
         }
         .hdr-drawer-btn--sec {
           background: rgba(33,46,80,0.06);
           color: #212E50;
-          border: 1px solid rgba(33,46,80,0.15);
+          border: 1px solid #6C8157;
         }
       `}</style>
     </>

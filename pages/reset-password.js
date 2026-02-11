@@ -75,7 +75,7 @@ export default function ResetPassword() {
   return (
     <>
       <Head>
-        <title>Réinitialiser mon mot de passe - LE SAGE DEV</title>
+        <title>Réinitialiser mon mot de passe - Collection Aur'art</title>
       </Head>
 
       <div className="reset-container">

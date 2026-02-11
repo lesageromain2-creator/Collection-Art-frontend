@@ -64,7 +64,7 @@ export default function OffersPage() {
   return (
     <>
       <Head>
-        <title>Nos Offres - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>Nos Offres - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content="Découvrez nos offres de développement web, e-commerce, design et plus encore." />
       </Head>
 

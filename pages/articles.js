@@ -100,6 +100,18 @@ export default function ArticlesPage() {
                     >
                       <div className="card-frame">
                         <div className="card-mat">
+                          {article.rubrique_name && (
+                            <span
+                              className="card-rubrique-label"
+                              style={
+                                article.rubrique_color
+                                  ? { color: article.rubrique_color }
+                                  : {}
+                              }
+                            >
+                              {article.rubrique_name}
+                            </span>
+                          )}
                           <div className="card-cover">
                             {article.featured_image_url ? (
                               <img
@@ -111,18 +123,6 @@ export default function ArticlesPage() {
                               <div className="card-cover-placeholder">
                                 <BookOpen size={56} />
                               </div>
-                            )}
-                            {article.rubrique_name && (
-                              <span
-                                className="card-badge"
-                                style={
-                                  article.rubrique_color
-                                    ? { backgroundColor: article.rubrique_color + '22', color: article.rubrique_color }
-                                    : {}
-                                }
-                              >
-                                {article.rubrique_name}
-                              </span>
                             )}
                           </div>
                           <div className="card-body">
@@ -212,7 +212,7 @@ export default function ArticlesPage() {
       <style jsx>{`
         .articles-page {
           min-height: 100vh;
-          background: #F8F8F0;
+          background: #F9F6F0;
         }
         .articles-main {
           padding-top: 80px;
@@ -287,36 +287,43 @@ export default function ArticlesPage() {
           transform: translateY(-6px);
         }
         .card-frame {
-          background: linear-gradient(145deg, #fff 0%, #fafaf8 100%);
+          background: #F9F6F0;
           border: none;
           border-radius: 12px;
           padding: 0;
-          box-shadow: 0 4px 20px rgba(33, 46, 80, 0.08),
-                      0 12px 40px rgba(33, 46, 80, 0.06);
-          position: relative;
+          box-shadow: 0 2px 12px rgba(33, 46, 80, 0.06);
           overflow: hidden;
           transition: box-shadow 0.35s ease;
         }
         .article-card:hover .card-frame {
-          box-shadow: 0 8px 28px rgba(33, 46, 80, 0.12),
-                      0 20px 56px rgba(33, 46, 80, 0.1);
+          box-shadow: 0 4px 20px rgba(33, 46, 80, 0.1);
         }
         .card-mat {
-          background: #F8F8F0;
+          background: #F9F6F0;
           border-radius: 12px;
           overflow: hidden;
           border: none;
         }
+        .card-rubrique-label {
+          display: block;
+          padding: 8px 16px 6px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+        }
         .card-cover {
           position: relative;
           aspect-ratio: 16/10;
-          background: #212E50;
+          background: #F9F6F0;
           overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
         .card-cover-img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           transition: transform 0.4s ease;
         }
         .article-card:hover .card-cover-img {
@@ -329,18 +336,6 @@ export default function ArticlesPage() {
           align-items: center;
           justify-content: center;
           color: rgba(248, 248, 240, 0.35);
-        }
-        .card-badge {
-          position: absolute;
-          top: 14px;
-          left: 14px;
-          padding: 8px 14px;
-          border-radius: 4px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          background: rgba(124, 42, 60, 0.92);
-          color: #F8F8F0;
-          letter-spacing: 0.02em;
         }
         .card-body {
           padding: 24px 28px 20px;

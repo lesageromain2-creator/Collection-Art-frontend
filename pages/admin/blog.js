@@ -536,7 +536,8 @@ export default function AdminBlogPage() {
           width: 60px;
           height: 60px;
           border-radius: 8px;
-          object-fit: cover;
+          object-fit: contain;
+          background: rgba(0,0,0,0.2);
         }
 
         .post-cell strong {

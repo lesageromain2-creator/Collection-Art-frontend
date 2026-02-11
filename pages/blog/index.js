@@ -57,7 +57,7 @@ export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Blog - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>Blog - {settings.site_name || "Collection Aur'art"}</title>
         <meta name="description" content="Découvrez nos articles sur le développement web, les technologies et les tendances." />
       </Head>
 

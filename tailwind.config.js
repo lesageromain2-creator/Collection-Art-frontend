@@ -9,7 +9,7 @@ module.exports = {
     extend: {
       colors: {
         /* Palette officielle Collection Aur'art */
-        creme: '#F8F8F0',
+        creme: '#F9F6F0',
         olive: '#6C8157',
         burgundy: '#7C2A3C',
         gold: '#C7A11E',
@@ -27,7 +27,7 @@ module.exports = {
         orange: '#C7A11E',
         or: '#C7A11E',
         dark: '#212E50',
-        light: '#F8F8F0',
+        light: '#F9F6F0',
       },
       backgroundImage: {
         'primary-gradient': 'linear-gradient(135deg, #7C2A3C 0%, #212E50 100%)',

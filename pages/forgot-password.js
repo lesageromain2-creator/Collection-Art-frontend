@@ -53,7 +53,7 @@ export default function ForgotPassword() {
   return (
     <>
       <Head>
-        <title>Mot de passe oublié - LE SAGE DEV</title>
+        <title>Mot de passe oublié - Collection Aur'art</title>
       </Head>
 
       <div className="forgot-container">

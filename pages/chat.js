@@ -252,7 +252,7 @@ export default function ChatPage() {
   return (
     <>
       <Head>
-        <title>Messages - {settings.site_name || 'LE SAGE DEV'}</title>
+        <title>Messages - {settings.site_name || "Collection Aur'art"}</title>
       </Head>
 
       <Header user={user} settings={settings} />
@@ -333,7 +333,7 @@ export default function ChatPage() {
                     <h3>
                       {selectedConversation.admin_firstname 
                         ? `${selectedConversation.admin_firstname} ${selectedConversation.admin_lastname}`
-                        : 'Support LE SAGE DEV'}
+                        : 'Support Collection Aur\'art'}
                     </h3>
                     <span className="chat-subject">{selectedConversation.subject}</span>
                   </div>

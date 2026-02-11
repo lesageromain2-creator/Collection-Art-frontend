@@ -12,13 +12,13 @@ import {
 } from 'lucide-react';
 
 const demoSettings = {
-  site_name: 'LE SAGE',
+  site_name: "Collection Aur'art",
   site_description:
     'Création de sites web professionnels sur-mesure — design moderne, performance et maintenance continue.',
   email: 'lesage.pro.dev@gmail.com',
   phone_number: '+33 07 86 18 18 40',
   city: 'Lyon',
-  website: 'www.LeSageDev.com',
+  website: '',
 };
 
 const services = [
@@ -93,10 +93,10 @@ export default function ServicesPage() {
   return (
     <>
       <Head>
-        <title>Services – LE SAGE | Sites vitrines, e-commerce, web apps</title>
+        <title>Services – Collection Aur'art | Sites vitrines, e-commerce, web apps</title>
         <meta
           name="description"
-          content="Découvrez les services LE SAGE : site vitrine, e-commerce, application web, refonte & optimisation, maintenance continue."
+          content="Découvrez les services Collection Aur'art : site vitrine, e-commerce, application web, refonte & optimisation, maintenance continue."
         />
       </Head>
 
@@ -115,7 +115,7 @@ export default function ServicesPage() {
               </span>
             </h1>
             <p className="mt-4 text-sm text-slate-300 md:text-base">
-              LE SAGE accompagne restaurants, commerces et services dans la
+              Collection Aur'art accompagne restaurants, commerces et services dans la
               création de solutions web sur-mesure : design, base de données,
               hébergement, maintenance.
             </p>

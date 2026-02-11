@@ -110,7 +110,7 @@ export default function AdminReservations() {
   return (
     <>
       <Head>
-        <title>Gestion Réservations - Admin LE SAGE DEV</title>
+        <title>Gestion Réservations - Admin Collection Aur'art</title>
       </Head>
 
       <div className="admin-layout">

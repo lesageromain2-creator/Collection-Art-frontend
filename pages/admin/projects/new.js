@@ -187,7 +187,7 @@ export default function NewProject() {
   return (
     <>
       <Head>
-        <title>Nouveau Projet - Admin LE SAGE DEV</title>
+        <title>Nouveau Projet - Admin Collection Aur'art</title>
       </Head>
 
       <div className="admin-layout">
