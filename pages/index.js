@@ -92,7 +92,7 @@ export default function Home() {
           className="sticky z-40 nav-rubriques"
           aria-label="Rubriques"
         >
-          <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="max-w-6xl mx-auto px-4 py-2 md:px-6 md:py-4">
             <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:gap-x-5">
               {rubriques.map((rubrique) => (
                 <Link
@@ -224,14 +224,20 @@ export default function Home() {
             }
           }
           .nav-rubriques-link {
-            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 9999px;
             color: #212E50;
-            font-size: 0.9375rem;
             font-weight: 500;
             letter-spacing: 0.03em;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+          }
+          @media (min-width: 768px) {
+            .nav-rubriques-link {
+              font-size: 0.9375rem;
+              padding: 0.5rem 1rem;
+            }
           }
           .nav-rubriques-link::after {
             content: '';
@@ -272,6 +278,8 @@ export default function Home() {
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
           }
           .hero-logo-border {
             position: absolute;
