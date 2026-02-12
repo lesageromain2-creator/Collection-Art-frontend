@@ -149,6 +149,12 @@ export default function Home() {
             justify-content: center;
             overflow: hidden;
             background: #F9F6F0;
+            padding-top: calc(5px + 88px);
+          }
+          @media (min-width: 768px) {
+            .hero-welcome {
+              padding-top: 0;
+            }
           }
           .hero-welcome-bg {
             position: absolute;
@@ -211,24 +217,24 @@ export default function Home() {
             text-align: center;
           }
           .nav-rubriques {
-            top: calc(5px + 88px);
-            margin-top: calc(5px + 88px);
-            background: linear-gradient(180deg, #F5C6D2 0%, #f0b8c6 100%);
-            box-shadow: 0 2px 20px rgba(124, 42, 60, 0.08);
-            border-top: 1px solid rgba(124, 42, 60, 0.06);
+            display: none;
           }
           @media (min-width: 768px) {
             .nav-rubriques {
+              display: block;
               top: calc(5px + 104px);
               margin-top: calc(5px + 104px);
+              background: linear-gradient(180deg, #F5C6D2 0%, #f0b8c6 100%);
+              box-shadow: 0 2px 20px rgba(124, 42, 60, 0.08);
+              border-top: 1px solid rgba(124, 42, 60, 0.06);
             }
           }
           .nav-rubriques-inner {
             display: flex;
             flex-wrap: nowrap;
             align-items: center;
-            justify-content: flex-start;
-            gap: 0.5rem;
+            justify-content: center;
+            gap: 0.25rem 0.4rem;
             overflow-x: auto;
             overflow-y: hidden;
             -webkit-overflow-scrolling: touch;
@@ -247,20 +253,22 @@ export default function Home() {
             }
           }
           .nav-rubriques-link {
-            font-size: 0.8125rem;
-            padding: 0.35rem 0.75rem;
+            font-size: 0.5625rem;
+            padding: 0.2rem 0.4rem;
             border-radius: 9999px;
             color: #212E50;
             font-weight: 500;
-            letter-spacing: 0.03em;
+            letter-spacing: 0.02em;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             flex-shrink: 0;
+            white-space: nowrap;
           }
           @media (min-width: 768px) {
             .nav-rubriques-link {
               font-size: 0.9375rem;
               padding: 0.5rem 1rem;
+              letter-spacing: 0.03em;
             }
           }
           .nav-rubriques-link::after {

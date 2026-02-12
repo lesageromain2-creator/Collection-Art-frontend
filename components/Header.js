@@ -12,6 +12,14 @@ const NAV_ITEMS = [
   { href: '/contact', label: 'Contact' },
 ];
 
+const RUBRIQUES = [
+  { id: 'histoire-arts', title: 'Histoire des arts' },
+  { id: 'fil-oeuvres', title: 'Au fil des œuvres' },
+  { id: 'art-contemporain', title: 'Art contemporain' },
+  { id: 'tribunal-arts', title: 'Tribunal des arts' },
+  { id: 'marche-art', title: "Marché de l'art" },
+];
+
 const SITE_NAME = "Collection Aur'art";
 
 export default function Header({ settings = {} }) {
@@ -144,6 +152,26 @@ export default function Header({ settings = {} }) {
                 {item.label}
               </Link>
             ))}
+            <div className="hdr-drawer-rubriques">
+              <span className="hdr-drawer-rubriques-title">Rubriques</span>
+              {RUBRIQUES.map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/rubriques/${r.id}`}
+                  onClick={() => setMenuOpen(false)}
+                  className={`hdr-drawer-link hdr-drawer-link--sub ${isActive(`/rubriques/${r.id}`) ? 'hdr-drawer-link--active' : ''}`}
+                >
+                  {r.title}
+                </Link>
+              ))}
+              <Link
+                href="/rubriques"
+                onClick={() => setMenuOpen(false)}
+                className="hdr-drawer-link hdr-drawer-link--all"
+              >
+                Toutes les rubriques
+              </Link>
+            </div>
           </nav>
           <div className="hdr-drawer-footer">
             {isLoggedIn ? (
@@ -476,6 +504,31 @@ export default function Header({ settings = {} }) {
           background: rgba(124,42,60,0.12);
           color: #7C2A3C;
           font-weight: 600;
+        }
+        .hdr-drawer-rubriques {
+          margin-top: 0.5rem;
+          padding-top: 0.75rem;
+          border-top: 1px solid rgba(33,46,80,0.12);
+          display: flex;
+          flex-direction: column;
+          gap: 0.15rem;
+        }
+        .hdr-drawer-rubriques-title {
+          padding: 0.5rem 1.125rem 0.25rem;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #1A2B64;
+        }
+        .hdr-drawer-link--sub {
+          padding: 0.65rem 1.125rem 0.65rem 1.75rem;
+          font-size: 1rem;
+        }
+        .hdr-drawer-link--all {
+          margin-top: 0.25rem;
+          font-weight: 600;
+          color: #1A2B64;
         }
         .hdr-drawer-footer {
           margin-top: auto;
