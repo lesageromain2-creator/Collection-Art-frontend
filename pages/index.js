@@ -93,7 +93,7 @@ export default function Home() {
           aria-label="Rubriques"
         >
           <div className="max-w-6xl mx-auto px-4 py-2 md:px-6 md:py-4">
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:gap-x-5">
+            <div className="nav-rubriques-inner">
               {rubriques.map((rubrique) => (
                 <Link
                   key={rubrique.id}
@@ -223,6 +223,29 @@ export default function Home() {
               margin-top: calc(5px + 104px);
             }
           }
+          .nav-rubriques-inner {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+          }
+          .nav-rubriques-inner::-webkit-scrollbar {
+            display: none;
+          }
+          @media (min-width: 768px) {
+            .nav-rubriques-inner {
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 0.75rem 1.25rem;
+              overflow: visible;
+            }
+          }
           .nav-rubriques-link {
             font-size: 0.8125rem;
             padding: 0.35rem 0.75rem;
@@ -232,6 +255,7 @@ export default function Home() {
             letter-spacing: 0.03em;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            flex-shrink: 0;
           }
           @media (min-width: 768px) {
             .nav-rubriques-link {
