@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 import { fetchSettings, sendContactMessage} from '../utils/api';
 import { Mail, Send, CheckCircle, XCircle } from 'lucide-react';
 
@@ -101,6 +102,9 @@ export default function Contact() {
         {/* Hero Section */}
         <section className={`hero-section ${mounted ? 'mounted' : ''}`}>
           <div className="hero-content">
+            <div className="flex justify-center mb-6">
+              <AssociationLogo size="md" linkToHome />
+            </div>
             <h1>Contactez-nous</h1>
             <p>Une question, une suggestion ? Nous sommes à votre écoute</p>
           </div>

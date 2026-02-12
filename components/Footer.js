@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, Instagram, Linkedin } from 'lucide-react';
+import AssociationLogo from './AssociationLogo';
 
 const TikTokIcon = ({ className }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -21,15 +21,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-11 w-11 flex-shrink-0 overflow-hidden rounded-full bg-navy/10 ring-2 ring-navy/10">
-                <Image
-                  src="/images/logo icone.jpeg"
-                  alt=""
-                  width={44}
-                  height={44}
-                  className="object-contain p-1"
-                />
-              </div>
+              <AssociationLogo size="sm" linkToHome className="flex-shrink-0" />
               <div>
                 <p className="font-heading text-lg font-semibold text-navy">{SITE_NAME}</p>
                 <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gris">

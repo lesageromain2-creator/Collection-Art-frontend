@@ -216,11 +216,13 @@ export default function BlogPostPage() {
                         <section className="post-sources">
                           <h3>Sources</h3>
                           <ol>
-                            {sourcesList.map((s, idx) => (
-                              <li key={idx} id={`source-${s.num || idx + 1}`}>
-                                {s.text || s}
-                              </li>
-                            ))}
+                            {sourcesList.map((s, idx) => {
+                              const rawSource = typeof s === 'object' ? (s.text || '') : String(s);
+                              const sourceHtml = simpleMarkdownToHtml(rawSource, 0);
+                              return (
+                                <li key={idx} id={`source-${s.num || idx + 1}`} dangerouslySetInnerHTML={{ __html: sourceHtml }} />
+                              );
+                            })}
                           </ol>
                         </section>
                       )}

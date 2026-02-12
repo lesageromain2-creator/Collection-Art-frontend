@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import AssociationLogo from '../../components/AssociationLogo';
 
 const demoSettings = {
   site_name: "Collection Aur'art",
@@ -93,14 +94,8 @@ export default function RubriquesPage() {
 
         <main className="px-6 py-20 md:py-32">
           <section className="mx-auto max-w-4xl text-center mb-20">
-            <div className="relative inline-flex h-20 w-20 rounded-full overflow-hidden bg-navy/10 ring-2 ring-navy/10 mb-8">
-              <Image
-                src="/images/logo icone.jpeg"
-                alt="Collection Aur'art"
-                width={80}
-                height={80}
-                className="object-contain p-2"
-              />
+            <div className="mb-8 flex justify-center">
+              <AssociationLogo size="md" linkToHome />
             </div>
 
             <h1 className="font-heading text-4xl md:text-6xl font-bold text-navy mb-6">

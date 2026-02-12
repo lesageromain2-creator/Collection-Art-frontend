@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 import { Mail, Linkedin, Phone, Globe, Loader2 } from 'lucide-react';
 import { getTeamMembers, fetchSettings } from '../utils/api';
 
@@ -77,9 +78,7 @@ export default function AboutPage({ initialMembers = [], initialSettings = {} })
           {/* Hero Section */}
           <section className="mx-auto max-w-4xl text-center mb-20">
             <div className="mb-8 flex justify-center">
-              <div className="h-16 w-16 rounded-full bg-primary-gradient flex items-center justify-center shadow-lg">
-                <span className="text-2xl font-bold text-white font-serif">A</span>
-              </div>
+              <AssociationLogo size="md" linkToHome />
             </div>
 
             <h1 className="font-heading text-4xl md:text-6xl font-bold text-anthracite mb-6">
