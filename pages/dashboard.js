@@ -305,11 +305,19 @@ export default function Dashboard() {
   };
 
   const insertRefInBlock = (blockIdRef, num) => {
-    const refHtml = `<sup class="article-ref"><a href="#source-${num}" id="ref-${num}">[${num}]</a></sup>`;
     setContentBlocks((prev) =>
       prev.map((b) => {
         if (b.id !== blockIdRef || b.type !== 'text') return b;
-        return { ...b, content: (b.content || '') + refHtml };
+        return { ...b, content: (b.content || '') + `[${num}]` };
+      })
+    );
+  };
+
+  const insertMarkupInBlock = (blockIdRef, markup) => {
+    setContentBlocks((prev) =>
+      prev.map((b) => {
+        if (b.id !== blockIdRef || b.type !== 'text') return b;
+        return { ...b, content: (b.content || '') + markup };
       })
     );
   };
@@ -1083,13 +1091,34 @@ export default function Dashboard() {
                         </button>
                       </div>
                       {block.type === 'text' ? (
-                        <textarea
-                          className="block-text"
-                          value={block.content}
-                          onChange={(e) => updateBlock(block.id, { content: e.target.value })}
-                          placeholder="Paragraphe de texte…"
-                          rows={4}
-                        />
+                        <div className="block-text-wrap">
+                          <div className="block-toolbar">
+                            <button type="button" className="btn-tool" onClick={() => insertMarkupInBlock(block.id, ' ** ** ')} title="Gras : **mot**">
+                              <Bold size={16} />
+                              <span>Gras</span>
+                            </button>
+                            <button type="button" className="btn-tool" onClick={() => insertMarkupInBlock(block.id, ' * * ')} title="Italique : *mot*">
+                              <Italic size={16} />
+                              <span>Italique</span>
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-tool"
+                              onClick={() => { const n = sources.length + 1; addSource(); insertRefInBlock(block.id, n); }}
+                              title="Insérer une référence [1], [2]…"
+                            >
+                              <Hash size={16} />
+                              <span>Réf</span>
+                            </button>
+                          </div>
+                          <textarea
+                            className="block-text"
+                            value={block.content}
+                            onChange={(e) => updateBlock(block.id, { content: e.target.value })}
+                            placeholder="Paragraphe… Utilisez **gras**, *italique*, [1] [2] pour les références."
+                            rows={4}
+                          />
+                        </div>
                       ) : (
                         <div className="block-image-wrap">
                           {block.url ? (
@@ -1114,6 +1143,29 @@ export default function Dashboard() {
                 {contentBlocks.length === 0 && (
                   <p className="blocks-hint">Cliquez sur « Ajouter un paragraphe » ou « Ajouter une image » pour construire l&apos;article.</p>
                 )}
+                <div className="sources-section">
+                  <label className="sources-label">Sources et références</label>
+                  <p className="sources-hint">Renseignez les sources correspondant aux numéros [1], [2]… insérés dans le texte.</p>
+                  {sources.map((s, idx) => (
+                    <div key={idx} className="source-row">
+                      <span className="source-num">[{s.num || idx + 1}]</span>
+                      <input
+                        type="text"
+                        className="source-input"
+                        value={s.text || ''}
+                        onChange={(e) => updateSource(idx, e.target.value)}
+                        placeholder={`Source ${idx + 1} (auteur, titre, éditeur, année, URL…)`}
+                      />
+                      <button type="button" className="btn-icon small danger" onClick={() => removeSource(idx)} title="Supprimer">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="btn-block-add" onClick={() => addSource()}>
+                    <Plus size={18} />
+                    Ajouter une source
+                  </button>
+                </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -1797,6 +1849,32 @@ export default function Dashboard() {
         .block-actions .btn-icon.small {
           padding: 6px;
         }
+        .block-toolbar {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        .btn-tool {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          font-size: 0.85rem;
+          background: rgba(199,161,30,0.25);
+          border: 1px solid rgba(199,161,30,0.5);
+          border-radius: 8px;
+          color: #F8F8F0;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .btn-tool:hover {
+          background: rgba(199,161,30,0.4);
+        }
+        .block-text-wrap {
+          flex: 1;
+          min-width: 0;
+        }
         .block-text {
           flex: 1;
           min-height: 80px;
@@ -1839,6 +1917,46 @@ export default function Dashboard() {
           color: rgba(248,248,240,0.6);
           font-size: 0.9rem;
           margin-top: 8px;
+        }
+        .sources-section {
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid rgba(199,161,30,0.3);
+        }
+        .sources-label {
+          display: block;
+          font-weight: 600;
+          color: #F8F8F0;
+          margin-bottom: 4px;
+        }
+        .sources-section .sources-hint {
+          font-size: 0.85rem;
+          color: rgba(248,248,240,0.7);
+          margin-bottom: 12px;
+        }
+        .source-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .source-num {
+          flex-shrink: 0;
+          font-weight: 600;
+          color: #C7A11E;
+          min-width: 28px;
+        }
+        .source-input {
+          flex: 1;
+          padding: 10px 12px;
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(199,161,30,0.2);
+          border-radius: 8px;
+          color: #F8F8F0;
+          font-size: 0.9rem;
+        }
+        .source-input::placeholder {
+          color: rgba(248,248,240,0.4);
         }
         .checkbox-wrap label {
           display: flex;

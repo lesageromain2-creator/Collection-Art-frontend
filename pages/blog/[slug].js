@@ -24,6 +24,24 @@ function parseArticleContent(content, outSources = {}) {
   }
 }
 
+/** Convertit **gras** *italique* et [1] [2] en HTML pour l'affichage */
+function simpleMarkdownToHtml(text, sourcesCount = 10) {
+  if (!text || typeof text !== 'string') return '';
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  if (!html.includes('href="#source-')) {
+    for (let n = 1; n <= sourcesCount; n++) {
+      html = html.replace(new RegExp(`\\[${n}\\]`, 'g'), `<sup><a href="#source-${n}" class="article-ref">[${n}]</a></sup>`);
+    }
+  }
+  return html;
+}
+
 export default function BlogPostPage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -173,8 +191,9 @@ export default function BlogPostPage() {
                     <>
                       {blocks.map((block, i) => {
                         if (block.type === 'text') {
-                          const html = (block.content || '').trim();
-                          if (!html) return null;
+                          const raw = (block.content || '').trim();
+                          if (!raw) return null;
+                          const html = simpleMarkdownToHtml(raw, Math.max(sourcesList.length, 20));
                           return (
                             <div
                               key={i}
@@ -208,7 +227,7 @@ export default function BlogPostPage() {
                     </>
                   );
                 }
-                return <div dangerouslySetInnerHTML={{ __html: post.content || '' }} />;
+                return <div className="post-block-text" dangerouslySetInnerHTML={{ __html: simpleMarkdownToHtml(post.content || '', 20) }} />;
               })()}
             </div>
 
