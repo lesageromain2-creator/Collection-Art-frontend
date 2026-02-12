@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { Calendar, User, ArrowRight, BookOpen } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 import { getPublicArticles, fetchSettings } from '../utils/api';
 
 const formatDate = (dateStr) =>
@@ -71,11 +72,10 @@ export default function ArticlesPage() {
           {/* Hero */}
           <section className="hero">
             <div className="hero-inner">
-              <div className="hero-icon" aria-hidden="true">
-                <BookOpen size={44} />
+              <div className="hero-logo">
+                <AssociationLogo size="md" linkToHome />
               </div>
               <h1 className="hero-title">Notre catalogue d&apos;articles</h1>
-              <div className="hero-line" />
               <p className="hero-desc">
                 Découvrez l&apos;ensemble des publications de l&apos;association sur l&apos;art, son histoire et son marché.
               </p>
@@ -219,8 +219,7 @@ export default function ArticlesPage() {
           padding-bottom: 60px;
         }
         .hero {
-          background: linear-gradient(135deg, #212E50 0%, #7C2A3C 100%);
-          color: #F8F8F0;
+          background: #F9F6F0;
           padding: 48px 24px 56px;
           text-align: center;
         }
@@ -228,26 +227,22 @@ export default function ArticlesPage() {
           max-width: 640px;
           margin: 0 auto;
         }
-        .hero-icon {
-          opacity: 0.9;
-          margin-bottom: 16px;
+        .hero-logo {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 24px;
         }
         .hero-title {
           font-size: 2.5rem;
           font-weight: 700;
+          color: #212E50;
           margin-bottom: 16px;
           letter-spacing: -0.02em;
         }
-        .hero-line {
-          width: 80px;
-          height: 4px;
-          background: #C7A11E;
-          border-radius: 2px;
-          margin: 0 auto 20px;
-        }
         .hero-desc {
           font-size: 1.15rem;
-          opacity: 0.95;
+          color: #212E50;
+          opacity: 0.9;
           line-height: 1.6;
         }
         .feed-section {
