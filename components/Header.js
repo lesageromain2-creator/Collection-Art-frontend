@@ -78,28 +78,30 @@ export default function Header({ settings = {} }) {
           </Link>
 
           <nav className="hdr-nav">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            <div className="hdr-nav-center">
+              {NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
             <div className="hdr-actions">
               {isLoggedIn ? (
                 <>
                   {userRole === 'admin' && (
-                    <Link href="/admin" className="hdr-btn hdr-btn--admin">Admin</Link>
+                    <Link href="/admin" className="hdr-link">Admin</Link>
                   )}
-                  <Link href="/dashboard" className="hdr-btn hdr-btn--dash">Dashboard</Link>
-                  <button type="button" onClick={handleLogout} className="hdr-btn hdr-btn--out">
+                  <Link href="/dashboard" className="hdr-link">Dashboard</Link>
+                  <button type="button" onClick={handleLogout} className="hdr-link hdr-link-btn">
                     Déconnexion
                   </button>
                 </>
               ) : (
-                <Link href="/login" className="hdr-btn hdr-btn--in">Connexion</Link>
+                <Link href="/login" className="hdr-link">Connexion</Link>
               )}
             </div>
           </nav>
@@ -227,6 +229,26 @@ export default function Header({ settings = {} }) {
           gap: 1rem;
           min-height: 88px;
         }
+        .hdr-nav {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 0;
+        }
+        .hdr-nav-center {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 1.5rem;
+          flex: 1;
+          min-width: 0;
+        }
+        @media (min-width: 1024px) {
+          .hdr-nav-center {
+            gap: 2rem;
+          }
+        }
         @media (min-width: 768px) {
           .hdr-inner {
             padding: 1.5rem 1.5rem 1.5rem 0.75rem;
@@ -243,11 +265,13 @@ export default function Header({ settings = {} }) {
           padding: 0.35rem 0.5rem;
           margin: -0.35rem -0.5rem;
           border-radius: 8px;
-          transition: opacity 0.25s ease, transform 0.2s ease;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hdr-logo-link:hover {
-          opacity: 0.92;
-          transform: translateY(-1px);
+          opacity: 0.95;
+          transform: translateY(-2px);
+          background: linear-gradient(135deg, rgba(249,246,240,0.06) 0%, rgba(108,129,87,0.04) 100%);
+          box-shadow: 0 2px 12px rgba(26,43,100,0.2);
         }
         .hdr-brand {
           display: flex;
@@ -280,37 +304,51 @@ export default function Header({ settings = {} }) {
 
         .hdr-nav {
           display: none;
-          align-items: center;
-          gap: 1.75rem;
           font-size: 1.0625rem;
-          font-weight: 500;
-        }
-        @media (min-width: 1024px) {
-          .hdr-nav {
-            font-size: 1.125rem;
-          }
         }
         @media (min-width: 768px) {
           .hdr-nav {
             display: flex;
           }
         }
+        @media (min-width: 1024px) {
+          .hdr-nav {
+            font-size: 1.125rem;
+          }
+        }
         .hdr-link {
           color: #F9F6F0 !important;
           -webkit-text-fill-color: #F9F6F0 !important;
           text-decoration: none !important;
-          padding: 0.4rem 0.6rem;
-          margin: 0 -0.6rem;
-          border-radius: 6px;
-          transition: color 0.25s ease, background 0.25s ease, transform 0.2s ease;
+          padding: 0.5rem 0.75rem;
+          margin: 0 -0.75rem;
+          border-radius: 8px;
+          transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           font-weight: 600;
           position: relative;
+          overflow: hidden;
+        }
+        .hdr-link::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          bottom: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, rgba(249,246,240,0.6) 0%, rgba(199,161,30,0.9) 50%, rgba(249,246,240,0.6) 100%);
+          border-radius: 2px;
+          transform: translateX(-50%);
+          transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hdr-link:hover {
-          color: #F5C6D2 !important;
-          -webkit-text-fill-color: #F5C6D2 !important;
-          background: rgba(245, 198, 210, 0.25);
-          transform: translateY(-1px);
+          color: #FDF8F2 !important;
+          -webkit-text-fill-color: #FDF8F2 !important;
+          background: linear-gradient(135deg, rgba(249,246,240,0.08) 0%, rgba(108,129,87,0.06) 100%);
+          transform: translateY(-2px);
+          box-shadow: 0 2px 12px rgba(26,43,100,0.2);
+        }
+        .hdr-link:hover::after {
+          width: 100%;
         }
         .hdr-link--active {
           position: relative;
@@ -319,55 +357,29 @@ export default function Header({ settings = {} }) {
           -webkit-text-fill-color: #F5C6D2 !important;
         }
         .hdr-link--active::after {
-          content: '';
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          width: 100% !important;
+          left: 0 !important;
+          transform: none !important;
           height: 3px;
-          background: #F5C6D2;
+          background: linear-gradient(90deg, rgba(245,198,210,0.9) 0%, rgba(199,161,30,0.85) 100%);
           border-radius: 2px;
+        }
+        .hdr-link--active:hover {
+          background: linear-gradient(135deg, rgba(245,198,210,0.12) 0%, rgba(199,161,30,0.06) 100%);
+        }
+        .hdr-link-btn {
+          background: none;
+          border: none;
+          font: inherit;
+          cursor: pointer;
         }
         .hdr-actions {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          margin-left: 0.5rem;
+          gap: 1.25rem;
+          margin-left: 2rem;
+          flex-shrink: 0;
         }
-        .hdr-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0.5rem 1rem;
-          font-size: 0.9375rem;
-          font-weight: 600;
-          border-radius: 9999px;
-          text-decoration: none;
-          border: none;
-          cursor: pointer;
-          transition: all 0.25s ease;
-        }
-        .hdr-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-        }
-        .hdr-btn--admin {
-          background: rgba(199,161,30,0.25);
-          color: #F9F6F0;
-          border: 1px solid #C7A11E;
-        }
-        .hdr-btn--dash {
-          background: rgba(249,246,240,0.12);
-          color: #F9F6F0;
-          border: 1px solid rgba(249,246,240,0.35);
-        }
-        .hdr-btn--out,
-        .hdr-btn--in {
-          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
-          color: #F9F6F0 !important;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-        }
-
         .hdr-burger {
           display: flex;
           flex-direction: column;
@@ -379,9 +391,14 @@ export default function Header({ settings = {} }) {
           padding: 0;
           border: none;
           border-radius: 12px;
-          background: rgba(249,246,240,0.1);
+          background: rgba(249,246,240,0.08);
           color: #F9F6F0;
           cursor: pointer;
+          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hdr-burger:hover {
+          background: linear-gradient(135deg, rgba(249,246,240,0.12) 0%, rgba(108,129,87,0.06) 100%);
+          transform: scale(1.05);
         }
         @media (min-width: 768px) {
           .hdr-burger {

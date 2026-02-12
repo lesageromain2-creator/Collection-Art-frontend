@@ -17,8 +17,6 @@ import {
   Loader2,
   ChevronUp,
   ChevronDown,
-  Search,
-  ExternalLink,
   Bold,
   Italic,
   AlignJustify,
@@ -134,8 +132,6 @@ export default function Dashboard() {
   const [profileSaving, setProfileSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
-  const [catalogueSearch, setCatalogueSearch] = useState('');
-  const [catalogueRubrique, setCatalogueRubrique] = useState('');
 
   // Équipe associative
   const [teamForm, setTeamForm] = useState({
@@ -888,44 +884,6 @@ export default function Dashboard() {
                   </div>
                 </form>
                 )}
-                <div className="catalogue-search-wrap">
-                  <h2 className="catalogue-search-title">Rechercher dans le catalogue d&apos;articles</h2>
-                  <div className="catalogue-search-row">
-                    <div className="catalogue-search-input-wrap">
-                      <Search size={20} className="catalogue-search-icon" />
-                      <input
-                        type="search"
-                        placeholder="Rechercher un article..."
-                        value={catalogueSearch}
-                        onChange={(e) => setCatalogueSearch(e.target.value)}
-                        className="catalogue-search-input"
-                      />
-                    </div>
-                    <select
-                      value={catalogueRubrique}
-                      onChange={(e) => setCatalogueRubrique(e.target.value)}
-                      className="catalogue-rubrique-select"
-                    >
-                      <option value="">Toutes les rubriques</option>
-                      {rubriques.map((r) => (
-                        <option key={r.id} value={r.slug || r.name}>{r.name}</option>
-                      ))}
-                    </select>
-                    <Link
-                      href={{
-                        pathname: '/articles',
-                        query: {
-                          ...(catalogueSearch && { search: catalogueSearch }),
-                          ...(catalogueRubrique && { rubrique: catalogueRubrique }),
-                        },
-                      }}
-                      className="btn-catalogue-link"
-                    >
-                      Voir le catalogue
-                      <ExternalLink size={18} />
-                    </Link>
-                  </div>
-                </div>
               </div>
             )}
           </main>

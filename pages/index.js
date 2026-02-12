@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, BookOpen, Scale, TrendingUp, Palette, Sparkles } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 
 // Statue 3D conservée dans les fichiers HermesSection.tsx et HermesScene.tsx mais non affichée.
 
@@ -122,19 +123,8 @@ export default function Home() {
             <div className="hero-orb hero-orb--navy" aria-hidden />
           </div>
           <div className="hero-welcome-inner">
-            <div className="hero-logo-frame">
-              <div className="hero-logo-border hero-logo-border--1" />
-              <div className="hero-logo-border hero-logo-border--2" />
-              <div className="hero-logo-wrap logo-hero-reveal">
-                <Image
-                  src="/images/logo final.PNG"
-                  alt="Collection Aur'art"
-                  fill
-                  className="object-contain object-center"
-                  priority
-                  sizes="(max-width: 768px) 90vw, min(70vmin, 520px)"
-                />
-              </div>
+            <div className="logo-hero-reveal">
+              <AssociationLogo size="hero" />
             </div>
             <p className="hero-subtitle">Esquisses de l&apos;Art & son marché</p>
           </div>
@@ -303,46 +293,11 @@ export default function Home() {
           .nav-rubriques-link--all:hover::after {
             background: #C7A11E;
           }
-          .hero-logo-frame {
-            position: relative;
-            width: min(65vw, min(48vmin, 380px));
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: auto;
-            margin-right: auto;
-          }
-          .hero-logo-border {
-            position: absolute;
-            border-radius: 24px;
-            border: 2px solid;
-            pointer-events: none;
-          }
-          .hero-logo-border--1 {
-            inset: -10px;
-            border-color: rgba(108, 129, 87, 0.35);
-            animation: heroBorderPulse 4s ease-in-out infinite;
-          }
-          .hero-logo-border--2 {
-            inset: -20px;
-            border-color: rgba(33, 46, 80, 0.2);
-            animation: heroBorderPulse 4s ease-in-out infinite 0.5s;
-          }
-          .hero-logo-wrap {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 20px;
-            overflow: hidden;
-            background: #F9F6F0;
-            box-shadow: 0 8px 32px rgba(33, 46, 80, 0.08);
-          }
-          @keyframes heroBorderPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-          }
           .logo-hero-reveal {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             opacity: 0;
             transform: scale(0.85);
             animation: logoHeroReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
