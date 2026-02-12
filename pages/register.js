@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 import { register, fetchSettings } from '../utils/api';
 
 export default function Register() {
@@ -174,13 +175,8 @@ export default function Register() {
           <div className={`register-card ${shake ? 'shake' : ''}`}>
             {/* Header */}
             <div className="card-header">
-              <div className="header-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                  <circle cx="8.5" cy="7" r="4"/>
-                  <line x1="20" y1="8" x2="20" y2="14"/>
-                  <line x1="23" y1="11" x2="17" y2="11"/>
-                </svg>
+              <div className="header-logo">
+                <AssociationLogo size="md" linkToHome />
               </div>
               <h1>Rejoignez-nous</h1>
               <p>Créez votre compte en quelques secondes</p>
@@ -426,43 +422,10 @@ export default function Register() {
             </div>
           </div>
 
-          {/* Benefits Side Panel - Image d'art + contenu */}
+          {/* Side — Logo sur fond blanc */}
           <div className="benefits-panel">
-            <div className="benefits-panel-bg" aria-hidden="true" />
-            <div className="benefits-panel-overlay" aria-hidden="true" />
-            <div className="benefits-content">
-              <div className="benefits-icon">
-                🎨
-              </div>
-              <h2>Pourquoi nous rejoindre ?</h2>
-              <ul className="benefits-list">
-                <li>
-                  <span className="benefit-icon">⚡</span>
-                  <span>Projets sur-mesure</span>
-                </li>
-                <li>
-                  <span className="benefit-icon">🎯</span>
-                  <span>Suivi personnalisé</span>
-                </li>
-                <li>
-                  <span className="benefit-icon">🚀</span>
-                  <span>Technologies modernes</span>
-                </li>
-                <li>
-                  <span className="benefit-icon">💼</span>
-                  <span>Support professionnel</span>
-                </li>
-              </ul>
-              <div className="stats">
-                <div className="stat-item">
-                  <div className="stat-value">100+</div>
-                  <div className="stat-label">Projets</div>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-value">98%</div>
-                  <div className="stat-label">Satisfaction</div>
-                </div>
-              </div>
+            <div className="auth-side-logo">
+              <AssociationLogo size="lg" linkToHome />
             </div>
           </div>
         </div>
@@ -478,7 +441,7 @@ export default function Register() {
 
         .register-page {
           min-height: 100vh;
-          background: linear-gradient(135deg, #212E50 0%, #2a3a62 50%, #1a2540 100%);
+          background: #F9F6F0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -497,45 +460,39 @@ export default function Register() {
         .bg-orb {
           position: absolute;
           border-radius: 50%;
-          filter: blur(80px);
-          opacity: 0.25;
+          filter: blur(120px);
+          opacity: 0.12;
           animation: float 20s ease-in-out infinite;
         }
 
         .orb-1 {
           width: 400px;
           height: 400px;
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          top: -150px;
-          left: -150px;
+          background: #6C8157;
+          top: 10%;
+          left: 5%;
         }
 
         .orb-2 {
           width: 350px;
           height: 350px;
-          background: linear-gradient(135deg, #F1B2C8, #6C8157);
-          bottom: -100px;
-          right: -100px;
-          animation-delay: 7s;
+          background: #7C2A3C;
+          bottom: 15%;
+          right: 10%;
+          animation-delay: -6s;
         }
 
         .orb-3 {
           width: 300px;
           height: 300px;
-          background: linear-gradient(135deg, #6C8157, #C7A11E);
-          top: 40%;
+          background: #C7A11E;
+          top: 50%;
           left: 50%;
-          animation-delay: 14s;
+          animation-delay: -12s;
         }
 
         .bg-grid {
-          position: absolute;
-          inset: 0;
-          background-image: 
-            linear-gradient(rgba(248,248,240,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(248,248,240,0.03) 1px, transparent 1px);
-          background-size: 50px 50px;
-          opacity: 0.5;
+          display: none;
         }
 
         @keyframes float {
@@ -564,12 +521,11 @@ export default function Register() {
         }
 
         .register-card {
-          background: rgba(33, 46, 80, 0.75);
-          backdrop-filter: blur(20px) saturate(180%);
-          border: 1px solid rgba(199, 161, 30, 0.25);
+          background: #FFFFFF;
+          border: 1px solid rgba(33, 46, 80, 0.08);
           border-radius: 24px;
           padding: 2rem;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 8px 32px rgba(33, 46, 80, 0.08);
           max-height: 85vh;
           overflow-y: auto;
         }
@@ -579,11 +535,11 @@ export default function Register() {
         }
 
         .register-card::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(33, 46, 80, 0.04);
         }
 
         .register-card::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(33, 46, 80, 0.15);
           border-radius: 10px;
         }
 
@@ -603,34 +559,23 @@ export default function Register() {
           margin-bottom: 1.5rem;
         }
 
-        .header-icon {
-          width: 56px;
-          height: 56px;
-          margin: 0 auto 1.5rem;
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          border-radius: 18px;
+        .header-logo {
           display: flex;
-          align-items: center;
           justify-content: center;
-          box-shadow: 0 8px 24px rgba(124, 42, 60, 0.4);
-        }
-
-        .header-icon svg {
-          width: 36px;
-          height: 36px;
-          color: #F8F8F0;
+          margin-bottom: 1.25rem;
         }
 
         .card-header h1 {
+          font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 1.65rem;
-          font-weight: 800;
-          color: #F8F8F0;
+          font-weight: 700;
+          color: #212E50;
           margin-bottom: 0.5rem;
           letter-spacing: -0.02em;
         }
 
         .card-header p {
-          color: rgba(248, 248, 240, 0.75);
+          color: #5A5A5A;
           font-size: 1rem;
         }
 
@@ -662,7 +607,7 @@ export default function Register() {
 
         .alert-error strong {
           display: block;
-          color: white;
+          color: #212E50;
           margin-bottom: 0.25rem;
         }
 
@@ -673,7 +618,7 @@ export default function Register() {
         }
 
         .alert-error li {
-          color: rgba(255, 255, 255, 0.9);
+          color: #5A5A5A;
           font-size: 0.9rem;
           margin: 0.25rem 0;
         }
@@ -691,7 +636,7 @@ export default function Register() {
 
         .input-field label {
           display: block;
-          color: rgba(248, 248, 240, 0.95);
+          color: #212E50;
           font-weight: 600;
           font-size: 0.9rem;
           margin-bottom: 0.5rem;
@@ -708,31 +653,32 @@ export default function Register() {
           left: 1rem;
           width: 20px;
           height: 20px;
-          color: rgba(255, 255, 255, 0.5);
+          color: #6C8157;
           pointer-events: none;
         }
 
         .input-wrapper input {
           width: 100%;
           padding: 0.875rem 1rem 0.875rem 3rem;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: #F9F6F0;
+          border: 2px solid rgba(33, 46, 80, 0.12);
           border-radius: 10px;
-          color: white;
+          color: #212E50;
           font-size: 0.95rem;
           transition: all 0.3s ease;
           font-family: inherit;
         }
 
         .input-wrapper input::placeholder {
-          color: rgba(255, 255, 255, 0.4);
+          color: #5A5A5A;
+          opacity: 0.6;
         }
 
         .input-wrapper input:focus {
           outline: none;
-          background: rgba(255, 255, 255, 0.1);
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+          background: #FFFFFF;
+          border-color: #6C8157;
+          box-shadow: 0 0 0 4px rgba(108, 129, 87, 0.15);
         }
 
         .input-wrapper input:disabled {
@@ -766,7 +712,7 @@ export default function Register() {
 
         .strength-bar {
           height: 4px;
-          background: rgba(255, 255, 255, 0.1);
+          background: rgba(33, 46, 80, 0.1);
           border-radius: 10px;
           overflow: hidden;
           margin-bottom: 0.5rem;
@@ -790,7 +736,8 @@ export default function Register() {
         }
 
         .hint {
-          color: rgba(255, 255, 255, 0.5);
+          color: #5A5A5A;
+          opacity: 0.8;
           font-size: 0.8rem;
         }
 
@@ -827,9 +774,9 @@ export default function Register() {
           width: 20px;
           height: 20px;
           min-width: 20px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
+          border: 2px solid rgba(33, 46, 80, 0.25);
           border-radius: 6px;
-          background: rgba(255, 255, 255, 0.05);
+          background: #F9F6F0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -838,40 +785,40 @@ export default function Register() {
         }
 
         .checkbox-field input[type="checkbox"]:checked + .checkmark {
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          border-color: transparent;
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          border-color: #7C2A3C;
         }
 
         .checkbox-field input[type="checkbox"]:checked + .checkmark::after {
           content: '✓';
-          color: white;
+          color: #F9F6F0;
           font-weight: bold;
           font-size: 12px;
         }
 
         .checkbox-text {
-          color: rgba(255, 255, 255, 0.8);
+          color: #5A5A5A;
           font-size: 0.9rem;
           line-height: 1.5;
         }
 
         .checkbox-text a {
-          color: #C7A11E;
+          color: #7C2A3C;
           text-decoration: none;
           font-weight: 600;
           transition: color 0.3s;
         }
 
         .checkbox-text a:hover {
-          color: #F1B2C8;
+          color: #212E50;
           text-decoration: underline;
         }
 
         .submit-btn {
           width: 100%;
           padding: 1rem;
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          color: #F8F8F0;
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          color: #F9F6F0;
           border: none;
           border-radius: 10px;
           font-size: 1rem;
@@ -931,14 +878,14 @@ export default function Register() {
           right: 0;
           top: 50%;
           height: 1px;
-          background: rgba(255, 255, 255, 0.12);
+          background: rgba(33, 46, 80, 0.12);
         }
 
         .divider span {
           position: relative;
-          background: rgba(255, 255, 255, 0.05);
+          background: #FFFFFF;
           padding: 0 1rem;
-          color: rgba(255, 255, 255, 0.6);
+          color: #5A5A5A;
           font-size: 0.85rem;
         }
 
@@ -951,10 +898,10 @@ export default function Register() {
 
         .social-btn {
           padding: 0.875rem;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: #F9F6F0;
+          border: 2px solid rgba(33, 46, 80, 0.12);
           border-radius: 10px;
-          color: white;
+          color: #212E50;
           font-weight: 600;
           font-size: 0.9rem;
           cursor: pointer;
@@ -966,8 +913,8 @@ export default function Register() {
         }
 
         .social-btn:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: rgba(108, 129, 87, 0.08);
+          border-color: rgba(108, 129, 87, 0.3);
           transform: translateY(-2px);
         }
 
@@ -979,11 +926,11 @@ export default function Register() {
         .card-footer {
           text-align: center;
           padding-top: 1.5rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          border-top: 1px solid rgba(33, 46, 80, 0.08);
         }
 
         .card-footer p {
-          color: rgba(255, 255, 255, 0.7);
+          color: #5A5A5A;
           margin-bottom: 0.75rem;
           font-size: 0.9rem;
         }
@@ -992,7 +939,7 @@ export default function Register() {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          color: #C7A11E;
+          color: #7C2A3C;
           text-decoration: none;
           font-weight: 600;
           font-size: 0.95rem;
@@ -1000,7 +947,7 @@ export default function Register() {
         }
 
         .link-action:hover {
-          color: #F1B2C8;
+          color: #212E50;
           gap: 0.75rem;
         }
 
@@ -1010,103 +957,24 @@ export default function Register() {
         }
 
         .benefits-panel {
+          background: #FFFFFF;
           border-radius: 24px;
           padding: 2rem;
-          color: #F8F8F0;
           position: relative;
           overflow: hidden;
-          border: 1px solid rgba(199, 161, 30, 0.25);
-        }
-
-        .benefits-panel-bg {
-          position: absolute;
-          inset: 0;
-          background: url('/images/qui sommes nous.jpeg') center center / cover no-repeat;
-        }
-
-        .benefits-panel-overlay {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(33, 46, 80, 0.88) 0%, rgba(124, 42, 60, 0.78) 50%, rgba(33, 46, 80, 0.92) 100%);
-        }
-
-        .benefits-content {
-          position: relative;
-          z-index: 1;
-        }
-
-        .benefits-icon {
-          font-size: 4rem;
-          text-align: center;
-          margin-bottom: 1.5rem;
-          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-        }
-
-        .benefits-content h2 {
-          font-size: 1.5rem;
-          font-weight: 800;
-          text-align: center;
-          margin-bottom: 1.5rem;
-          letter-spacing: -0.02em;
-          color: #F8F8F0;
-        }
-
-        .benefits-list {
-          list-style: none;
-          padding: 0;
-          margin: 0 0 1.5rem;
-        }
-
-        .benefits-list li {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem 0;
-          font-size: 1rem;
-          font-weight: 500;
-          color: #F8F8F0;
-        }
-
-        .benefit-icon {
-          font-size: 1.5rem;
-          width: 40px;
-          height: 40px;
+          border: 1px solid rgba(33, 46, 80, 0.06);
+          box-shadow: 0 4px 24px rgba(33, 46, 80, 0.06);
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(199, 161, 30, 0.25);
-          border-radius: 10px;
-          flex-shrink: 0;
         }
 
-        .stats {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1rem;
-          margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 2px solid rgba(199, 161, 30, 0.3);
-        }
-
-        .stat-item {
-          text-align: center;
-        }
-
-        .stat-value {
-          font-size: 2rem;
-          font-weight: 900;
-          margin-bottom: 0.5rem;
-          background: linear-gradient(180deg, #F8F8F0, rgba(241, 178, 200, 0.9));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .stat-label {
-          font-size: 0.9rem;
-          opacity: 0.95;
-          font-weight: 600;
-          color: #F8F8F0;
+        .auth-side-logo {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          min-height: 200px;
         }
 
         /* ============================================

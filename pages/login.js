@@ -356,43 +356,10 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Side Info */}
+          {/* Side — Logo sur fond blanc */}
           <div className="auth-side">
-            <div className="side-content">
-              <div className="side-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                  <path d="M2 17l10 5 10-5"/>
-                  <path d="M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <h2>Espace Client Professionnel</h2>
-              <ul>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Gestion de vos projets</span>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Suivi en temps réel</span>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Rendez-vous et consultations</span>
-                </li>
-                <li>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                  <span>Support dédié</span>
-                </li>
-              </ul>
+            <div className="auth-side-logo">
+              <AssociationLogo size="lg" linkToHome />
             </div>
           </div>
         </div>
@@ -960,7 +927,7 @@ export default function Login() {
     }
 
         .auth-side {
-          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          background: #FFFFFF;
           border-radius: 24px;
           padding: 40px;
           display: flex;
@@ -968,70 +935,16 @@ export default function Login() {
           justify-content: center;
           position: relative;
           overflow: hidden;
+          border: 1px solid rgba(33, 46, 80, 0.06);
+          box-shadow: 0 4px 24px rgba(33, 46, 80, 0.06);
         }
 
-    .auth-side::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.04)"/></svg>');
-      background-size: 100px 100px;
-      opacity: 0.5;
-    }
-
-    .side-content {
-      position: relative;
-      z-index: 1;
-      color: #F9F6F0;
-    }
-
-    .side-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 30px;
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
+    .auth-side-logo {
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: float 6s ease-in-out infinite;
-    }
-
-    .side-icon svg {
-      width: 40px;
-      height: 40px;
-      stroke: #F9F6F0;
-    }
-
-    .side-content h2 {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.75em;
-      margin-bottom: 24px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .side-content ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .side-content li {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      padding: 15px 0;
-      font-size: 1.1em;
-      font-weight: 500;
-    }
-
-    .side-content li svg {
-      width: 24px;
-      height: 24px;
-      flex-shrink: 0;
-      stroke: #C7A11E;
+      width: 100%;
+      min-height: 200px;
     }
 
     @media (max-width: 1024px) {
