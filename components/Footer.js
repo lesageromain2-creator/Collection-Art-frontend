@@ -124,6 +124,11 @@ export default function Footer() {
             Conformément au RGPD, vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles. Contact :{' '}
             <a href={`mailto:${EMAIL}`} className="text-burgundy hover:underline">{EMAIL}</a>
           </p>
+          <p>
+            <Link href="/terms" className="text-burgundy hover:underline">Conditions générales</Link>
+            {' · '}
+            <Link href="/privacy" className="text-burgundy hover:underline">Politique de confidentialité</Link>
+          </p>
         </div>
       </div>
     </footer>
