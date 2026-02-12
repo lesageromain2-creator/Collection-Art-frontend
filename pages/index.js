@@ -205,6 +205,13 @@ export default function Home() {
             justify-content: center;
             padding: 2rem 1rem 3rem;
             text-align: center;
+            /* Remonte pour centrage dans la zone visible (header + nav sur desktop) */
+            transform: translateY(calc(-1 * (5px + 88px) / 2));
+          }
+          @media (min-width: 768px) {
+            .hero-welcome-inner {
+              transform: translateY(calc(-1 * (5px + 104px + 3.5rem)));
+            }
           }
           .nav-rubriques {
             display: none;

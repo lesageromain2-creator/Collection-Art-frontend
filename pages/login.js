@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import AssociationLogo from '../components/AssociationLogo';
 import { login, fetchSettings } from '../utils/api';
 
 export default function Login() {
@@ -170,11 +171,8 @@ export default function Login() {
           <div className={`auth-card ${shake ? 'shake' : ''}`}>
             {/* Header */}
             <div className="auth-header">
-              <div className="auth-icon-wrapper">
-                <svg className="auth-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
+              <div className="auth-logo">
+                <AssociationLogo size="md" linkToHome />
               </div>
               <h1>Bon retour !</h1>
               <p>Connectez-vous pour accéder à votre espace</p>
@@ -460,7 +458,7 @@ export default function Login() {
 
         .auth-page {
           min-height: 100vh;
-          background: #0a0a1e;
+          background: #F9F6F0;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -479,34 +477,34 @@ export default function Login() {
           position: absolute;
           border-radius: 50%;
           filter: blur(120px);
-          opacity: 0.4;
+          opacity: 0.12;
           animation: float 20s ease-in-out infinite;
         }
 
         .orb-1 {
-          width: 500px;
-          height: 500px;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          top: -200px;
-          left: -200px;
+          width: 400px;
+          height: 400px;
+          background: #6C8157;
+          top: 10%;
+          left: 5%;
         }
 
         .orb-2 {
-          width: 400px;
-          height: 400px;
-          background: linear-gradient(135deg, #f093fb, #f5576c);
-          bottom: -150px;
-          right: -150px;
-          animation-delay: 7s;
+          width: 350px;
+          height: 350px;
+          background: #7C2A3C;
+          bottom: 15%;
+          right: 10%;
+          animation-delay: -6s;
         }
 
         .orb-3 {
-          width: 350px;
-          height: 350px;
-          background: linear-gradient(135deg, #4facfe, #00f2fe);
+          width: 300px;
+          height: 300px;
+          background: #C7A11E;
           top: 50%;
           left: 50%;
-          animation-delay: 14s;
+          animation-delay: -12s;
         }
 
         @keyframes float {
@@ -535,12 +533,12 @@ export default function Login() {
         }
 
         .auth-card {
-          background: rgba(255, 255, 255, 0.05);
+          background: #FFFFFF;
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(33, 46, 80, 0.08);
           border-radius: 24px;
           padding: 35px 40px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 8px 32px rgba(33, 46, 80, 0.08);
           transition: transform 0.3s ease;
           max-height: 85vh;
           overflow-y: auto;
@@ -561,35 +559,23 @@ export default function Login() {
           margin-bottom: 28px;
         }
 
-        .auth-icon-wrapper {
-          width: 64px;
-          height: 64px;
-          margin: 0 auto 18px;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          border-radius: 20px;
+        .auth-logo {
           display: flex;
-          align-items: center;
           justify-content: center;
-          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-          animation: float 6s ease-in-out infinite;
-        }
-
-        .auth-icon {
-          width: 32px;
-          height: 32px;
-          stroke: white;
+          margin-bottom: 20px;
         }
 
         .auth-header h1 {
+          font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 2em;
-          color: white;
+          color: #212E50;
           margin-bottom: 8px;
-          font-weight: 800;
+          font-weight: 700;
         }
 
         .auth-header p {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 1.1em;
+          color: #5A5A5A;
+          font-size: 1.05em;
         }
 
         /* 🔥 SUCCESS BOX STYLES */
@@ -617,13 +603,13 @@ export default function Login() {
 
         .success-box strong {
           display: block;
-          color: white;
+          color: #212E50;
           font-size: 1.05em;
           margin-bottom: 5px;
         }
 
         .success-box p {
-          color: rgba(255, 255, 255, 0.95);
+          color: #5A5A5A;
           font-weight: 500;
           margin: 0;
         }
@@ -652,7 +638,7 @@ export default function Login() {
 
         .error-box strong {
           display: block;
-          color: white;
+          color: #212E50;
           font-size: 1.05em;
           margin-bottom: 5px;
         }
@@ -664,7 +650,7 @@ export default function Login() {
         }
 
         .error-box li {
-          color: rgba(255, 255, 255, 0.95);
+          color: #5A5A5A;
           font-weight: 500;
           margin-bottom: 5px;
         }
@@ -678,7 +664,7 @@ export default function Login() {
           align-items: center;
           gap: 10px;
           margin-bottom: 12px;
-          color: rgba(255, 255, 255, 0.9);
+          color: #212E50;
           font-weight: 600;
           font-size: 1.05em;
         }
@@ -686,29 +672,31 @@ export default function Login() {
         .form-group label svg {
           width: 20px;
           height: 20px;
+          stroke: #6C8157;
         }
 
         .form-group input {
           width: 100%;
           padding: 16px 20px;
-          border: 2px solid rgba(255, 255, 255, 0.1);
+          border: 2px solid rgba(33, 46, 80, 0.12);
           border-radius: 12px;
           font-size: 1.05em;
           transition: all 0.3s ease;
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
+          background: #F9F6F0;
+          color: #212E50;
           font-family: inherit;
         }
 
         .form-group input::placeholder {
-          color: rgba(255, 255, 255, 0.4);
+          color: #5A5A5A;
+          opacity: 0.6;
         }
 
         .form-group input:focus {
           outline: none;
-          border-color: #667eea;
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+          border-color: #6C8157;
+          background: #FFFFFF;
+          box-shadow: 0 0 0 4px rgba(108, 129, 87, 0.15);
         }
 
         .form-group input:disabled {
@@ -727,14 +715,14 @@ export default function Login() {
           transform: translateY(-50%);
           background: transparent;
           border: none;
-          color: rgba(255, 255, 255, 0.6);
+          color: #5A5A5A;
           cursor: pointer;
           padding: 5px;
           transition: all 0.3s ease;
         }
 
         .toggle-password:hover {
-          color: white;
+          color: #212E50;
         }
 
         .toggle-password svg {
@@ -759,7 +747,7 @@ export default function Login() {
           align-items: center;
           gap: 10px;
           cursor: pointer;
-          color: rgba(255, 255, 255, 0.8);
+          color: #5A5A5A;
           font-size: 0.95em;
         }
 
@@ -770,7 +758,7 @@ export default function Login() {
         .checkbox-custom {
           width: 20px;
           height: 20px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
+          border: 2px solid rgba(33, 46, 80, 0.25);
           border-radius: 6px;
           display: flex;
           align-items: center;
@@ -780,19 +768,19 @@ export default function Login() {
         }
 
         .remember-me input[type="checkbox"]:checked + .checkbox-custom {
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          border-color: #667eea;
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          border-color: #7C2A3C;
         }
 
         .remember-me input[type="checkbox"]:checked + .checkbox-custom::after {
           content: '✓';
-          color: white;
+          color: #F9F6F0;
           font-weight: bold;
           font-size: 14px;
         }
 
         .forgot-link {
-          color: #667eea;
+          color: #7C2A3C;
           text-decoration: none;
           font-size: 0.95em;
           font-weight: 600;
@@ -800,15 +788,15 @@ export default function Login() {
         }
 
         .forgot-link:hover {
-          color: #764ba2;
+          color: #212E50;
           text-decoration: underline;
         }
 
         .btn-submit {
           width: 100%;
           padding: 14px 18px;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
+          color: #F9F6F0;
           border: none;
           border-radius: 12px;
           font-size: 1.15em;
@@ -819,7 +807,7 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           gap: 12px;
-          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+          box-shadow: 0 4px 20px rgba(124, 42, 60, 0.3);
           position: relative;
           overflow: hidden;
         }
@@ -832,7 +820,7 @@ export default function Login() {
           width: 0;
           height: 0;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.15);
           transform: translate(-50%, -50%);
           transition: width 0.6s, height 0.6s;
         }
@@ -844,9 +832,8 @@ export default function Login() {
 
         .btn-submit:hover:not(:disabled) {
           transform: translateY(-3px);
-          box-shadow: 0 15px 40px rgba(
-          102, 126, 234, 0.6);
-}
+          box-shadow: 0 8px 28px rgba(124, 42, 60, 0.4);
+        }
     .btn-submit:disabled {
       opacity: 0.6;
       cursor: not-allowed;
@@ -868,8 +855,8 @@ export default function Login() {
     .spinner {
       width: 22px;
       height: 22px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      border: 3px solid rgba(249, 246, 240, 0.3);
+      border-top-color: #F9F6F0;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -891,14 +878,14 @@ export default function Login() {
       right: 0;
       top: 50%;
       height: 1px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(33, 46, 80, 0.12);
     }
 
     .divider span {
       position: relative;
-      background: rgba(255, 255, 255, 0.05);
+      background: #FFFFFF;
       padding: 0 20px;
-      color: rgba(255, 255, 255, 0.6);
+      color: #5A5A5A;
       font-size: 0.9em;
     }
 
@@ -911,10 +898,10 @@ export default function Login() {
 
     .social-btn {
       padding: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(33, 46, 80, 0.12);
       border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      color: white;
+      background: #F9F6F0;
+      color: #212E50;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -925,8 +912,8 @@ export default function Login() {
     }
 
     .social-btn:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(108, 129, 87, 0.08);
+      border-color: rgba(108, 129, 87, 0.3);
       transform: translateY(-2px);
     }
 
@@ -943,11 +930,11 @@ export default function Login() {
     .auth-footer {
       text-align: center;
       padding-top: 22px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(33, 46, 80, 0.08);
     }
 
     .auth-footer p {
-      color: rgba(255, 255, 255, 0.7);
+      color: #5A5A5A;
       margin-bottom: 15px;
     }
 
@@ -955,7 +942,7 @@ export default function Login() {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: #667eea;
+      color: #7C2A3C;
       text-decoration: none;
       font-weight: 600;
       font-size: 1.05em;
@@ -963,7 +950,7 @@ export default function Login() {
     }
 
     .register-link:hover {
-      color: #764ba2;
+      color: #212E50;
       gap: 12px;
     }
 
@@ -973,36 +960,36 @@ export default function Login() {
     }
 
         .auth-side {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
           border-radius: 24px;
           padding: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+        }
 
     .auth-side::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.04)"/></svg>');
       background-size: 100px 100px;
-      opacity: 0.3;
+      opacity: 0.5;
     }
 
     .side-content {
       position: relative;
       z-index: 1;
-      color: white;
+      color: #F9F6F0;
     }
 
     .side-icon {
       width: 80px;
       height: 80px;
       margin: 0 auto 30px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(10px);
       border-radius: 20px;
       display: flex;
@@ -1014,12 +1001,14 @@ export default function Login() {
     .side-icon svg {
       width: 40px;
       height: 40px;
+      stroke: #F9F6F0;
     }
 
-        .side-content h2 {
-          font-size: 1.75em;
-          margin-bottom: 24px;
-      font-weight: 800;
+    .side-content h2 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.75em;
+      margin-bottom: 24px;
+      font-weight: 700;
       text-align: center;
     }
 
@@ -1042,6 +1031,7 @@ export default function Login() {
       width: 24px;
       height: 24px;
       flex-shrink: 0;
+      stroke: #C7A11E;
     }
 
     @media (max-width: 1024px) {
