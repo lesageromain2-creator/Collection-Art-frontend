@@ -2,67 +2,43 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Scale, TrendingUp, Palette, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import AssociationLogo from '../components/AssociationLogo';
+import { getPublicArticles } from '../utils/api';
 
-// Statue 3D conservée dans les fichiers HermesSection.tsx et HermesScene.tsx mais non affichée.
+// Rubriques dans l'ordre du prompt : Marché de l'art, Art contemporain, Histoire de l'art, Tribunal des arts, Au fil des œuvres
+const RUBRIQUES_ORDER = ['marche-art', 'art-contemporain', 'histoire-arts', 'tribunal-arts', 'fil-oeuvres'];
 
-// Mapping rubriques → images (dossier public/images)
-const RUBRIQUES_IMAGES = {
-  'histoire-arts': '/images/Histoire des arts.png',
-  'fil-oeuvres': '/images/au fil des oeuvres.png',
-  'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': '/images/tribunal des arts.jpeg',
-  'marche-art': '/images/marche.jpeg',
+const RUBRIQUES_DATA = {
+  'marche-art': { title: "Marché de l'art", image: '/images/marche.jpeg' },
+  'art-contemporain': { title: 'Art contemporain', image: '/images/art contempo.jpg.jpeg' },
+  'histoire-arts': { title: "Histoire de l'art", image: '/images/Histoire des arts.png' },
+  'tribunal-arts': { title: 'Tribunal des arts', image: '/images/tribunal des arts.jpeg' },
+  'fil-oeuvres': { title: 'Au fil des œuvres', image: '/images/au fil des oeuvres.png' },
 };
 
-const rubriques = [
+const IDENTITE_ITEMS = [
   {
-    id: 'histoire-arts',
-    title: 'Histoire des arts',
-    description: "Découvrez l'histoire de l'art à travers les siècles, des œuvres majeures aux courants artistiques qui ont façonné notre regard.",
-    icon: BookOpen,
-    color: 'burgundy',
-    hex: '#7C2A3C',
+    src: '/new images/derriere-chaque-oeuvre.jpeg',
+    text: 'Derrière chaque œuvre, il y a une histoire qui mérite d\u2019être racontée.',
   },
   {
-    id: 'fil-oeuvres',
-    title: 'Au fil des œuvres',
-    description: "Explorez en profondeur les œuvres qui ont marqué l'histoire de l'art, leurs secrets et leur contexte de création.",
-    icon: Palette,
-    color: 'olive',
-    hex: '#6C8157',
+    src: '/new images/on-explore-art.jpeg',
+    text: 'On explore l\u2019art sous tous ses angles\u00a0: beauté, marché, enjeux contemporains.',
   },
   {
-    id: 'art-contemporain',
-    title: 'Art contemporain',
-    description: "Plongez dans l'art d'aujourd'hui : tendances, artistes émergents et enjeux de la création contemporaine.",
-    icon: Sparkles,
-    color: 'gold',
-    hex: '#C7A11E',
+    src: '/new images/chaque-mois-recherches.jpeg',
+    text: 'Chaque mois, des recherches approfondies pour mieux comprendre l\u2019univers artistique.',
   },
   {
-    id: 'tribunal-arts',
-    title: 'Tribunal des arts',
-    description: "Analyse des procès et affaires judiciaires qui ont secoué le monde de l'art, entre droit et patrimoine.",
-    icon: Scale,
-    color: 'navy',
-    hex: '#212E50',
-  },
-  {
-    id: 'marche-art',
-    title: "Marché de l'art",
-    description: "Décryptage des dynamiques du marché de l'art : ventes aux enchères, tendances, valorisation et circulation des œuvres.",
-    icon: TrendingUp,
-    color: 'burgundy',
-    hex: '#7C2A3C',
+    src: '/new images/collection-aurart-reflexion.jpeg',
+    text: 'Collection Aur\u2019art se veut un espace de réflexion, de découverte et de transmission, où l\u2019art se pense autant qu\u2019il se contemple.',
   },
 ];
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
+  const [articles, setArticles] = useState([]);
 
   const demoSettings = {
     site_name: "Collection Aur'art",
@@ -70,9 +46,26 @@ export default function Home() {
     email: 'collection.aurart@gmail.com',
   };
 
+  const [pubsPage, setPubsPage] = useState(0);
+
   useEffect(() => {
-    setMounted(true);
+    getPublicArticles({ limit: 12 })
+      .then(({ articles: list }) => {
+        const sorted = (list || []).slice().sort((a, b) => {
+          const da = a.publishedAt || a.createdAt || a.updatedAt || 0;
+          const db = b.publishedAt || b.createdAt || b.updatedAt || 0;
+          return new Date(db) - new Date(da);
+        });
+        setArticles(sorted);
+      })
+      .catch(() => setArticles([]));
   }, []);
+
+  const pubsPerPage = 3;
+  const pubsMaxPage = Math.max(0, Math.ceil(articles.length / pubsPerPage) - 1);
+  const canPrevPubs = pubsPage > 0;
+  const canNextPubs = pubsPage < pubsMaxPage;
+  const visibleArticles = articles.slice(pubsPage * pubsPerPage, pubsPage * pubsPerPage + pubsPerPage);
 
   return (
     <>
@@ -85,449 +78,591 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-creme">
+      <div className="min-h-screen bg-white">
         <Header settings={demoSettings} />
 
-        {/* Menu rubriques — collé sous le header bleu */}
-        <nav
-          className="sticky z-40 nav-rubriques"
-          aria-label="Rubriques"
-        >
-          <div className="max-w-6xl mx-auto px-4 py-2 md:px-6 md:py-4">
-            <div className="nav-rubriques-inner">
-              {rubriques.map((rubrique) => (
-                <Link
-                  key={rubrique.id}
-                  href={`/rubriques/${rubrique.id}`}
-                  className="nav-rubriques-link"
-                >
-                  {rubrique.title}
-                </Link>
-              ))}
-              <Link
-                href="/rubriques"
-                className="nav-rubriques-link nav-rubriques-link--all"
-              >
-                Toutes les rubriques
-              </Link>
-            </div>
+        <main id="main-content">
+        {/* Hero — image plein écran, overlay titre + slogan + CTA */}
+        <section className="hero-home">
+          <div className="hero-home-bg">
+            <img
+              src="/new images/image acceuil principale.jpeg"
+              alt=""
+              className="hero-home-bg-img"
+            />
           </div>
-        </nav>
-
-        {/* Hero d'accueil — palette officielle : crème, olive, bordeaux, or, navy */}
-        <section className="hero-welcome">
-          <div className="hero-welcome-bg">
-            <div className="hero-orb hero-orb--olive" aria-hidden />
-            <div className="hero-orb hero-orb--burgundy" aria-hidden />
-            <div className="hero-orb hero-orb--gold" aria-hidden />
-            <div className="hero-orb hero-orb--navy" aria-hidden />
-          </div>
-          <div className="hero-welcome-inner">
-            <div className="logo-hero-reveal">
-              <AssociationLogo size="hero" />
-            </div>
-            <p className="hero-subtitle">Esquisses de l&apos;Art & son marché</p>
+          <div className="hero-home-content">
+            <h1 className="hero-home-title">Collection Aur&apos;art</h1>
+            <p className="hero-home-subtitle">Esquisses de l&apos;art et son marché</p>
           </div>
         </section>
 
+        {/* Rubriques — grille pleine largeur */}
+        <section className="section-rubriques">
+          <h2 className="section-rubriques-title">Les rubriques</h2>
+          <div className="section-rubriques-grid">
+            {RUBRIQUES_ORDER.map((id) => {
+              const data = RUBRIQUES_DATA[id];
+              if (!data) return null;
+              return (
+                <Link
+                  key={id}
+                  href={`/rubriques/${id}`}
+                  className="section-rubriques-card"
+                >
+                  <div className="section-rubriques-card-img">
+                    <Image
+                      src={data.image}
+                      alt={data.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 20vw"
+                    />
+                  </div>
+                  <h3 className="section-rubriques-card-title">{data.title}</h3>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Dernières publications — grille 3 colonnes, pagination par 3 */}
+        <section className="section-pubs">
+          <h2 className="section-pubs-title">Dernières publications</h2>
+          {articles.length === 0 ? (
+            <p className="section-pubs-empty">Aucun article pour le moment.</p>
+          ) : (
+            <>
+              <div className="section-pubs-grid">
+                {visibleArticles.map((art) => (
+                  <Link
+                    key={art.id}
+                    href={`/blog/${art.slug || art.id}`}
+                    className="section-pubs-card"
+                  >
+                    <div className="section-pubs-card-frame">
+                      <div className="section-pubs-card-cover">
+                        {(art.featured_image_url || art.imageUrl) ? (
+                          <img
+                            src={art.featured_image_url || art.imageUrl}
+                            alt=""
+                            className="section-pubs-card-img"
+                          />
+                        ) : (
+                          <div className="section-pubs-card-placeholder" />
+                        )}
+                      </div>
+                      <div className="section-pubs-card-body">
+                        {(art.rubrique?.title || art.rubriqueName) && (
+                          <span className="section-pubs-card-rubrique">
+                            {(art.rubrique?.title || art.rubriqueName).toUpperCase()}
+                          </span>
+                        )}
+                        <h3 className="section-pubs-card-title">{art.title}</h3>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {(canPrevPubs || canNextPubs) && (
+                <div className="section-pubs-nav">
+                  <button
+                    type="button"
+                    className="section-pubs-nav-btn"
+                    onClick={() => setPubsPage((p) => Math.max(0, p - 1))}
+                    disabled={!canPrevPubs}
+                    aria-label="Articles précédents"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    className="section-pubs-nav-btn"
+                    onClick={() => setPubsPage((p) => Math.min(pubsMaxPage, p + 1))}
+                    disabled={!canNextPubs}
+                    aria-label="Articles suivants"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+          <div className="section-pubs-footer">
+            <Link href="/articles" className="section-pubs-link">
+              Voir tous les articles
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+
+        {/* Identité de l'association — mosaïque artistique */}
+        <section className="section-identite">
+          <h2 className="section-identite-title">Notre identité</h2>
+          <div className="section-identite-mosaic">
+            {IDENTITE_ITEMS.map((item, i) => (
+              <figure key={i} className={`id-fig id-fig--${i}`}>
+                <div className="id-fig-img-wrap">
+                  <img src={item.src} alt="" className="id-fig-img" />
+                </div>
+                <figcaption className="id-fig-caption">{item.text}</figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        {/* Nous contacter */}
+        <section className="section-contact">
+          <div className="section-contact-inner">
+            <h2 className="section-contact-title">Nous contacter</h2>
+            <p className="section-contact-text">
+              Une question, un partenariat ou simplement envie d&apos;échanger ? Écrivez-nous.
+            </p>
+            <Link href="/contact" className="section-contact-btn">
+              Envoyer un message
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+
+        </main>
+
         <style jsx>{`
-          .hero-welcome {
+          .hero-home {
             position: relative;
-            min-height: 100vh;
+            min-height: 60vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background: #F9F6F0;
-            padding-top: calc(5px + 88px);
           }
           @media (min-width: 768px) {
-            .hero-welcome {
-              padding-top: 0;
-            }
+            .hero-home { min-height: 100vh; }
           }
-          .hero-welcome-bg {
+          .hero-home-bg {
             position: absolute;
             inset: 0;
+            background: #fff;
             pointer-events: none;
           }
-          .hero-orb {
+          .hero-home-bg-img {
             position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.12;
-            animation: heroOrbFloat 25s ease-in-out infinite;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
           }
-          .hero-orb--olive {
-            width: 400px;
-            height: 400px;
-            background: #6C8157;
-            top: 10%;
-            left: 5%;
-            animation-delay: 0s;
+          @media (min-width: 768px) {
+            .hero-home-bg-img { object-fit: contain; }
           }
-          .hero-orb--burgundy {
-            width: 350px;
-            height: 350px;
-            background: #7C2A3C;
-            top: 60%;
-            right: 10%;
-            animation-delay: -6s;
-          }
-          .hero-orb--gold {
-            width: 300px;
-            height: 300px;
-            background: #C7A11E;
-            bottom: 15%;
-            left: 15%;
-            animation-delay: -12s;
-          }
-          .hero-orb--navy {
-            width: 320px;
-            height: 320px;
-            background: #212E50;
-            top: 20%;
-            right: 20%;
-            animation-delay: -18s;
-          }
-          @keyframes heroOrbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(20px, -30px) scale(1.05); }
-            50% { transform: translate(-15px, 20px) scale(0.98); }
-            75% { transform: translate(25px, 15px) scale(1.02); }
-          }
-          .hero-welcome-inner {
+          .hero-home-content {
             position: relative;
             z-index: 1;
+            text-align: center;
+            padding: 2rem 1rem 3rem;
+          }
+          .hero-home-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: clamp(1.75rem, 8vw, 4.5rem);
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8), 0 2px 12px rgba(0,0,0,0.6), 0 4px 24px rgba(0,0,0,0.4);
+            margin: 0 0 0.5rem;
+            line-height: 1.1;
+          }
+          .hero-home-subtitle {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: clamp(0.85rem, 2.5vw, 1.35rem);
+            color: rgba(255,255,255,0.95);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.7), 0 2px 8px rgba(0,0,0,0.5);
+            margin: 0 0 2rem;
+            letter-spacing: 0.08em;
+          }
+          .section-rubriques {
+            background: #fff;
+            padding: 2rem 0.75rem 2.5rem;
+            width: 100%;
+          }
+          @media (min-width: 768px) {
+            .section-rubriques { padding: 2.5rem 0 3rem; }
+          }
+          .section-rubriques-title {
+            font-family: 'Times New Roman', Times, Georgia, serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4a6b3a;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin: 0 0 1.25rem;
+          }
+          @media (min-width: 768px) {
+            .section-rubriques-title { font-size: 1.5rem; margin: 0 0 1.5rem; }
+          }
+          .section-rubriques-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 100%;
+            padding: 0 0.25rem;
+          }
+          @media (min-width: 640px) {
+            .section-rubriques-grid {
+              grid-template-columns: repeat(3, 1fr);
+              gap: 1rem;
+              padding: 0;
+            }
+          }
+          @media (min-width: 1024px) {
+            .section-rubriques-grid {
+              grid-template-columns: repeat(5, 1fr);
+              gap: 1.5rem;
+            }
+          }
+          .section-rubriques-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: transform 0.25s, box-shadow 0.25s;
+          }
+          .section-rubriques-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          }
+          .section-rubriques-card-img {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #E8B4BC;
+          }
+          .section-rubriques-card-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2d1f2d;
+            margin: 0;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+          }
+          @media (min-width: 640px) {
+            .section-rubriques-card-title {
+              font-size: 1rem;
+              padding: 1rem;
+            }
+          }
+          @media (min-width: 768px) {
+            .section-rubriques-card-title {
+              font-size: 1.25rem;
+              padding: 1.25rem;
+            }
+          }
+
+          .section-pubs {
+            background: #E8B4BC;
+            padding: 2rem 0.75rem 3rem;
+          }
+          @media (min-width: 768px) {
+            .section-pubs { padding: 3rem 1rem 4rem; }
+          }
+          .section-pubs-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4A6B3A;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: center;
+            margin: 0 0 1.5rem;
+          }
+          @media (min-width: 768px) {
+            .section-pubs-title { font-size: 1.5rem; margin: 0 0 2rem; }
+          }
+          .section-pubs-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 0.5rem;
+          }
+          @media (min-width: 480px) {
+            .section-pubs-grid {
+              grid-template-columns: repeat(2, 1fr);
+              gap: 1.25rem;
+              padding: 0 1rem;
+            }
+          }
+          @media (min-width: 768px) {
+            .section-pubs-grid {
+              grid-template-columns: repeat(3, 1fr);
+              gap: 1.5rem;
+              padding: 0 1.5rem;
+            }
+          }
+          @media (min-width: 1024px) {
+            .section-pubs-grid {
+              gap: 2rem;
+            }
+          }
+          .section-pubs-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.3s ease;
+          }
+          .section-pubs-card:hover {
+            transform: translateY(-6px);
+          }
+          .section-pubs-card-frame {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem 3rem;
-            text-align: center;
-            /* Remonte pour centrage dans la zone visible (header + nav sur desktop) */
-            transform: translateY(calc(-1 * (5px + 88px) / 2));
+            background: transparent;
+            overflow: hidden;
           }
-          @media (min-width: 768px) {
-            .hero-welcome-inner {
-              transform: translateY(calc(-1 * (5px + 104px + 3.5rem)));
-            }
-          }
-          .nav-rubriques {
-            display: none;
-          }
-          @media (min-width: 768px) {
-            .nav-rubriques {
-              display: block;
-              top: calc(5px + 104px);
-              margin-top: calc(5px + 104px);
-              background: linear-gradient(180deg, #F5C6D2 0%, #f0b8c6 100%);
-              box-shadow: 0 2px 20px rgba(124, 42, 60, 0.08);
-              border-top: 1px solid rgba(124, 42, 60, 0.06);
-            }
-          }
-          .nav-rubriques-inner {
-            display: flex;
-            flex-wrap: nowrap;
-            align-items: center;
-            justify-content: center;
-            gap: 0.25rem 0.4rem;
-            overflow-x: auto;
-            overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding-bottom: 2px;
-          }
-          .nav-rubriques-inner::-webkit-scrollbar {
-            display: none;
-          }
-          @media (min-width: 768px) {
-            .nav-rubriques-inner {
-              flex-wrap: wrap;
-              justify-content: center;
-              gap: 0.75rem 1.25rem;
-              overflow: visible;
-            }
-          }
-          .nav-rubriques-link {
-            font-size: 0.5625rem;
-            padding: 0.2rem 0.4rem;
-            border-radius: 9999px;
-            color: #212E50;
-            font-weight: 500;
-            letter-spacing: 0.02em;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            flex-shrink: 0;
-            white-space: nowrap;
-          }
-          @media (min-width: 768px) {
-            .nav-rubriques-link {
-              font-size: 0.9375rem;
-              padding: 0.5rem 1rem;
-              letter-spacing: 0.03em;
-            }
-          }
-          .nav-rubriques-link::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            bottom: 2px;
-            width: 0;
-            height: 2px;
-            background: #7C2A3C;
-            border-radius: 2px;
-            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), left 0.25s ease;
-          }
-          .nav-rubriques-link:hover {
-            background: #7C2A3C;
-            color: #F9F6F0;
-            transform: translateY(-1px);
-          }
-          .nav-rubriques-link:hover::after {
-            width: 70%;
-            left: 15%;
-            background: #F9F6F0;
-          }
-          .nav-rubriques-link--all {
-            font-weight: 600;
-            color: #1A2B64;
-          }
-          .nav-rubriques-link--all:hover {
-            background: #1A2B64;
-            color: #F9F6F0;
-          }
-          .nav-rubriques-link--all:hover::after {
-            background: #C7A11E;
-          }
-          .logo-hero-reveal {
+          .section-pubs-card-cover {
             width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transform: scale(0.85);
-            animation: logoHeroReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+            aspect-ratio: 3/2;
+            overflow: hidden;
           }
-          @keyframes logoHeroReveal {
-            0% {
-              opacity: 0;
-              transform: scale(0.85);
-            }
-            100% {
-              opacity: 1;
-              transform: scale(1);
-            }
+          .section-pubs-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
           }
-          .hero-subtitle {
-            margin-top: 1.5rem;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 1.125rem;
-            font-weight: 500;
-            letter-spacing: 0.2em;
+          .section-pubs-card-placeholder {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.25);
+          }
+          .section-pubs-card-body {
+            padding: 0.75rem 0.25rem 0;
+          }
+          .section-pubs-card-rubrique {
+            display: block;
+            font-family: 'Times New Roman', Georgia, serif;
+            font-size: 0.65rem;
+            font-weight: 400;
             text-transform: uppercase;
-            color: #212E50;
+            letter-spacing: 0.12em;
+            color: #4a6b3a;
+            margin-bottom: 0.35rem;
+          }
+          .section-pubs-card-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.4;
+            color: #2d1f2d;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
           }
           @media (min-width: 768px) {
-            .hero-subtitle {
-              font-size: 1.25rem;
-              letter-spacing: 0.25em;
-              margin-top: 2rem;
+            .section-pubs-card-title {
+              font-size: 1.15rem;
             }
+          }
+          .section-pubs-card:hover .section-pubs-card-title {
+            color: #4a6b3a;
+          }
+          .section-pubs-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+          }
+          .section-pubs-nav-btn {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            border: 0;
+            background: rgba(255,255,255,0.95);
+            color: #4a6b3a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            transition: background 0.2s, opacity 0.2s;
+          }
+          .section-pubs-nav-btn:hover:not(:disabled) {
+            background: #fff;
+          }
+          .section-pubs-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
+          .section-pubs-empty {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+          }
+          .section-pubs-footer {
+            text-align: center;
+            margin-top: 2rem;
+          }
+          .section-pubs-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #fff;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.15);
+            transition: background 0.2s;
+          }
+          .section-pubs-link:hover {
+            background: rgba(0,0,0,0.25);
+          }
+
+          .section-identite {
+            background: #fff;
+            padding: 2.5rem 1rem 3rem;
+          }
+          @media (min-width: 768px) {
+            .section-identite { padding: 4rem 1.5rem 5rem; }
+          }
+          .section-identite-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4A6B3A;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 0 0 2rem;
+            text-align: center;
+          }
+          @media (min-width: 768px) {
+            .section-identite-title { font-size: 1.5rem; margin: 0 0 3rem; }
+          }
+
+          /* Mosaïque en quinconce 2×2 */
+          .section-identite-mosaic {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 0.75rem;
+            row-gap: 1.25rem;
+            max-width: 820px;
+            margin: 0 auto;
+          }
+
+          .id-fig {
+            margin: 0;
+            padding: 0;
+          }
+          /* Quinconce mobile : même disposition que desktop */
+          .id-fig--0 { grid-column: 1; grid-row: 1; }
+          .id-fig--3 { grid-column: 2; grid-row: 1; padding-top: 2rem; }
+          .id-fig--2 { grid-column: 1; grid-row: 2; margin-top: -2rem; }
+          .id-fig--1 { grid-column: 2; grid-row: 2; }
+
+          @media (min-width: 768px) {
+            .section-identite-mosaic {
+              column-gap: 3rem;
+              row-gap: 3.5rem;
+            }
+            .id-fig--0 { grid-column: 1; grid-row: 1; }
+            .id-fig--3 { grid-column: 2; grid-row: 1; padding-top: 5rem; }
+            .id-fig--2 { grid-column: 1; grid-row: 2; margin-top: -11rem; }
+            .id-fig--1 { grid-column: 2; grid-row: 2; padding-top: 1rem; justify-self: center; }
+          }
+
+          .id-fig-img-wrap {
+            overflow: hidden;
+          }
+          .id-fig-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            transition: transform 0.5s ease;
+          }
+          .id-fig:hover .id-fig-img {
+            transform: scale(1.03);
+          }
+          .id-fig-caption {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 0.7rem;
+            font-style: italic;
+            line-height: 1.45;
+            color: #4A6B3A;
+            margin-top: 0.4rem;
+            padding: 0;
+          }
+          @media (min-width: 480px) {
+            .id-fig-caption { font-size: 0.8rem; }
+          }
+          @media (min-width: 768px) {
+            .id-fig-caption {
+              font-size: 1rem;
+              line-height: 1.6;
+              margin-top: 0.65rem;
+            }
+          }
+
+          .section-contact {
+            background: #f8f4f4;
+            padding: 2rem 1rem 3rem;
+          }
+          @media (min-width: 768px) {
+            .section-contact { padding: 3rem 1rem 4rem; }
+          }
+          .section-contact-inner {
+            max-width: 32rem;
+            margin: 0 auto;
+            text-align: center;
+          }
+          .section-contact-title {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #4A6B3A;
+            margin: 0 0 0.75rem;
+          }
+          @media (min-width: 768px) {
+            .section-contact-title { font-size: 1.5rem; }
+          }
+          .section-contact-text {
+            font-size: 0.9rem;
+            color: #555;
+            margin: 0 0 1.25rem;
+          }
+          @media (min-width: 768px) {
+            .section-contact-text { font-size: 1rem; margin: 0 0 1.5rem; }
+          }
+          .section-contact-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #4A6B3A;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.2s;
+          }
+          @media (min-width: 768px) {
+            .section-contact-btn { padding: 0.875rem 1.75rem; font-size: 1rem; }
+          }
+          .section-contact-btn:hover {
+            background: #3a5a2e;
+            transform: translateY(-2px);
           }
         `}</style>
-
-        <main id="main-content" className="relative z-10">
-          {/* Section présentation — 5 couleurs identité */}
-          <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-24 pb-16 px-6 bg-creme">
-            <div className="absolute top-0 left-0 right-0 h-1.5 flex" aria-hidden>
-              <span className="flex-1 bg-olive" />
-              <span className="flex-1 bg-burgundy" />
-              <span className="flex-1 bg-gold" />
-              <span className="flex-1 bg-navy" />
-            </div>
-            <div className={`max-w-4xl mx-auto text-center transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-              <h1 className="font-heading text-4xl md:text-6xl font-bold text-navy mb-4 leading-tight">
-                Collection Aur'art
-              </h1>
-              <p className="text-xl md:text-2xl font-light tracking-wide mb-6" style={{ color: '#7C2A3C' }}>
-                Esquisses de l'Art & son marché
-              </p>
-              <p className="text-base md:text-lg text-gris max-w-2xl mx-auto mb-10 leading-relaxed">
-                L'Association de passionnés qui s'engage à valoriser le patrimoine artistique sous toutes ses « formes »
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <Link
-                  href="/articles"
-                  className="group inline-flex items-center justify-center gap-2 text-navy px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                  style={{ backgroundColor: '#F5C6D2' }}
-                >
-                  Découvrir nos articles
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                <Link
-                  href="/about"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-navy text-navy px-8 py-3 rounded-full font-medium hover:bg-navy hover:text-creme transition-all"
-                >
-                  Notre équipe
-                </Link>
-              </div>
-            </div>
-          </section>
-
-          {/* PRÉSENTATION DE L'ASSOCIATION */}
-          <section className="py-20 md:py-32 px-6 bg-creme">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="font-heading text-3xl md:text-5xl font-bold text-navy mb-6">
-                  Notre mission
-                </h2>
-                <div className="w-32 h-1.5 flex mx-auto rounded-full overflow-hidden">
-                  <span className="flex-1 bg-olive" />
-                  <span className="flex-1 bg-burgundy" />
-                  <span className="flex-1 bg-gold" />
-                  <span className="flex-1 bg-navy" />
-                </div>
-              </div>
-              <div className="space-y-6 text-justify">
-                <p className="text-base md:text-lg text-gris leading-relaxed">
-                  Notre association se donne pour mission de questionner, valoriser et transmettre l'histoire de l'art dans toute sa complexité. À travers nos articles, nous explorons les œuvres, les courants artistiques, les procès, les dynamiques du marché de l'art et les enjeux contemporains de la protection patrimoniale.
-                </p>
-                <p className="text-base md:text-lg text-gris leading-relaxed">
-                  Nous refusons une approche élitiste de l'art qui le cantonne aux cercles initiés. Notre conviction est que la compréhension des œuvres, leur contexte historique et leur circulation actuelle constituent un enjeu culturel fondamental. L'art n'est pas un luxe réservé à quelques-uns : c'est un patrimoine commun qui façonne notre regard sur le monde et notre rapport à l'histoire.
-                </p>
-                <p className="text-base md:text-lg text-gris leading-relaxed">
-                  Nos rubriques interrogent aussi bien la beauté formelle des créations que les questions juridiques, économiques et éthiques qui traversent le marché de l'art. Nous analysons les ventes aux enchères, les procès, décryptons les tendances, documentons les débats.
-                </p>
-                <p className="text-base md:text-lg text-gris leading-relaxed">
-                  Écrire sur l'art, c'est aussi prendre position : face aux inégalités d'accès à la culture, face à la marchandisation croissante des œuvres, face à l'urgence de préserver et transmettre notre héritage artistique. C'est notre façon de contribuer à une culture vivante, critique et partagée.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* NOS RUBRIQUES - Avec images */}
-          <section className="py-20 md:py-32 px-6 bg-creme">
-            <div className="max-w-6xl mx-auto">
-              <div className="text-center mb-16">
-                <h2 className="font-heading text-3xl md:text-5xl font-bold text-navy mb-6">
-                  Nos rubriques
-                </h2>
-                <p className="text-lg text-gris max-w-2xl mx-auto">
-                  Parcourez nos thématiques artistiques et découvrez nos analyses approfondies
-                </p>
-                <div className="w-32 h-1.5 flex mx-auto rounded-full overflow-hidden mt-6">
-                  <span className="flex-1 bg-olive" />
-                  <span className="flex-1 bg-burgundy" />
-                  <span className="flex-1 bg-gold" />
-                  <span className="flex-1 bg-navy" />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-8">
-                {rubriques.map((rubrique) => {
-                  const Icon = rubrique.icon;
-                  const imageSrc = RUBRIQUES_IMAGES[rubrique.id];
-                  return (
-                    <Link
-                      key={rubrique.id}
-                      href={`/rubriques/${rubrique.id}`}
-                      className="group block bg-creme rounded-2xl overflow-hidden shadow-md border border-navy/10 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                    >
-                      <div className="relative h-48 md:h-56 overflow-hidden">
-                        {imageSrc ? (
-                          <>
-                            <Image
-                              src={imageSrc}
-                              alt={rubrique.title}
-                              fill
-                              className="object-cover transition-transform duration-500 group-hover:scale-105"
-                              sizes="(max-width: 768px) 100vw, 50vw"
-                            />
-                            <div
-                              className="absolute inset-0 opacity-60 transition-opacity group-hover:opacity-40"
-                              style={{ background: `linear-gradient(180deg, transparent 0%, ${rubrique.hex} 100%)` }}
-                            />
-                          </>
-                        ) : (
-                          <div
-                            className="absolute inset-0 flex items-center justify-center"
-                            style={{ background: `linear-gradient(135deg, ${rubrique.hex} 0%, #212E50 100%)` }}
-                          >
-                            <Icon className="h-16 w-16 text-creme/90" />
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 p-5">
-                          <h3 className="font-heading text-xl md:text-2xl font-semibold text-creme drop-shadow-lg">
-                            {rubrique.title}
-                          </h3>
-                        </div>
-                      </div>
-                      <div className="p-6 bg-creme border-t border-navy/5">
-                        <p className="text-gris leading-relaxed mb-4 line-clamp-2">
-                          {rubrique.description}
-                        </p>
-                        <div className="inline-flex items-center gap-2 font-medium text-sm group-hover:gap-3 transition-all" style={{ color: '#7C2A3C' }}>
-                          Découvrir
-                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <div className="text-center mt-12">
-                <Link
-                  href="/rubriques"
-                  className="inline-flex items-center gap-2 text-navy hover:text-burgundy transition-colors font-medium"
-                >
-                  Voir toutes les rubriques
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
-            </div>
-          </section>
-
-          {/* SECTION CTA — 5 couleurs identité */}
-          <section className="py-20 md:py-32 px-6 bg-creme relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1.5 flex" aria-hidden>
-              <span className="flex-1 bg-olive" />
-              <span className="flex-1 bg-burgundy" />
-              <span className="flex-1 bg-gold" />
-              <span className="flex-1 bg-navy" />
-            </div>
-            <div className="max-w-4xl mx-auto text-center relative">
-              <div className="mb-8">
-                <div className="inline-flex h-16 w-16 rounded-full items-center justify-center shadow-lg overflow-hidden" style={{ background: 'linear-gradient(135deg, #6C8157 0%, #7C2A3C 33%, #C7A11E 66%, #212E50 100%)' }}>
-                  <BookOpen className="h-8 w-8 text-creme" />
-                </div>
-              </div>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold text-navy mb-6">
-                Rejoignez notre communauté
-              </h2>
-              <p className="text-lg text-gris mb-8 max-w-2xl mx-auto leading-relaxed">
-                Découvrez nos derniers articles, analyses et réflexions sur l'art, son histoire et son marché. Une culture artistique vivante, critique et partagée.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/articles"
-                  className="inline-flex items-center justify-center gap-2 text-navy px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
-                  style={{ backgroundColor: '#F5C6D2' }}
-                >
-                  Lire nos articles
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-navy text-navy px-8 py-3 rounded-full font-medium hover:bg-navy hover:text-creme transition-all"
-                >
-                  Nous contacter
-                </Link>
-              </div>
-            </div>
-          </section>
-        </main>
 
         <Footer settings={demoSettings} />
       </div>

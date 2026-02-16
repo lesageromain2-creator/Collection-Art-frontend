@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { href: '/', label: 'Accueil' },
   { href: '/rubriques', label: 'Rubriques' },
   { href: '/articles', label: 'Articles' },
-  { href: '/about', label: 'Notre équipe' },
+  { href: '/about', label: 'À propos' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -21,6 +21,13 @@ const RUBRIQUES = [
 ];
 
 const SITE_NAME = "Collection Aur'art";
+
+// Couleurs extraites des images dans frontend/public/new images/
+// vert banderole au dessus du header.jpeg → vert profond
+// rose header.jpeg → rose clair
+const BANDEAU_COLOR = '#4a6b3a';
+const HEADER_COLOR = '#E8C8D4';
+const LOGO_IMG = '/new images/Logo final (1).png';
 
 export default function Header({ settings = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,30 +73,33 @@ export default function Header({ settings = {} }) {
 
   return (
     <>
-      {/* Bandeau identité : 5 couleurs exactes crème, olive, bordeaux, or, navy */}
-      <div className="hdr-palette" aria-hidden />
-      <header className="hdr" role="banner">
-        <div className="hdr-inner">
-          <Link href="/" className="hdr-logo-link">
-            <span className="hdr-brand">
-              <span className="hdr-title">{SITE_NAME}</span>
-              <span className="hdr-subtitle">Esquisses de l&apos;Art & son marché</span>
-            </span>
-          </Link>
+      <div className="hdr-full">
+        <div className="hdr-bandeau" aria-hidden>
+          Magazine mensuel d&apos;art
+        </div>
+        <header className="hdr" role="banner">
+          <Link href="/" className="hdr-brand" aria-label="Accueil Collection Aur'art">
 
+          
+            <span className="hdr-logo-wrap">
+              <img src={LOGO_IMG} alt="" className="hdr-logo-img" />
+            </span>
+            
+          </Link>
           <nav className="hdr-nav">
-            <div className="hdr-nav-center">
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
+              >
+                {item.label}
+              </Link>
+            ))}
             <div className="hdr-actions">
+              <Link href="/articles" className="hdr-icon-link" aria-label="Rechercher / Articles">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </Link>
               {isLoggedIn ? (
                 <>
                   {userRole === 'admin' && (
@@ -101,11 +111,12 @@ export default function Header({ settings = {} }) {
                   </button>
                 </>
               ) : (
-                <Link href="/login" className="hdr-link">Connexion</Link>
+                <Link href="/login" className="hdr-icon-link" aria-label="Connexion">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                </Link>
               )}
             </div>
           </nav>
-
           <button
             type="button"
             aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
@@ -117,8 +128,8 @@ export default function Header({ settings = {} }) {
             <span className="hdr-burger-line" />
             <span className="hdr-burger-line" />
           </button>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {menuOpen && (
         <div
@@ -199,134 +210,152 @@ export default function Header({ settings = {} }) {
         </div>
       </aside>
 
+      <style jsx global>{`
+        .hdr a.hdr-link,
+        .hdr a.hdr-link:visited,
+        .hdr a.hdr-link:focus,
+        .hdr .hdr-nav a.hdr-link {
+          color: #4a6b3a !important;
+          -webkit-text-fill-color: #4a6b3a !important;
+          font-family: 'Times New Roman', Times, Georgia, serif !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.18em !important;
+        }
+      `}</style>
       <style jsx>{`
-        .hdr-palette {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 51;
-          height: 5px;
-          background: linear-gradient(90deg, #F9F6F0 0%, #F9F6F0 20%, #6C8157 20%, #6C8157 40%, #7C2A3C 40%, #7C2A3C 60%, #C7A11E 60%, #C7A11E 80%, #212E50 80%, #212E50 100%);
+        .hdr-full {
+          width: 100%;
+          margin-bottom: 1.5rem;
+          box-shadow: 0 4px 14px rgba(74, 107, 58, 0.08);
+        }
+        .hdr-bandeau {
+          width: 100%;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: ${BANDEAU_COLOR};
+          color: #fff;
+          font-family: 'Times New Roman', Times, Georgia, serif;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
         .hdr {
-          position: fixed;
-          top: 5px;
-          left: 0;
-          right: 0;
-          z-index: 50;
-          background: #1A2B64;
-          color: #F9F6F0;
-          box-shadow: 0 4px 24px rgba(26,43,100,0.3);
-        }
-        .hdr-inner {
-          max-width: 80rem;
-          margin: 0 auto;
-          padding: 1.25rem 1rem 1.25rem 0.5rem;
+          width: 100%;
           display: flex;
+          flex-direction: row;
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          min-height: 88px;
+          padding: 0.5rem 1rem;
+          min-height: 52px;
+          background: ${HEADER_COLOR};
+          color: #2d1f2d;
+          box-shadow: 0 2px 12px rgba(45,31,45,0.1);
+        }
+        @media (min-width: 768px) {
+          .hdr {
+            padding: 0.6rem 1.25rem;
+            min-height: 56px;
+          }
         }
         .hdr-nav {
-          flex: 1;
           display: flex;
+          flex-direction: row;
           align-items: center;
           justify-content: center;
-          min-width: 0;
-        }
-        .hdr-nav-center {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 1.5rem;
+          gap: 2rem;
           flex: 1;
           min-width: 0;
         }
         @media (min-width: 1024px) {
-          .hdr-nav-center {
-            gap: 2rem;
-          }
-        }
-        @media (min-width: 768px) {
-          .hdr-inner {
-            padding: 1.5rem 1.5rem 1.5rem 0.75rem;
-            min-height: 104px;
+          .hdr-nav {
+            gap: 3rem;
           }
         }
 
-        .hdr-logo-link {
-          display: flex;
-          align-items: center;
-          text-decoration: none;
-          color: inherit;
-          flex-shrink: 0;
-          padding: 0.35rem 0.5rem;
-          margin: -0.35rem -0.5rem;
-          border-radius: 8px;
-          transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .hdr-logo-link:hover {
-          opacity: 0.95;
-          transform: translateY(-2px);
-          background: linear-gradient(135deg, rgba(249,246,240,0.06) 0%, rgba(108,129,87,0.04) 100%);
-          box-shadow: 0 2px 12px rgba(26,43,100,0.2);
-        }
         .hdr-brand {
           display: flex;
-          flex-direction: column;
-          gap: 0.15rem;
-          text-align: left;
+          flex-direction: row;
+          align-items: center;
+          gap: 1.25rem;
+          text-decoration: none;
+          padding: 0.5rem 0.75rem;
+          margin: 0;
+          border-radius: 8px;
+          transition: opacity 0.25s;
+          flex-shrink: 0;
         }
-        .hdr-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #F9F6F0;
-          line-height: 1.2;
+        .hdr-brand:hover {
+          opacity: 0.9;
         }
-        .hdr-subtitle {
-          font-size: 11px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          color: rgba(249,246,240,0.92);
+        .hdr-logo-wrap {
+          display: block;
+          flex-shrink: 0;
+          width: 56px;
+          height: 56px;
+          overflow: hidden;
+          padding: 0.25rem;
+          box-sizing: border-box;
         }
         @media (min-width: 768px) {
-          .hdr-title {
-            font-size: 1.4rem;
+          .hdr-logo-wrap {
+            width: 64px;
+            height: 64px;
+            padding: 0.35rem;
           }
-          .hdr-subtitle {
-            font-size: 12px;
+        }
+        .hdr-logo-img {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center;
+        }
+        .hdr-site-name {
+          flex-shrink: 0;
+          font-family: 'Times New Roman', Times, Georgia, serif;
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: ${BANDEAU_COLOR};
+          -webkit-text-fill-color: ${BANDEAU_COLOR};
+          white-space: nowrap;
+        }
+        @media (min-width: 768px) {
+          .hdr-site-name {
+            font-size: 1.6rem;
           }
         }
 
         .hdr-nav {
           display: none;
-          font-size: 1.0625rem;
         }
         @media (min-width: 768px) {
           .hdr-nav {
             display: flex;
           }
         }
-        @media (min-width: 1024px) {
-          .hdr-nav {
-            font-size: 1.125rem;
-          }
-        }
         .hdr-link {
-          color: #F9F6F0 !important;
-          -webkit-text-fill-color: #F9F6F0 !important;
+          font-family: 'Times New Roman', Times, Georgia, serif !important;
+          font-size: 1rem !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.18em;
           text-decoration: none !important;
-          padding: 0.5rem 0.75rem;
-          margin: 0 -0.75rem;
+          padding: 0.5rem 0.6rem;
+          margin: 0;
           border-radius: 8px;
-          transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-          font-weight: 600;
+          transition: color 0.25s, background 0.25s;
+          font-weight: 700;
           position: relative;
-          overflow: hidden;
+        }
+        .hdr-link,
+        .hdr-link:visited,
+        .hdr-link:focus {
+          color: #4a6b3a !important;
+          -webkit-text-fill-color: #4a6b3a !important;
         }
         .hdr-link::after {
           content: '';
@@ -335,37 +364,45 @@ export default function Header({ settings = {} }) {
           bottom: 0;
           width: 0;
           height: 2px;
-          background: linear-gradient(90deg, rgba(249,246,240,0.6) 0%, rgba(199,161,30,0.9) 50%, rgba(249,246,240,0.6) 100%);
+          background: #4a6b3a;
           border-radius: 2px;
           transform: translateX(-50%);
-          transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: width 0.25s;
         }
         .hdr-link:hover {
-          color: #FDF8F2 !important;
-          -webkit-text-fill-color: #FDF8F2 !important;
-          background: linear-gradient(135deg, rgba(249,246,240,0.08) 0%, rgba(108,129,87,0.06) 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 2px 12px rgba(26,43,100,0.2);
+          color: #3a5a2e !important;
+          -webkit-text-fill-color: #3a5a2e !important;
+          background: rgba(255,255,255,0.4);
         }
         .hdr-link:hover::after {
           width: 100%;
         }
-        .hdr-link--active {
-          position: relative;
+        .hdr-link--active,
+        .hdr-link--active:visited {
           font-weight: 700;
-          color: #F5C6D2 !important;
-          -webkit-text-fill-color: #F5C6D2 !important;
+          color: #3a5a2e !important;
+          -webkit-text-fill-color: #3a5a2e !important;
         }
         .hdr-link--active::after {
           width: 100% !important;
           left: 0 !important;
           transform: none !important;
-          height: 3px;
-          background: linear-gradient(90deg, rgba(245,198,210,0.9) 0%, rgba(199,161,30,0.85) 100%);
-          border-radius: 2px;
+          height: 2px;
+          background: #4a6b3a;
         }
-        .hdr-link--active:hover {
-          background: linear-gradient(135deg, rgba(245,198,210,0.12) 0%, rgba(199,161,30,0.06) 100%);
+        .hdr-icon-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          color: ${BANDEAU_COLOR};
+          border-radius: 8px;
+          transition: color 0.2s, background 0.2s;
+        }
+        .hdr-icon-link:hover {
+          color: #3a5a2e;
+          background: rgba(255,255,255,0.5);
         }
         .hdr-link-btn {
           background: none;
