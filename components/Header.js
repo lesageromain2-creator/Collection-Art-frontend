@@ -347,7 +347,10 @@ export default function Header({ settings = {} }) {
           padding: 0.5rem 0.6rem;
           margin: 0;
           border-radius: 8px;
-          transition: color 0.25s, background 0.25s;
+          transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                      letter-spacing 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                      background 0.35s ease,
+                      opacity 0.35s ease;
           font-weight: 700;
           position: relative;
         }
@@ -360,19 +363,19 @@ export default function Header({ settings = {} }) {
         .hdr-link::after {
           content: '';
           position: absolute;
-          left: 50%;
-          bottom: 0;
+          left: 0;
+          bottom: 2px;
           width: 0;
           height: 2px;
-          background: #4a6b3a;
+          background: linear-gradient(90deg, #4a6b3a 0%, #3a5a2e 100%);
           border-radius: 2px;
-          transform: translateX(-50%);
-          transition: width 0.25s;
+          transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hdr-link:hover {
           color: #3a5a2e !important;
           -webkit-text-fill-color: #3a5a2e !important;
-          background: rgba(255,255,255,0.4);
+          letter-spacing: 0.22em;
+          background: rgba(255,255,255,0.35);
         }
         .hdr-link:hover::after {
           width: 100%;
@@ -386,9 +389,8 @@ export default function Header({ settings = {} }) {
         .hdr-link--active::after {
           width: 100% !important;
           left: 0 !important;
-          transform: none !important;
           height: 2px;
-          background: #4a6b3a;
+          background: linear-gradient(90deg, #4a6b3a 0%, #3a5a2e 100%);
         }
         .hdr-icon-link {
           display: flex;
@@ -549,10 +551,30 @@ export default function Header({ settings = {} }) {
           color: #212E50;
           text-decoration: none;
           border-radius: 10px;
-          transition: background 0.2s, color 0.2s;
+          position: relative;
+          overflow: hidden;
+          transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                      color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                      padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hdr-drawer-link::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 3px;
+          background: linear-gradient(180deg, #4a6b3a, #7C2A3C);
+          transform: scaleY(0);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 0 2px 2px 0;
         }
         .hdr-drawer-link:hover {
           background: rgba(33,46,80,0.06);
+          padding-left: 1.375rem;
+        }
+        .hdr-drawer-link:hover::before {
+          transform: scaleY(1);
         }
         .hdr-drawer-link--active {
           background: rgba(124,42,60,0.12);
