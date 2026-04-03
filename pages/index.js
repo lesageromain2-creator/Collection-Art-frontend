@@ -8,7 +8,7 @@ import Footer from '../components/Footer';
 import { getPublicArticles } from '../utils/api';
 
 // Rubriques dans l'ordre du prompt : Marché de l'art, Art contemporain, Histoire de l'art, Tribunal des arts, Au fil des œuvres
-const RUBRIQUES_ORDER = ['marche-art', 'art-contemporain', 'histoire-arts', 'tribunal-arts', 'fil-oeuvres'];
+const RUBRIQUES_ORDER = ['marche-art', 'art-contemporain', 'histoire-arts', 'tribunal-arts', 'fil-oeuvres', 'portraits'];
 
 const RUBRIQUES_DATA = {
   'marche-art': { title: "Marché de l'art", image: '/images/marche.jpeg' },
@@ -16,6 +16,7 @@ const RUBRIQUES_DATA = {
   'histoire-arts': { title: "Histoire de l'art", image: '/images/Histoire des arts.png' },
   'tribunal-arts': { title: 'Tribunal des arts', image: '/images/tribunal des arts.jpeg' },
   'fil-oeuvres': { title: 'Au fil des œuvres', image: '/images/au fil des oeuvres.png' },
+  portraits: { title: 'Portraits', image: '/images/interview.jpeg' },
 };
 
 const IDENTITE_ITEMS = [
@@ -382,9 +383,14 @@ export default function Home() {
           }
           @media (min-width: 1024px) {
             .section-rubriques-grid {
-              grid-template-columns: repeat(5, 1fr);
+              grid-template-columns: repeat(3, 1fr);
               gap: 1.75rem;
               padding: 0 2rem;
+            }
+          }
+          @media (min-width: 1280px) {
+            .section-rubriques-grid {
+              grid-template-columns: repeat(6, 1fr);
             }
           }
           .section-rubriques-card {

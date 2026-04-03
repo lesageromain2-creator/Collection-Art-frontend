@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight } from 'lucide-react';
+import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight, UserRound } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getPublicArticles, fetchSettings } from '../../utils/api';
@@ -24,6 +24,7 @@ const RUBRIQUES_IMAGES = {
   'art-contemporain': '/images/art contempo.jpg.jpeg',
   'tribunal-arts': '/images/tribunal des arts.jpeg',
   'marche-art': '/images/marche.jpeg',
+  portraits: '/images/interview.jpeg',
 };
 
 const rubriquesConfig = {
@@ -66,6 +67,16 @@ const rubriquesConfig = {
     icon: TrendingUp,
     color: '#7C2A3C',
     hex: '#7C2A3C',
+  },
+  portraits: {
+    title: 'Portraits',
+    description:
+      "Portraits d'artistes, de collectionneurs et de figures du monde de l'art : regards, entretiens et mises en lumière.",
+    longDescription:
+      "Cette rubrique met en avant les personnalités qui font vivre l'art : créateurs, mécènes, historiens et acteurs du marché. Entretiens, profils et regards croisés pour mieux comprendre ceux qui façonnent la scène artistique.",
+    icon: UserRound,
+    color: '#8B7355',
+    hex: '#8B7355',
   },
 };
 

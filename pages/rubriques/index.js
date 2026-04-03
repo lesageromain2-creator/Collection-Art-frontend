@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles, UserRound } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import AssociationLogo from '../../components/AssociationLogo';
@@ -18,6 +18,7 @@ const RUBRIQUES_IMAGES = {
   'art-contemporain': '/images/art contempo.jpg.jpeg',
   'tribunal-arts': '/images/tribunal des arts.jpeg',
   'marche-art': '/images/marche.jpeg',
+  portraits: '/images/interview.jpeg',
 };
 
 const rubriques = [
@@ -76,6 +77,19 @@ const rubriques = [
     hex: '#7C2A3C',
     articleCount: 0,
   },
+  {
+    id: 'portraits',
+    title: 'Portraits',
+    slug: 'portraits',
+    description:
+      "Portraits d'artistes, de collectionneurs et de figures du monde de l'art : regards, entretiens et mises en lumière.",
+    longDescription:
+      "Cette rubrique met en avant les personnalités qui font vivre l'art : créateurs, mécènes, historiens et acteurs du marché. Entretiens, profils et regards croisés pour mieux comprendre ceux qui façonnent la scène artistique.",
+    icon: UserRound,
+    color: '#8B7355',
+    hex: '#8B7355',
+    articleCount: 0,
+  },
 ];
 
 export default function RubriquesPage() {
@@ -85,7 +99,7 @@ export default function RubriquesPage() {
         <title>Nos rubriques – Collection Aur'art</title>
         <meta
           name="description"
-          content="Explorez nos différentes rubriques : Histoire des arts, Au fil des œuvres, Art contemporain, Tribunal des arts, Marché de l'art."
+          content="Explorez nos rubriques : Histoire des arts, Au fil des œuvres, Art contemporain, Tribunal des arts, Marché de l'art, Portraits."
         />
       </Head>
 

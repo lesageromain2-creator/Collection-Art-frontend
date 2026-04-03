@@ -18,6 +18,7 @@ const RUBRIQUES = [
   { id: 'art-contemporain', title: 'Art contemporain' },
   { id: 'tribunal-arts', title: 'Tribunal des arts' },
   { id: 'marche-art', title: "Marché de l'art" },
+  { id: 'portraits', title: 'Portraits' },
 ];
 
 const SITE_NAME = "Collection Aur'art";
