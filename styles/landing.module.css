@@ -1,0 +1,1209 @@
+.page {
+  --ink: #2b2926;
+  --muted: #6a645c;
+  --cream: #f6f1e8;
+  --paper: #fffdf8;
+  --sage: #6e7c63;
+  --sage-deep: #5c6a52;
+  --pink: #f6d0da;
+  --pink-deep: #e7b4c3;
+  --blush: #f8e7ec;
+  --gold: #c6a15a;
+  --line: rgba(43, 41, 38, 0.08);
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 420px at -10% 18%, rgba(143, 160, 126, 0.18), transparent 60%),
+    radial-gradient(700px 380px at 110% 8%, rgba(246, 208, 218, 0.55), transparent 55%),
+    var(--cream);
+  color: var(--ink);
+  font-family: 'Outfit', 'Montserrat', sans-serif;
+  overflow-x: clip;
+  position: relative;
+}
+
+.greenBar {
+  background: var(--sage);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 22px 48px;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 18px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(247, 243, 234, 0.82);
+  text-decoration: none;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 2px 0 5px;
+  border: 0;
+  position: relative;
+}
+
+.pill:hover {
+  color: #fffdf8;
+}
+
+.pillActive {
+  color: #fffdf8;
+}
+
+.pillActive::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 6px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 8' preserveAspectRatio='none'%3E%3Cpath d='M1 5c8-3 14 2 22-1s16 3 24 0 18-2 28 1' fill='none' stroke='%23f3efe4' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 6px no-repeat;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border-radius: 0;
+  border-bottom: 1px solid rgba(247, 243, 234, 0.45);
+  padding: 6px 2px 5px;
+  min-width: 190px;
+  color: rgba(247, 243, 234, 0.8);
+}
+
+.search input {
+  border: 0;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  color: #f7f3ea;
+}
+
+.search input::placeholder {
+  color: rgba(247, 243, 234, 0.62);
+}
+
+.login {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 1px solid rgba(247, 243, 234, 0.45);
+  color: #f7f3ea;
+  text-decoration: none;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 4px 0 5px;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.login:hover {
+  border-bottom-color: #f7f3ea;
+}
+
+.burger {
+  display: none;
+  width: 36px;
+  height: 32px;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.burger span {
+  display: block;
+  width: 18px;
+  height: 1px;
+  background: #f7f3ea;
+}
+
+.drawer {
+  display: none;
+}
+
+.brand {
+  position: relative;
+  z-index: 2;
+  margin-top: -62px;
+  text-align: center;
+  padding: 0 16px 8px;
+}
+
+.logo {
+  height: 86px;
+  width: auto;
+  margin: 0 auto 2px;
+  display: block;
+  filter: drop-shadow(0 8px 16px rgba(60, 40, 30, 0.08));
+}
+
+.script {
+  font-family: 'Great Vibes', cursive;
+  font-size: clamp(42px, 5vw, 64px);
+  line-height: 0.9;
+  font-weight: 400;
+  color: #2a2723;
+  margin: 0;
+}
+
+.tag {
+  margin: 8px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #6d675f;
+  font-weight: 500;
+}
+
+.wrap {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.15fr);
+  gap: 28px;
+  align-items: center;
+  padding: 18px 0 54px;
+}
+
+.kicker {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7a746c;
+  font-weight: 600;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kicker::before {
+  content: '';
+  width: 36px;
+  height: 8px;
+  flex: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 8'%3E%3Cpath d='M1 5c6-3 10 2 16-1s10 2 18 0' fill='none' stroke='%238d946c' stroke-width='2' stroke-linecap='round' opacity='0.7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.atelier {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stain {
+  position: absolute;
+  display: block;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.layer {
+  position: relative;
+  z-index: 1;
+}
+
+.heroTitle {
+  font-family: 'Fraunces', 'Cormorant Garamond', serif;
+  font-weight: 560;
+  font-size: clamp(40px, 4.6vw, 68px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin: 0 0 16px;
+  color: #241f1c;
+}
+
+.heroText {
+  margin: 0 0 22px;
+  max-width: 460px;
+  color: #4e4943;
+  font-size: 15.5px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: var(--ink);
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(60, 40, 30, 0.06);
+  border: 1px solid rgba(43, 41, 38, 0.06);
+}
+
+.cta:hover {
+  transform: translateY(-1px);
+}
+
+.collage {
+  position: relative;
+  min-height: 460px;
+}
+
+.blobSage,
+.blobPink,
+.spark {
+  position: absolute;
+  pointer-events: none;
+}
+
+.blobSage {
+  width: 170px;
+  height: 210px;
+  left: -8px;
+  top: 70px;
+  background: #8ea184;
+  border-radius: 46% 54% 42% 58% / 38% 42% 58% 62%;
+  transform: rotate(-12deg);
+  opacity: 0.9;
+}
+
+.blobPink {
+  width: 190px;
+  height: 150px;
+  right: 8px;
+  top: 6px;
+  background: #f4c5d1;
+  border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+  transform: rotate(8deg);
+}
+
+.spark {
+  color: #d7b56a;
+}
+
+.frame {
+  position: absolute;
+  background: #fffdf8;
+  padding: 8px 8px 22px;
+  box-shadow: 0 16px 40px rgba(50, 36, 24, 0.12);
+}
+
+.frame img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.frameMain {
+  left: 6%;
+  top: 16%;
+  width: 58%;
+  transform: rotate(-3.5deg);
+  z-index: 2;
+}
+
+.frameMain img {
+  height: 250px;
+}
+
+.frameSide {
+  right: 2%;
+  top: 7%;
+  width: 34%;
+  transform: rotate(7deg);
+  z-index: 3;
+}
+
+.frameSide img {
+  height: 150px;
+}
+
+.frameLow {
+  right: 0;
+  bottom: 18px;
+  width: 40%;
+  transform: rotate(2.5deg);
+  z-index: 4;
+}
+
+.frameLow img {
+  height: 132px;
+}
+
+.note {
+  position: absolute;
+  right: 8%;
+  top: 38%;
+  z-index: 5;
+  width: 132px;
+  background: #fffdf8;
+  padding: 16px 14px 18px;
+  transform: rotate(8deg);
+  box-shadow: 0 10px 24px rgba(50, 36, 24, 0.1);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.25;
+  color: #3a342e;
+}
+
+.flower {
+  position: absolute;
+  right: -6px;
+  bottom: 0;
+  width: 120px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.sectionTitle {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 560;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.textLink:hover {
+  text-decoration: underline;
+}
+
+.articleRow {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 2px 18px;
+  margin-bottom: 28px;
+}
+
+.articleRow::-webkit-scrollbar {
+  height: 0;
+}
+
+.card {
+  flex: 0 0 220px;
+  scroll-snap-align: start;
+  background: var(--paper);
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 10px 28px rgba(50, 36, 24, 0.05);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.cardImg {
+  height: 132px;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cardBody {
+  padding: 12px 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.badge {
+  align-self: flex-start;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: #f3ebe3;
+  color: #6a5648;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.cardTitle {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 560;
+  margin: 0;
+}
+
+.cardFoot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+  margin: 10px 0 42px;
+}
+
+.agenda {
+  position: relative;
+  background: #6f7e64;
+  color: #f7f3ea;
+  border-radius: 28px;
+  padding: 26px 22px 22px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(70, 80, 60, 0.12);
+}
+
+.agenda::before {
+  content: '';
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  left: -40px;
+  bottom: -30px;
+  background: rgba(255, 253, 248, 0.08);
+  border-radius: 50%;
+}
+
+.agendaTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  position: relative;
+}
+
+.agenda h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 48px;
+  line-height: 0.9;
+  margin: 0;
+  font-weight: 560;
+}
+
+.cities {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-family: 'Fraunces', serif;
+}
+
+.ghost {
+  background: transparent;
+  border: 0;
+  color: #f7f3ea;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+}
+
+.toggles {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  position: relative;
+}
+
+.toggle {
+  border: 0;
+  background: rgba(255, 253, 248, 0.16);
+  color: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggleOn {
+  background: #fffdf8;
+  color: var(--ink);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotParis { background: #e07a9a; }
+.dotLyon { background: #7eb0d4; }
+.dotGold { background: var(--gold); }
+
+.agendaGrid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(200px, 1fr);
+  gap: 16px;
+  position: relative;
+}
+
+.cal {
+  background: #fffdf8;
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 14px 12px 12px;
+}
+
+.calTitle {
+  text-align: center;
+  font-family: 'Fraunces', serif;
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.week,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  gap: 2px;
+}
+
+.week span {
+  font-size: 11px;
+  color: #8a847c;
+  padding-bottom: 4px;
+}
+
+.day {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  height: 28px;
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: default;
+  padding: 0;
+}
+
+.dayBtn {
+  cursor: pointer;
+}
+
+.dayParis { background: #f3b7c8; }
+.dayLyon { background: #b9d7ea; }
+.dayGold {
+  background:
+    radial-gradient(circle at 50% 78%, var(--gold) 0 2px, transparent 2.5px),
+    transparent;
+}
+.dayOn { outline: 2px solid var(--sage-deep); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #6f6962;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.event {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.eventDate {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.event strong {
+  display: block;
+  font-weight: 600;
+}
+
+.event em {
+  font-style: normal;
+  opacity: 0.88;
+}
+
+.portraits {
+  background: #f7d5de;
+  border-radius: 28px;
+  padding: 18px 18px 22px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.portraitStage {
+  position: relative;
+  height: 230px;
+  margin-bottom: 8px;
+}
+
+.portraitMain,
+.portraitSide {
+  position: absolute;
+  background: #fffdf8;
+  padding: 7px 7px 16px;
+  box-shadow: 0 12px 28px rgba(80, 40, 50, 0.12);
+}
+
+.portraitMain {
+  width: 72%;
+  left: 4%;
+  top: 18px;
+  transform: rotate(-2deg);
+}
+
+.portraitMain img,
+.portraitSide img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+.portraitSide {
+  width: 38%;
+  right: 0;
+  top: 0;
+  transform: rotate(8deg);
+}
+
+.portraitSide img {
+  height: 120px;
+}
+
+.portraits h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  margin: 8px 0 6px;
+  font-weight: 560;
+  letter-spacing: -0.03em;
+}
+
+.portraits p {
+  margin: 0 0 16px;
+  max-width: 320px;
+  color: #4d3e44;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.rubBlock {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.rubHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rubScroller {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.rubScroller::-webkit-scrollbar { height: 0; }
+
+.rub {
+  flex: 0 0 118px;
+  min-height: 168px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: var(--ink);
+  padding: 8px 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 8px 20px rgba(50, 36, 24, 0.04);
+}
+
+.rub img {
+  width: 100%;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.rub span {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  line-height: 1.15;
+  padding: 8px 2px 0;
+}
+
+.rub i {
+  align-self: flex-end;
+  font-style: normal;
+}
+
+.pink { background: #f6d3dc; }
+.sageCard { background: #d7e0cf; }
+.blue { background: #d5e3ef; }
+.sand { background: #f3e6d4; }
+.mint { background: #d9ebe3; }
+
+.join {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  min-height: 210px;
+  color: #fff;
+  display: flex;
+  align-items: flex-end;
+  box-shadow: 0 12px 30px rgba(50, 36, 24, 0.08);
+}
+
+.join img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.joinShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(30, 24, 20, 0.05), rgba(30, 24, 20, 0.72));
+}
+
+.joinBody {
+  position: relative;
+  z-index: 1;
+  padding: 16px;
+}
+
+.join h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  margin: 0 0 6px;
+  font-weight: 560;
+}
+
+.join p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.join .cta {
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.sticker {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  z-index: 2;
+  background: #fffdf8;
+  color: var(--ink);
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 13px;
+  padding: 8px 10px;
+  transform: rotate(8deg);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.quote {
+  text-align: right;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  color: #6d675f;
+  margin: 0 0 28px;
+  font-size: 16px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 18px 0 36px;
+  border-top: 1px solid rgba(43, 41, 38, 0.08);
+}
+
+.brandMini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brandMini img {
+  height: 42px;
+  width: auto;
+}
+
+.brandMini strong {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 560;
+}
+
+.social p,
+.legal {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.icons {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.icons a {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  border: 1px solid rgba(43, 41, 38, 0.12);
+}
+
+.legal {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1100px) {
+  .articleRow {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    overflow: visible;
+  }
+
+  .card {
+    flex: none;
+  }
+
+  .rubScroller {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .rub {
+    flex: none;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .hero,
+  .split,
+  .rubBlock,
+  .agendaGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .collage {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .blobSage,
+  .blobPink,
+  .spark,
+  .flower {
+    display: none;
+  }
+
+  .frame,
+  .frameMain,
+  .frameSide,
+  .frameLow {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    width: auto;
+    transform: none;
+  }
+
+  .frameMain { grid-column: 1 / -1; }
+  .frame img,
+  .frameMain img,
+  .frameSide img,
+  .frameLow img { height: 160px; }
+
+  .note {
+    position: relative;
+    right: auto;
+    top: auto;
+    grid-column: 1 / -1;
+    width: auto;
+    transform: rotate(-1deg);
+  }
+
+  .portraitStage { height: 210px; }
+}
+
+@media (max-width: 760px) {
+  .greenBar {
+    padding: 10px 14px 36px;
+  }
+
+  .nav,
+  .search {
+    display: none;
+  }
+
+  .burger,
+  .drawer {
+    display: flex;
+  }
+
+  .drawer {
+    flex-direction: column;
+    gap: 8px;
+    background: var(--sage-deep);
+    padding: 8px 14px 16px;
+  }
+
+  .drawer .pill,
+  .drawer .search {
+    display: flex;
+    width: 100%;
+  }
+
+  .drawer .pill {
+    color: #f7f3ea;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(247, 243, 234, 0.16);
+  }
+
+  .drawer .pillActive::after {
+    display: none;
+  }
+
+  .search { min-width: 0; }
+
+  .brand { margin-top: -20px; }
+  .drawer + .brand { margin-top: 16px; }
+  .logo { height: 72px; }
+  .script { font-size: 40px; }
+  .tag { letter-spacing: 0.16em; font-size: 10px; }
+
+  .hero { padding-top: 8px; }
+  .heroTitle { font-size: 38px; }
+
+  .collage { grid-template-columns: 1fr; }
+  .card { flex-basis: 78vw; }
+
+  .agenda h2 { font-size: 40px; }
+  .portraits h2 { font-size: 36px; }
+  .portraitMain { width: 68%; }
+  .portraitMain img { height: 150px; }
+
+  .sectionHead,
+  .rubHead,
+  .agendaTop {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer { align-items: flex-start; }
+}
+
+
+/* Papier dechire */
+.greenBar {
+  border-radius: 0;
+  clip-path: polygon(0% 0%, 100% 0%, 100.00% 89.02%, 97.06% 93.54%, 94.12% 90.16%, 91.18% 94.92%, 88.24% 92.43%, 85.29% 94.44%, 82.35% 93.86%, 79.41% 93.61%, 76.47% 91.37%, 73.53% 94.07%, 70.59% 91.56%, 67.65% 87.40%, 64.71% 94.70%, 61.76% 90.95%, 58.82% 93.37%, 55.88% 94.34%, 52.94% 89.12%, 50.00% 89.50%, 47.06% 92.09%, 44.12% 92.24%, 41.18% 92.84%, 38.24% 93.63%, 35.29% 92.67%, 32.35% 89.42%, 29.41% 90.13%, 26.47% 92.22%, 23.53% 90.14%, 20.59% 91.14%, 17.65% 90.57%, 14.71% 92.04%, 11.76% 90.76%, 8.82% 93.68%, 5.88% 90.84%, 2.94% 92.13%, 0.00% 92.54%);
+  padding-bottom: 62px;
+}
+.blobSage,
+.blobPink {
+  border-radius: 0;
+  opacity: 0.95;
+}
+.blobSage { clip-path: polygon(4.20% 6.69%, 9.29% 4.87%, 14.38% 4.35%, 19.47% 1.53%, 24.56% 6.63%, 29.64% 7.59%, 34.73% 1.20%, 39.82% 3.00%, 44.91% 2.80%, 50.00% 8.21%, 55.09% 1.88%, 60.18% 3.58%, 65.27% 6.66%, 70.36% 4.14%, 75.44% 1.20%, 80.53% 7.36%, 85.62% 3.13%, 90.71% 1.97%, 95.80% 1.55%, 97.51% 9.29%, 98.43% 14.38%, 98.19% 19.47%, 94.68% 24.56%, 96.48% 29.64%, 95.60% 34.73%, 91.24% 39.82%, 93.01% 44.91%, 98.55% 50.00%, 97.56% 55.09%, 97.94% 60.18%, 96.69% 65.27%, 95.32% 70.36%, 95.37% 75.44%, 96.03% 80.53%, 94.06% 85.62%, 98.17% 90.71%, 95.25% 95.80%, 90.71% 97.21%, 85.62% 94.85%, 80.53% 97.07%, 75.44% 93.33%, 70.36% 93.78%, 65.27% 96.51%, 60.18% 94.49%, 55.09% 94.19%, 50.00% 91.65%, 44.91% 93.80%, 39.82% 93.82%, 34.73% 95.78%, 29.64% 92.59%, 24.56% 98.03%, 19.47% 95.99%, 14.38% 92.56%, 9.29% 93.57%, 4.20% 97.18%, 5.58% 90.71%, 2.67% 85.62%, 9.76% 80.53%, 7.29% 75.44%, 2.47% 70.36%, 6.17% 65.27%, 1.58% 60.18%, 3.52% 55.09%, 5.67% 50.00%, 2.75% 44.91%, 3.98% 39.82%, 6.10% 34.73%, 5.32% 29.64%, 1.20% 24.56%, 1.20% 19.47%, 7.04% 14.38%, 3.79% 9.29%); background: #93a888; }
+.blobPink { clip-path: polygon(6.00% 8.44%, 12.29% 1.89%, 18.57% 4.66%, 24.86% 4.57%, 31.14% 3.08%, 37.43% 1.20%, 43.71% 11.22%, 50.00% 8.80%, 56.29% 4.48%, 62.57% 4.14%, 68.86% 5.55%, 75.14% 8.80%, 81.43% 6.31%, 87.71% 4.13%, 94.00% 15.48%, 90.74% 12.29%, 83.98% 18.57%, 96.74% 24.86%, 92.81% 31.14%, 96.71% 37.43%, 90.85% 43.71%, 89.93% 50.00%, 95.15% 56.29%, 95.78% 62.57%, 92.81% 68.86%, 94.70% 75.14%, 92.20% 81.43%, 91.60% 87.71%, 98.60% 94.00%, 87.71% 98.60%, 81.43% 82.65%, 75.14% 91.57%, 68.86% 95.00%, 62.57% 93.02%, 56.29% 98.60%, 50.00% 97.18%, 43.71% 98.60%, 37.43% 97.18%, 31.14% 97.20%, 24.86% 91.89%, 18.57% 89.11%, 12.29% 85.42%, 6.00% 94.65%, 1.32% 87.71%, 2.01% 81.43%, 6.29% 75.14%, 3.12% 68.86%, 9.66% 62.57%, 9.25% 56.29%, 8.28% 50.00%, 4.65% 43.71%, 3.39% 37.43%, 8.38% 31.14%, 6.12% 24.86%, 5.29% 18.57%, 4.74% 12.29%); background: #f4c6d2; }
+.frame,
+.portraitMain,
+.portraitSide {
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 14px 16px rgba(48, 34, 24, 0.16));
+  background: #fffdf8;
+}
+.frameMain { clip-path: polygon(4.00% 4.21%, 9.11% 2.45%, 14.22% 6.61%, 19.33% 5.10%, 24.44% 2.44%, 29.56% 6.39%, 34.67% 3.18%, 39.78% 5.03%, 44.89% 1.93%, 50.00% 2.45%, 55.11% 3.52%, 60.22% 6.07%, 65.33% 4.27%, 70.44% 2.03%, 75.56% 2.54%, 80.67% 5.65%, 85.78% 8.31%, 90.89% 1.20%, 96.00% 5.91%, 96.80% 9.11%, 94.10% 14.22%, 98.60% 19.33%, 95.17% 24.44%, 95.69% 29.56%, 93.45% 34.67%, 98.60% 39.78%, 98.59% 44.89%, 94.23% 50.00%, 97.32% 55.11%, 97.18% 60.22%, 93.88% 65.33%, 94.97% 70.44%, 95.74% 75.56%, 98.60% 80.67%, 98.60% 85.78%, 95.05% 90.89%, 96.78% 96.00%, 90.89% 94.45%, 85.78% 96.12%, 80.67% 94.60%, 75.56% 98.60%, 70.44% 94.59%, 65.33% 94.33%, 60.22% 98.60%, 55.11% 98.60%, 50.00% 90.25%, 44.89% 95.89%, 39.78% 93.96%, 34.67% 95.96%, 29.56% 93.83%, 24.44% 94.83%, 19.33% 98.06%, 14.22% 96.45%, 9.11% 96.69%, 4.00% 95.36%, 5.17% 90.89%, 3.41% 85.78%, 5.37% 80.67%, 1.20% 75.56%, 2.24% 70.44%, 4.50% 65.33%, 2.40% 60.22%, 2.58% 55.11%, 1.52% 50.00%, 2.33% 44.89%, 1.20% 39.78%, 3.98% 34.67%, 1.25% 29.56%, 7.77% 24.44%, 4.15% 19.33%, 1.20% 14.22%, 1.64% 9.11%); padding: 14px 12px 28px; }
+.frameSide { clip-path: polygon(4.20% 6.69%, 9.29% 4.87%, 14.38% 4.35%, 19.47% 1.53%, 24.56% 6.63%, 29.64% 7.59%, 34.73% 1.20%, 39.82% 3.00%, 44.91% 2.80%, 50.00% 8.21%, 55.09% 1.88%, 60.18% 3.58%, 65.27% 6.66%, 70.36% 4.14%, 75.44% 1.20%, 80.53% 7.36%, 85.62% 3.13%, 90.71% 1.97%, 95.80% 1.55%, 97.51% 9.29%, 98.43% 14.38%, 98.19% 19.47%, 94.68% 24.56%, 96.48% 29.64%, 95.60% 34.73%, 91.24% 39.82%, 93.01% 44.91%, 98.55% 50.00%, 97.56% 55.09%, 97.94% 60.18%, 96.69% 65.27%, 95.32% 70.36%, 95.37% 75.44%, 96.03% 80.53%, 94.06% 85.62%, 98.17% 90.71%, 95.25% 95.80%, 90.71% 97.21%, 85.62% 94.85%, 80.53% 97.07%, 75.44% 93.33%, 70.36% 93.78%, 65.27% 96.51%, 60.18% 94.49%, 55.09% 94.19%, 50.00% 91.65%, 44.91% 93.80%, 39.82% 93.82%, 34.73% 95.78%, 29.64% 92.59%, 24.56% 98.03%, 19.47% 95.99%, 14.38% 92.56%, 9.29% 93.57%, 4.20% 97.18%, 5.58% 90.71%, 2.67% 85.62%, 9.76% 80.53%, 7.29% 75.44%, 2.47% 70.36%, 6.17% 65.27%, 1.58% 60.18%, 3.52% 55.09%, 5.67% 50.00%, 2.75% 44.91%, 3.98% 39.82%, 6.10% 34.73%, 5.32% 29.64%, 1.20% 24.56%, 1.20% 19.47%, 7.04% 14.38%, 3.79% 9.29%); padding: 12px 11px 22px; }
+.frameLow { clip-path: polygon(3.60% 4.59%, 8.76% 6.49%, 13.91% 1.20%, 19.07% 2.06%, 24.22% 4.12%, 29.38% 2.08%, 34.53% 6.90%, 39.69% 5.45%, 44.84% 6.14%, 50.00% 5.17%, 55.16% 5.27%, 60.31% 1.77%, 65.47% 1.31%, 70.62% 1.74%, 75.78% 4.26%, 80.93% 5.34%, 86.09% 3.83%, 91.24% 5.94%, 96.40% 3.02%, 98.07% 8.76%, 95.40% 13.91%, 98.60% 19.07%, 98.60% 24.22%, 93.55% 29.38%, 98.60% 34.53%, 95.54% 39.69%, 95.41% 44.84%, 98.16% 50.00%, 95.72% 55.16%, 96.17% 60.31%, 97.40% 65.47%, 97.34% 70.62%, 93.26% 75.78%, 94.74% 80.93%, 98.60% 86.09%, 96.22% 91.24%, 96.27% 96.40%, 91.24% 98.15%, 86.09% 96.27%, 80.93% 98.60%, 75.78% 96.71%, 70.62% 98.04%, 65.47% 96.95%, 60.31% 90.59%, 55.16% 97.21%, 50.00% 97.61%, 44.84% 97.02%, 39.69% 95.32%, 34.53% 95.06%, 29.38% 98.28%, 24.22% 94.38%, 19.07% 96.80%, 13.91% 95.62%, 8.76% 97.24%, 3.60% 97.75%, 5.06% 91.24%, 3.72% 86.09%, 3.06% 80.93%, 8.49% 75.78%, 4.38% 70.62%, 4.98% 65.47%, 4.10% 60.31%, 2.39% 55.16%, 1.20% 50.00%, 5.40% 44.84%, 1.74% 39.69%, 3.46% 34.53%, 6.22% 29.38%, 4.63% 24.22%, 4.63% 19.07%, 4.63% 13.91%, 2.13% 8.76%); padding: 12px 11px 22px; }
+.note,
+.sticker {
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 8px 12px rgba(48, 34, 24, 0.12));
+}
+.note { clip-path: polygon(6.00% 8.44%, 12.29% 1.89%, 18.57% 4.66%, 24.86% 4.57%, 31.14% 3.08%, 37.43% 1.20%, 43.71% 11.22%, 50.00% 8.80%, 56.29% 4.48%, 62.57% 4.14%, 68.86% 5.55%, 75.14% 8.80%, 81.43% 6.31%, 87.71% 4.13%, 94.00% 15.48%, 90.74% 12.29%, 83.98% 18.57%, 96.74% 24.86%, 92.81% 31.14%, 96.71% 37.43%, 90.85% 43.71%, 89.93% 50.00%, 95.15% 56.29%, 95.78% 62.57%, 92.81% 68.86%, 94.70% 75.14%, 92.20% 81.43%, 91.60% 87.71%, 98.60% 94.00%, 87.71% 98.60%, 81.43% 82.65%, 75.14% 91.57%, 68.86% 95.00%, 62.57% 93.02%, 56.29% 98.60%, 50.00% 97.18%, 43.71% 98.60%, 37.43% 97.18%, 31.14% 97.20%, 24.86% 91.89%, 18.57% 89.11%, 12.29% 85.42%, 6.00% 94.65%, 1.32% 87.71%, 2.01% 81.43%, 6.29% 75.14%, 3.12% 68.86%, 9.66% 62.57%, 9.25% 56.29%, 8.28% 50.00%, 4.65% 43.71%, 3.39% 37.43%, 8.38% 31.14%, 6.12% 24.86%, 5.29% 18.57%, 4.74% 12.29%); }
+.sticker { clip-path: polygon(6.50% 15.98%, 13.75% 8.15%, 21.00% 3.64%, 28.25% 11.28%, 35.50% 2.61%, 42.75% 2.58%, 50.00% 7.21%, 57.25% 5.03%, 64.50% 2.35%, 71.75% 1.20%, 79.00% 2.61%, 86.25% 3.81%, 93.50% 6.46%, 98.42% 13.75%, 95.67% 21.00%, 90.25% 28.25%, 98.60% 35.50%, 88.31% 42.75%, 91.34% 50.00%, 92.65% 57.25%, 94.20% 64.50%, 94.66% 71.75%, 95.84% 79.00%, 92.00% 86.25%, 93.60% 93.50%, 86.25% 95.23%, 79.00% 94.07%, 71.75% 90.73%, 64.50% 88.72%, 57.25% 96.30%, 50.00% 98.60%, 42.75% 87.95%, 35.50% 97.58%, 28.25% 93.71%, 21.00% 85.52%, 13.75% 98.60%, 6.50% 95.35%, 5.61% 86.25%, 10.94% 79.00%, 6.20% 71.75%, 1.20% 64.50%, 10.94% 57.25%, 4.78% 50.00%, 2.99% 42.75%, 4.37% 35.50%, 9.23% 28.25%, 9.28% 21.00%, 15.10% 13.75%); }
+.agenda,
+.portraits {
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.agenda {
+  clip-path: polygon(3.20% 2.84%, 6.80% 5.34%, 10.40% 2.05%, 14.00% 1.75%, 17.60% 4.33%, 21.20% 5.38%, 24.80% 1.76%, 28.40% 1.81%, 32.00% 5.11%, 35.60% 6.51%, 39.20% 4.97%, 42.80% 5.19%, 46.40% 3.06%, 50.00% 5.29%, 53.60% 3.48%, 57.20% 4.74%, 60.80% 3.59%, 64.40% 1.20%, 68.00% 4.18%, 71.60% 4.80%, 75.20% 3.75%, 78.80% 1.39%, 82.40% 1.70%, 86.00% 3.95%, 89.60% 1.84%, 93.20% 3.60%, 96.80% 2.62%, 97.01% 6.80%, 96.93% 10.40%, 94.91% 14.00%, 97.81% 17.60%, 97.91% 21.20%, 94.23% 24.80%, 96.25% 28.40%, 96.29% 32.00%, 98.60% 35.60%, 93.63% 39.20%, 96.51% 42.80%, 98.60% 46.40%, 96.76% 50.00%, 94.13% 53.60%, 98.60% 57.20%, 96.36% 60.80%, 94.06% 64.40%, 92.52% 68.00%, 97.75% 71.60%, 98.60% 75.20%, 98.60% 78.80%, 95.58% 82.40%, 98.60% 86.00%, 96.77% 89.60%, 95.30% 93.20%, 97.07% 96.80%, 93.20% 98.23%, 89.60% 97.99%, 86.00% 98.36%, 82.40% 96.31%, 78.80% 96.97%, 75.20% 96.73%, 71.60% 93.99%, 68.00% 95.46%, 64.40% 98.09%, 60.80% 98.34%, 57.20% 98.60%, 53.60% 97.22%, 50.00% 96.45%, 46.40% 96.24%, 42.80% 97.00%, 39.20% 92.29%, 35.60% 98.54%, 32.00% 96.69%, 28.40% 94.63%, 24.80% 97.28%, 21.20% 94.63%, 17.60% 98.60%, 14.00% 98.28%, 10.40% 97.65%, 6.80% 98.14%, 3.20% 90.64%, 5.51% 93.20%, 1.20% 89.60%, 2.39% 86.00%, 3.33% 82.40%, 2.74% 78.80%, 6.14% 75.20%, 4.18% 71.60%, 5.31% 68.00%, 4.39% 64.40%, 3.61% 60.80%, 1.20% 57.20%, 2.47% 53.60%, 2.14% 50.00%, 3.42% 46.40%, 7.99% 42.80%, 3.31% 39.20%, 6.87% 35.60%, 2.97% 32.00%, 3.05% 28.40%, 2.04% 24.80%, 1.63% 21.20%, 5.32% 17.60%, 2.97% 14.00%, 2.17% 10.40%, 4.97% 6.80%);
+  filter: drop-shadow(0 16px 22px rgba(55, 62, 48, 0.16));
+  padding: 38px 32px 36px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.28%20%200%200%200%200%200.24%20%200%200%200%200%200.18%20%200%200%200%200.45%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+  background-size: 180px 180px;
+}
+.agenda::before { display: none; }
+.portraits {
+  clip-path: polygon(3.40% 8.09%, 6.98% 1.32%, 10.57% 5.55%, 14.15% 1.21%, 17.74% 3.36%, 21.32% 3.70%, 24.91% 2.66%, 28.49% 2.13%, 32.08% 1.86%, 35.66% 4.27%, 39.25% 2.98%, 42.83% 3.30%, 46.42% 1.20%, 50.00% 1.90%, 53.58% 1.20%, 57.17% 3.01%, 60.75% 1.20%, 64.34% 4.62%, 67.92% 1.83%, 71.51% 4.61%, 75.09% 1.86%, 78.68% 2.10%, 82.26% 4.95%, 85.85% 5.18%, 89.43% 4.54%, 93.02% 3.74%, 96.60% 3.86%, 96.27% 6.98%, 97.64% 10.57%, 98.60% 14.15%, 97.66% 17.74%, 98.60% 21.32%, 97.79% 24.91%, 97.29% 28.49%, 98.59% 32.08%, 98.00% 35.66%, 98.60% 39.25%, 94.30% 42.83%, 95.92% 46.42%, 98.60% 50.00%, 95.56% 53.58%, 95.13% 57.17%, 98.60% 60.75%, 96.73% 64.34%, 96.04% 67.92%, 97.43% 71.51%, 95.83% 75.09%, 95.63% 78.68%, 97.24% 82.26%, 98.60% 85.85%, 98.60% 89.43%, 95.81% 93.02%, 97.37% 96.60%, 93.02% 93.64%, 89.43% 96.37%, 85.85% 92.78%, 82.26% 96.79%, 78.68% 98.60%, 75.09% 97.57%, 71.51% 96.00%, 67.92% 98.60%, 64.34% 97.58%, 60.75% 98.22%, 57.17% 95.89%, 53.58% 97.25%, 50.00% 96.33%, 46.42% 97.73%, 42.83% 97.97%, 39.25% 95.74%, 35.66% 97.90%, 32.08% 95.98%, 28.49% 94.11%, 24.91% 94.82%, 21.32% 94.44%, 17.74% 97.15%, 14.15% 95.13%, 10.57% 97.04%, 6.98% 95.96%, 3.40% 98.60%, 5.34% 93.02%, 1.20% 89.43%, 2.54% 85.85%, 2.89% 82.26%, 4.74% 78.68%, 6.70% 75.09%, 1.20% 71.51%, 3.79% 67.92%, 2.93% 64.34%, 2.82% 60.75%, 4.10% 57.17%, 2.40% 53.58%, 3.69% 50.00%, 3.37% 46.42%, 1.72% 42.83%, 1.20% 39.25%, 3.77% 35.66%, 2.37% 32.08%, 1.68% 28.49%, 4.33% 24.91%, 1.20% 21.32%, 5.09% 17.74%, 6.22% 14.15%, 2.23% 10.57%, 2.43% 6.98%);
+  filter: drop-shadow(0 16px 22px rgba(90, 50, 60, 0.12));
+  padding: 30px 24px 32px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%3E%3Cfilter%20id%3D'n'%3E%3CfeTurbulence%20type%3D'fractalNoise'%20baseFrequency%3D'0.85'%20numOctaves%3D'2'%20stitchTiles%3D'stitch'%2F%3E%3CfeColorMatrix%20values%3D'0%200%200%200%200.28%20%200%200%200%200%200.24%20%200%200%200%200%200.18%20%200%200%200%200.45%200'%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20filter%3D'url(%23n)'%2F%3E%3C%2Fsvg%3E");
+  background-size: 180px 180px;
+}
+.portraitMain { clip-path: polygon(4.00% 4.21%, 9.11% 2.45%, 14.22% 6.61%, 19.33% 5.10%, 24.44% 2.44%, 29.56% 6.39%, 34.67% 3.18%, 39.78% 5.03%, 44.89% 1.93%, 50.00% 2.45%, 55.11% 3.52%, 60.22% 6.07%, 65.33% 4.27%, 70.44% 2.03%, 75.56% 2.54%, 80.67% 5.65%, 85.78% 8.31%, 90.89% 1.20%, 96.00% 5.91%, 96.80% 9.11%, 94.10% 14.22%, 98.60% 19.33%, 95.17% 24.44%, 95.69% 29.56%, 93.45% 34.67%, 98.60% 39.78%, 98.59% 44.89%, 94.23% 50.00%, 97.32% 55.11%, 97.18% 60.22%, 93.88% 65.33%, 94.97% 70.44%, 95.74% 75.56%, 98.60% 80.67%, 98.60% 85.78%, 95.05% 90.89%, 96.78% 96.00%, 90.89% 94.45%, 85.78% 96.12%, 80.67% 94.60%, 75.56% 98.60%, 70.44% 94.59%, 65.33% 94.33%, 60.22% 98.60%, 55.11% 98.60%, 50.00% 90.25%, 44.89% 95.89%, 39.78% 93.96%, 34.67% 95.96%, 29.56% 93.83%, 24.44% 94.83%, 19.33% 98.06%, 14.22% 96.45%, 9.11% 96.69%, 4.00% 95.36%, 5.17% 90.89%, 3.41% 85.78%, 5.37% 80.67%, 1.20% 75.56%, 2.24% 70.44%, 4.50% 65.33%, 2.40% 60.22%, 2.58% 55.11%, 1.52% 50.00%, 2.33% 44.89%, 1.20% 39.78%, 3.98% 34.67%, 1.25% 29.56%, 7.77% 24.44%, 4.15% 19.33%, 1.20% 14.22%, 1.64% 9.11%); }
+.portraitSide { clip-path: polygon(3.60% 4.59%, 8.76% 6.49%, 13.91% 1.20%, 19.07% 2.06%, 24.22% 4.12%, 29.38% 2.08%, 34.53% 6.90%, 39.69% 5.45%, 44.84% 6.14%, 50.00% 5.17%, 55.16% 5.27%, 60.31% 1.77%, 65.47% 1.31%, 70.62% 1.74%, 75.78% 4.26%, 80.93% 5.34%, 86.09% 3.83%, 91.24% 5.94%, 96.40% 3.02%, 98.07% 8.76%, 95.40% 13.91%, 98.60% 19.07%, 98.60% 24.22%, 93.55% 29.38%, 98.60% 34.53%, 95.54% 39.69%, 95.41% 44.84%, 98.16% 50.00%, 95.72% 55.16%, 96.17% 60.31%, 97.40% 65.47%, 97.34% 70.62%, 93.26% 75.78%, 94.74% 80.93%, 98.60% 86.09%, 96.22% 91.24%, 96.27% 96.40%, 91.24% 98.15%, 86.09% 96.27%, 80.93% 98.60%, 75.78% 96.71%, 70.62% 98.04%, 65.47% 96.95%, 60.31% 90.59%, 55.16% 97.21%, 50.00% 97.61%, 44.84% 97.02%, 39.69% 95.32%, 34.53% 95.06%, 29.38% 98.28%, 24.22% 94.38%, 19.07% 96.80%, 13.91% 95.62%, 8.76% 97.24%, 3.60% 97.75%, 5.06% 91.24%, 3.72% 86.09%, 3.06% 80.93%, 8.49% 75.78%, 4.38% 70.62%, 4.98% 65.47%, 4.10% 60.31%, 2.39% 55.16%, 1.20% 50.00%, 5.40% 44.84%, 1.74% 39.69%, 3.46% 34.53%, 6.22% 29.38%, 4.63% 24.22%, 4.63% 19.07%, 4.63% 13.91%, 2.13% 8.76%); }
+.split { position: relative; }
+.scrapOut,
+.scrapOutB {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.agenda,
+.portraits {
+  z-index: 1;
+}
+.scrapOut {
+  left: -36px;
+  bottom: 18px;
+  width: 110px;
+  height: 140px;
+  background: #f6d5de;
+  clip-path: polygon(6.00% 8.44%, 12.29% 1.89%, 18.57% 4.66%, 24.86% 4.57%, 31.14% 3.08%, 37.43% 1.20%, 43.71% 11.22%, 50.00% 8.80%, 56.29% 4.48%, 62.57% 4.14%, 68.86% 5.55%, 75.14% 8.80%, 81.43% 6.31%, 87.71% 4.13%, 94.00% 15.48%, 90.74% 12.29%, 83.98% 18.57%, 96.74% 24.86%, 92.81% 31.14%, 96.71% 37.43%, 90.85% 43.71%, 89.93% 50.00%, 95.15% 56.29%, 95.78% 62.57%, 92.81% 68.86%, 94.70% 75.14%, 92.20% 81.43%, 91.60% 87.71%, 98.60% 94.00%, 87.71% 98.60%, 81.43% 82.65%, 75.14% 91.57%, 68.86% 95.00%, 62.57% 93.02%, 56.29% 98.60%, 50.00% 97.18%, 43.71% 98.60%, 37.43% 97.18%, 31.14% 97.20%, 24.86% 91.89%, 18.57% 89.11%, 12.29% 85.42%, 6.00% 94.65%, 1.32% 87.71%, 2.01% 81.43%, 6.29% 75.14%, 3.12% 68.86%, 9.66% 62.57%, 9.25% 56.29%, 8.28% 50.00%, 4.65% 43.71%, 3.39% 37.43%, 8.38% 31.14%, 6.12% 24.86%, 5.29% 18.57%, 4.74% 12.29%);
+  transform: rotate(-12deg);
+}
+.note {
+  width: 178px;
+  padding: 30px 24px 36px;
+  font-size: 17px;
+}
+.sticker {
+  padding: 18px 20px 20px;
+  right: 22px;
+  top: 18px;
+}
+.agenda {
+  padding: 52px 64px 46px 44px;
+}
+.frameMain { padding: 16px 14px 34px; }
+.frameSide,
+.frameLow { padding: 14px 12px 26px; }
+.scrapOutB {
+  right: -24px;
+  top: -18px;
+  width: 92px;
+  height: 78px;
+  background: #d5e7df;
+  clip-path: polygon(6.50% 15.98%, 13.75% 8.15%, 21.00% 3.64%, 28.25% 11.28%, 35.50% 2.61%, 42.75% 2.58%, 50.00% 7.21%, 57.25% 5.03%, 64.50% 2.35%, 71.75% 1.20%, 79.00% 2.61%, 86.25% 3.81%, 93.50% 6.46%, 98.42% 13.75%, 95.67% 21.00%, 90.25% 28.25%, 98.60% 35.50%, 88.31% 42.75%, 91.34% 50.00%, 92.65% 57.25%, 94.20% 64.50%, 94.66% 71.75%, 95.84% 79.00%, 92.00% 86.25%, 93.60% 93.50%, 86.25% 95.23%, 79.00% 94.07%, 71.75% 90.73%, 64.50% 88.72%, 57.25% 96.30%, 50.00% 98.60%, 42.75% 87.95%, 35.50% 97.58%, 28.25% 93.71%, 21.00% 85.52%, 13.75% 98.60%, 6.50% 95.35%, 5.61% 86.25%, 10.94% 79.00%, 6.20% 71.75%, 1.20% 64.50%, 10.94% 57.25%, 4.78% 50.00%, 2.99% 42.75%, 4.37% 35.50%, 9.23% 28.25%, 9.28% 21.00%, 15.10% 13.75%);
+  transform: rotate(8deg);
+}

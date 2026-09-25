@@ -21,7 +21,12 @@ export default function Document() {
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         
-        {/* Google Fonts - déjà importé dans globals.css */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Great+Vibes&family=Outfit:wght@300;400;500;600&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <body>
         <Main />
