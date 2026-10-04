@@ -284,15 +284,13 @@ export default function BlogPage() {
         .post-image {
           position: relative;
           width: 100%;
-          height: 220px;
           overflow: hidden;
         }
 
         .post-image img {
           width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.4s;
+          height: auto;
+          display: block;
         }
 
         .post-card:hover .post-image img {

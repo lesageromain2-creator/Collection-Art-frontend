@@ -284,25 +284,18 @@ export default function BlogPostPage() {
 
         .post-hero-image {
           width: 100%;
-          min-height: 280px;
-          max-height: 70vh;
           border-radius: 12px;
           overflow: hidden;
           margin-bottom: 40px;
           border: 3px solid #212E50;
           box-shadow: 0 8px 32px rgba(33, 46, 80, 0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f5f3ee;
+          background: transparent;
         }
 
         .post-hero-image img {
-          max-width: 100%;
-          max-height: 70vh;
-          width: auto;
+          width: 100%;
           height: auto;
-          object-fit: contain;
+          display: block;
         }
 
         .post-article {
@@ -446,17 +439,13 @@ export default function BlogPostPage() {
         }
 
         .post-body :global(img) {
-          max-width: 100%;
-          width: auto;
+          width: 100%;
           height: auto;
-          max-height: 70vh;
-          object-fit: contain;
+          object-fit: unset;
           border-radius: 12px;
           margin: 30px 0;
           border: 1px solid rgba(33, 46, 80, 0.1);
           display: block;
-          margin-left: auto;
-          margin-right: auto;
         }
 
         .post-block-text {

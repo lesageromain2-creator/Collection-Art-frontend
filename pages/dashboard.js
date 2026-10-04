@@ -1471,19 +1471,17 @@ export default function Dashboard() {
           border-color: rgba(138,133,94,0.35);
         }
         .article-cover {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: block;
           width: 120px;
           height: 80px;
           border-radius: 10px;
           overflow: hidden;
-          background: rgba(0,0,0,0.2);
+          background: transparent;
         }
         .article-cover img {
           width: 100%;
           height: 100%;
-          object-fit: contain;
+          object-fit: cover;
         }
         .no-cover {
           width: 100%;
@@ -1784,10 +1782,10 @@ export default function Dashboard() {
           margin-bottom: 12px;
         }
         .cover-preview img {
-          max-width: 100%;
-          max-height: 280px;
+          width: 100%;
+          height: auto;
           border-radius: 10px;
-          object-fit: contain;
+          display: block;
         }
         .cover-preview span {
           display: block;
@@ -1919,9 +1917,9 @@ export default function Dashboard() {
           gap: 8px;
         }
         .block-image-preview {
-          max-width: 100%;
-          max-height: 200px;
-          object-fit: contain;
+          width: 100%;
+          height: auto;
+          display: block;
           border-radius: 8px;
         }
         .block-image-alt {

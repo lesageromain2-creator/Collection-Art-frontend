@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
-import Image from 'next/image';
 import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight, UserRound, Newspaper, PenLine, Clock } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -169,29 +168,25 @@ export default function RubriquePage() {
 
         <main className="px-0 pb-20 md:pb-32">
           {/* Hero avec image de rubrique - pleine largeur, élégant */}
-          <section className="relative w-full h-[45vh] min-h-[320px] md:h-[55vh] overflow-hidden bg-[#EDDBCE]">
+          <section className="relative w-full overflow-hidden">
             {showHeroImage ? (
               <>
-                <Image
+                <img
                   src={imageSrc}
                   alt={rubrique.title}
-                  fill
-                  className="object-contain"
-                  style={{ objectFit: 'contain', backgroundColor: '#EDDBCE' }}
-                  priority
-                  sizes="100vw"
+                  className="block w-full h-auto"
                   onError={() => setHeroImageError(true)}
                 />
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(180deg, transparent 45%, rgba(52, 30, 4, 0.55) 100%)',
+                    background: 'linear-gradient(180deg, transparent 55%, rgba(52, 30, 4, 0.55) 100%)',
                   }}
                 />
               </>
             ) : (
               <div
-                className="absolute inset-0 flex items-center justify-center"
+                className="flex h-[45vh] min-h-[320px] items-center justify-center"
                 style={{
                   background: `linear-gradient(135deg, ${rubrique.hex} 0%, #341E04 100%)`,
                 }}
@@ -398,15 +393,14 @@ export default function RubriquePage() {
           }
           .rubrique-feed .card-cover {
             position: relative;
-            aspect-ratio: 16/10;
-            background: #F9F6F0;
+            background: transparent;
             overflow: hidden;
           }
           .rubrique-feed .card-cover-img {
             width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: transform 0.4s ease;
+            height: auto;
+            display: block;
+            object-fit: unset;
           }
           .rubrique-feed .article-card:hover .card-cover-img {
             transform: scale(1.06);

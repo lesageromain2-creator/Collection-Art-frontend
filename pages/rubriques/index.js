@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import Image from 'next/image';
 import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles, UserRound, Newspaper, PenLine } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -158,16 +157,13 @@ export default function RubriquesPage() {
                     href={`/rubriques/${rubrique.slug}`}
                     className="group block bg-white rounded-2xl overflow-hidden shadow-sm border border-navy/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                   >
-                    <div className="relative h-56 md:h-64 overflow-hidden bg-[#EDDBCE]">
+                    <div className="relative overflow-hidden">
                       {imageSrc ? (
                         <>
-                          <Image
+                          <img
                             src={imageSrc}
                             alt={rubrique.title}
-                            fill
-                            className="object-contain"
-                            style={{ objectFit: 'contain' }}
-                            sizes="(max-width: 768px) 100vw, 50vw"
+                            className="block w-full h-auto"
                           />
                           <div
                             className="absolute inset-0 opacity-70 transition-opacity group-hover:opacity-50"

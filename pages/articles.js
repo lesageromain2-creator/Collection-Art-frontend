@@ -314,18 +314,14 @@ export default function ArticlesPage() {
         }
         .card-cover {
           position: relative;
-          aspect-ratio: 16/10;
-          background: #F9F6F0;
+          background: transparent;
           overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
         .card-cover-img {
           width: 100%;
-          height: 100%;
-          object-fit: contain;
-          transition: transform 0.4s ease;
+          height: auto;
+          display: block;
+          object-fit: unset;
         }
         .article-card:hover .card-cover-img {
           transform: scale(1.06);
