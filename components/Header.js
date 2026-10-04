@@ -19,6 +19,8 @@ const RUBRIQUES = [
   { id: 'tribunal-arts', title: 'Tribunal des arts' },
   { id: 'marche-art', title: "Marché de l'art" },
   { id: 'portraits', title: 'Portraits' },
+  { id: 'billets-art', title: "Billets d'art" },
+  { id: 'actualites', title: "Les actualités du monde de l'art" },
 ];
 
 const SITE_NAME = "Collection Aur'art";
@@ -26,8 +28,9 @@ const SITE_NAME = "Collection Aur'art";
 // Couleurs extraites des images dans frontend/public/new images/
 // vert banderole au dessus du header.jpeg → vert profond
 // rose header.jpeg → rose clair
-const BANDEAU_COLOR = '#4a6b3a';
-const HEADER_COLOR = '#E8C8D4';
+const BANDEAU_COLOR = '#D7D98A';
+const HEADER_COLOR = '#19E7DB';
+const INK = '#341E04';
 const LOGO_IMG = '/new images/Logo final (1).png';
 
 export default function Header({ settings = {} }) {
@@ -76,7 +79,7 @@ export default function Header({ settings = {} }) {
     <>
       <div className="hdr-full">
         <div className="hdr-bandeau" aria-hidden>
-          Magazine mensuel d&apos;art
+          Magazine hebdomadaire d&apos;art
         </div>
         <header className="hdr" role="banner">
           <Link href="/" className="hdr-brand" aria-label="Accueil Collection Aur'art">
@@ -112,8 +115,8 @@ export default function Header({ settings = {} }) {
                   </button>
                 </>
               ) : (
-                <Link href="/login" className="hdr-icon-link" aria-label="Connexion">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                <Link href="/login" className="hdr-link">
+                  Se connecter
                 </Link>
               )}
             </div>
@@ -216,9 +219,9 @@ export default function Header({ settings = {} }) {
         .hdr a.hdr-link:visited,
         .hdr a.hdr-link:focus,
         .hdr .hdr-nav a.hdr-link {
-          color: #4a6b3a !important;
-          -webkit-text-fill-color: #4a6b3a !important;
-          font-family: 'Times New Roman', Times, Georgia, serif !important;
+          color: #341E04 !important;
+          -webkit-text-fill-color: #341E04 !important;
+          font-family: 'TS Tarek', 'Nunito Sans', sans-serif !important;
           font-weight: 700 !important;
           text-transform: uppercase !important;
           letter-spacing: 0.18em !important;
@@ -232,14 +235,14 @@ export default function Header({ settings = {} }) {
         }
         .hdr-bandeau {
           width: 100%;
-          height: 28px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
           background: ${BANDEAU_COLOR};
-          color: #fff;
-          font-family: 'Times New Roman', Times, Georgia, serif;
-          font-size: 0.75rem;
+          color: ${INK};
+          font-family: 'Sue Ellen Francisco', cursive;
+          font-size: 1.15rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.05em;
@@ -251,16 +254,16 @@ export default function Header({ settings = {} }) {
           align-items: center;
           justify-content: space-between;
           gap: 1rem;
-          padding: 0.5rem 1rem;
-          min-height: 52px;
+          padding: 0.85rem 1.25rem;
+          min-height: 96px;
           background: ${HEADER_COLOR};
           color: #2d1f2d;
           box-shadow: 0 2px 12px rgba(45,31,45,0.1);
         }
         @media (min-width: 768px) {
           .hdr {
-            padding: 0.6rem 1.25rem;
-            min-height: 56px;
+            padding: 0.85rem 1.5rem;
+            min-height: 96px;
           }
         }
         .hdr-nav {

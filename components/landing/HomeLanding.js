@@ -29,7 +29,7 @@ const FALLBACK_ARTICLES = [
     category: "Marché de l'art",
     title: 'Pourquoi les jeunes collectionneurs changent la donne',
     date: '8 sept. 2026',
-    image: '/images/landing/marche.jpg',
+    image: '/images/landing/marche-art.jpg',
   },
   {
     id: 'tribunal',
@@ -45,26 +45,28 @@ const FALLBACK_ARTICLES = [
     category: "Histoire de l'art",
     title: 'Le retour de la couleur dans les musées',
     date: '2 sept. 2026',
-    image: '/images/landing/histoire.png',
+    image: '/images/landing/histoire-arts.jpg',
   },
   {
     id: 'portrait',
-    href: '/articles',
+    href: '/rubriques/portraits',
     category: 'Portrait',
-    title: 'Rencontre avec Sophie Laurent, artiste plasticienne',
+    title: 'Rencontre avec celles et ceux qui font vivre l’art',
     date: '29 août 2026',
-    image: '/images/landing/au-fil.png',
+    image: '/images/landing/portrait.jpg',
   },
 ];
 
+const LOGO = '/new images/Logo final (1).png';
+
 const RUBRIQUES = [
   { href: '/rubriques/art-contemporain', title: 'Art contemporain', image: '/images/landing/art-contemporain.jpg', tone: styles.pink },
-  { href: '/rubriques/marche-art', title: "Marché de l'art", image: '/images/landing/marche.jpg', tone: styles.sageCard },
-  { href: '/rubriques/tribunal-arts', title: 'Tribunal des arts', image: '/images/landing/tribunal.jpg', tone: styles.blue },
-  { href: '/rubriques/histoire-arts', title: "Histoire de l'art", image: '/images/landing/histoire.png', tone: styles.sand },
-  { href: '/rubriques/tribunal-arts', title: 'Droit', image: '/images/landing/tribunal.jpg', tone: styles.pink },
-  { href: '/articles', title: 'Portraits', image: '/images/landing/au-fil.png', tone: styles.sageCard },
-  { href: '/rubriques/fil-oeuvres', title: 'Au fil des œuvres', image: '/images/landing/au-fil.png', tone: styles.mint },
+  { href: '/rubriques/marche-art', title: "Marché de l'art", image: '/images/landing/marche-art.jpg', tone: styles.sageCard },
+  { href: '/rubriques/histoire-arts', title: 'Histoire des arts', image: '/images/landing/histoire-arts.jpg', tone: styles.sand },
+  { href: '/rubriques/fil-oeuvres', title: 'Au fil des œuvres', image: '/images/landing/au-fil.jpg', tone: styles.mint },
+  { href: '/rubriques/portraits', title: 'Portrait', image: '/images/landing/portrait.jpg', tone: styles.pink },
+  { href: '/rubriques/actualites', title: "Les actualités du monde de l'art", image: '/images/landing/actualites.jpg', tone: styles.sageCard },
+  { href: '/rubriques/billets-art', title: "Billets d'art", image: '/images/landing/au-fil.jpg', tone: styles.mint },
 ];
 
 const EVENTS = [
@@ -80,10 +82,13 @@ const SPECIAL_DAYS = [4, 19];
 function imageForRubrique(name) {
   const value = (name || '').toLowerCase();
   if (value.includes('tribunal') || value.includes('droit')) return '/images/landing/tribunal.jpg';
-  if (value.includes('march')) return '/images/landing/marche.jpg';
+  if (value.includes('march')) return '/images/landing/marche-art.jpg';
   if (value.includes('contempor')) return '/images/landing/art-contemporain.jpg';
-  if (value.includes('histoire')) return '/images/landing/histoire.png';
-  return '/images/landing/au-fil.png';
+  if (value.includes('histoire')) return '/images/landing/histoire-arts.jpg';
+  if (value.includes('portrait')) return '/images/landing/portrait.jpg';
+  if (value.includes('actualit')) return '/images/landing/actualites.jpg';
+  if (value.includes('billet')) return '/images/landing/au-fil.jpg';
+  return '/images/landing/au-fil.jpg';
 }
 
 function formatShort(dateStr) {
@@ -122,6 +127,7 @@ export default function HomeLanding() {
   const [city, setCity] = useState('all');
   const [selectedDay, setSelectedDay] = useState(null);
   const [articles, setArticles] = useState(FALLBACK_ARTICLES);
+  const [portraits, setPortraits] = useState([]);
 
   useEffect(() => {
     setLoggedIn(Boolean(localStorage.getItem('authToken')));
@@ -144,6 +150,27 @@ export default function HomeLanding() {
         );
       })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      getPublicArticles({ rubrique: 'portraits', limit: 12 }).catch(() => ({ articles: [] })),
+      getPublicArticles({ page: 1, limit: 40 }).catch(() => ({ articles: [] })),
+    ]).then(([bySlug, all]) => {
+      if (cancelled) return;
+      const extra = (all.articles || []).filter((article) =>
+        /portrait/i.test(`${article.rubrique_slug || ''} ${article.rubrique_name || ''}`)
+      );
+      const map = new Map();
+      [...(bySlug.articles || []), ...extra].forEach((article) => {
+        if (article?.id) map.set(article.id, article);
+      });
+      setPortraits([...map.values()]);
+    });
     return () => {
       cancelled = true;
     };
@@ -172,7 +199,7 @@ export default function HomeLanding() {
         <title>Collection Aur&apos;art – Esquisses de l&apos;Art & son marché</title>
         <meta
           name="description"
-          content="Collection Aur'art est un magazine mensuel qui explore l'art sous toutes ses formes : expositions, artistes, marché de l'art, droit et actualités."
+          content="Collection Aur'art est un magazine hebdomadaire qui explore l'art sous toutes ses formes : expositions, artistes, marché de l'art, droit et actualités."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -197,6 +224,7 @@ export default function HomeLanding() {
       </div>
 
       <header className={styles.layer}>
+        <p className={styles.magBand}>Magazine hebdomadaire d&apos;art</p>
         <div className={styles.greenBar}>
           <button
             type="button"
@@ -251,7 +279,7 @@ export default function HomeLanding() {
           </div>
         )}
         <div className={styles.brand}>
-          <img src="/images/landing/logo-aa.png" alt="" className={styles.logo} />
+          <img src={LOGO} alt="Collection Aur'art" className={styles.logo} />
           <p className={styles.script}>Collection Aur&apos;art</p>
           <p className={styles.tag}>Esquisses de l&apos;art & son marché</p>
         </div>
@@ -260,10 +288,10 @@ export default function HomeLanding() {
       <main className={`${styles.wrap} ${styles.layer}`}>
         <section className={styles.hero}>
           <div>
-            <p className={styles.kicker}>Le magazine mensuel</p>
+            <p className={styles.kicker}>Le magazine hebdomadaire</p>
             <h1 className={styles.heroTitle}>L&apos;art, une histoire de regards</h1>
             <p className={styles.heroText}>
-              Collection Aur&apos;art est un magazine mensuel qui explore l&apos;art sous toutes ses formes :
+              Collection Aur&apos;art est un magazine hebdomadaire qui explore l&apos;art sous toutes ses formes :
               expositions, artistes, marché de l&apos;art, droit, actualités et bien plus encore.
             </p>
             <Link href="/articles" className={styles.cta}>
@@ -277,13 +305,13 @@ export default function HomeLanding() {
               <path d="M12 0l1.6 8.2L22 12l-8.4 1.8L12 24l-1.6-10.2L2 12l8.4-1.8L12 0z" />
             </svg>
             <figure className={`${styles.frame} ${styles.frameMain}`}>
-              <img src="/images/landing/au-fil.png" alt="" />
+              <img src="/images/landing/au-fil.jpg" alt="" />
             </figure>
             <figure className={`${styles.frame} ${styles.frameSide}`}>
               <img src="/images/landing/art-contemporain.jpg" alt="" />
             </figure>
             <figure className={`${styles.frame} ${styles.frameLow}`}>
-              <img src="/images/landing/marche.jpg" alt="" />
+              <img src="/images/landing/marche-art.jpg" alt="" />
             </figure>
             <p className={styles.note}>
               Explorer
@@ -397,17 +425,35 @@ export default function HomeLanding() {
           </div>
 
           <aside className={styles.portraits}>
-            <div className={styles.portraitStage}>
-              <figure className={styles.portraitMain}>
-                <img src="/images/landing/au-fil.png" alt="" />
-              </figure>
-              <figure className={styles.portraitSide}>
-                <img src="/images/landing/histoire.png" alt="" />
-              </figure>
-            </div>
             <h2>Portraits</h2>
             <p>Des rencontres avec celles et ceux qui font vivre l&apos;art d&apos;aujourd&apos;hui.</p>
-            <Link href="/articles" className={styles.cta}>
+            {portraits.length > 0 ? (
+              <div className={styles.portraitRail}>
+                <div className={styles.portraitTrack}>
+                  {(portraits.length > 1 ? [...portraits, ...portraits] : portraits).map((portrait, index) => (
+                    <Link
+                      key={`${portrait.id}-${index}`}
+                      href={portrait.slug ? `/blog/${portrait.slug}` : '/rubriques/portraits'}
+                      className={styles.portraitCard}
+                    >
+                      <img
+                        src={portrait.featured_image_url || '/images/landing/portrait.jpg'}
+                        alt=""
+                      />
+                      <strong>{portrait.title}</strong>
+                      <span>{portrait.author_names || [portrait.firstname, portrait.lastname].filter(Boolean).join(' ')}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className={styles.portraitStage}>
+                <figure className={styles.portraitMain}>
+                  <img src="/images/landing/portrait.jpg" alt="" />
+                </figure>
+              </div>
+            )}
+            <Link href="/rubriques/portraits" className={styles.cta}>
               Découvrir les portraits <ArrowRight size={16} />
             </Link>
           </aside>
@@ -433,14 +479,14 @@ export default function HomeLanding() {
               </div>
             </div>
             <article className={styles.join}>
-              <img src="/images/landing/marche.jpg" alt="" />
+              <img src="/images/landing/marche-art.jpg" alt="" />
               <div className={styles.joinShade} />
               <p className={styles.sticker}>Time, passe par là</p>
               <div className={styles.joinBody}>
-                <h3>Rejoignez l&apos;aventure</h3>
+                <h3>Rejoignez-nous</h3>
                 <p>
-                  Rejoignez notre communauté et accédez à tous nos articles, enregistrez vos favoris,
-                  et échangez avec nous.
+                  créez vous un compte pour ne rien manquer de notre activité ! Pour cela, rien de plus simple :
+                  À très vite ;)
                 </p>
                 <Link href="/register" className={styles.cta}>
                   Créer un compte <ArrowRight size={15} />
@@ -453,7 +499,7 @@ export default function HomeLanding() {
 
         <footer className={styles.footer}>
           <Link href="/" className={styles.brandMini}>
-            <img src="/images/landing/logo-aa.png" alt="" />
+            <img src={LOGO} alt="" />
             <strong>Collection Aur&apos;art</strong>
           </Link>
           <div className={styles.social}>
@@ -465,7 +511,7 @@ export default function HomeLanding() {
               <a href="https://www.tiktok.com/@collection.aurart" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 3v12.2a3.2 3.2 0 1 1-2.2-3V9.1A6.2 6.2 0 1 0 17 15V8.4A6.7 6.7 0 0 0 21 9.6V6.5A4 4 0 0 1 17.2 3H14z" /></svg>
               </a>
-              <a href="https://www.linkedin.com/company/collection-aurart" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/company/collection-aur-art/home/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 9H4V20h2.5V9zM5.2 4A1.6 1.6 0 1 0 5.2 7.2 1.6 1.6 0 0 0 5.2 4zM20 20h-2.5v-5.6c0-1.6-.6-2.6-2-2.6-1 0-1.6.7-1.9 1.4-.1.2-.1.6-.1.9V20H11V9h2.4v1.5c.4-.7 1.3-1.8 3.2-1.8 2.3 0 4 1.5 4 4.8V20z" /></svg>
               </a>
             </div>

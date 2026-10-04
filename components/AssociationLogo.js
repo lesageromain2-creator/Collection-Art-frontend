@@ -19,7 +19,7 @@ export default function AssociationLogo({ size = 'md', linkToHome = false, class
         <>
           <div className="association-logo-inner">
             <Image
-              src="/images/logo final.PNG"
+              src="/new images/Logo final (1).png"
               alt="Collection Aur'art"
               fill
               className="object-contain object-center"
@@ -43,7 +43,7 @@ export default function AssociationLogo({ size = 'md', linkToHome = false, class
         </>
       ) : (
         <Image
-          src="/images/logo final.PNG"
+          src="/new images/Logo final (1).png"
           alt="Collection Aur'art"
           width={s.width}
           height={s.height}

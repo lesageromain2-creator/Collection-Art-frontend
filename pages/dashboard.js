@@ -115,6 +115,8 @@ export default function Dashboard() {
     rubrique_id: '',
     status: 'draft',
     is_featured: false,
+    reading_time: '',
+    co_author_ids: [],
   });
   const [articleSubmitLoading, setArticleSubmitLoading] = useState(false);
   const [contentBlocks, setContentBlocks] = useState([]);
@@ -124,6 +126,7 @@ export default function Dashboard() {
   const fileInputRef = useRef(null);
   const blockImageInputRef = useRef(null);
   const [rubriques, setRubriques] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [deleteArticleId, setDeleteArticleId] = useState(null);
 
   // Profil
@@ -155,6 +158,7 @@ export default function Dashboard() {
     if (activeTab === 'articles' && user?.is_team_member) {
       loadArticles();
       getRubriques().then(setRubriques);
+      getTeamMembers().then(setTeamMembers).catch(() => setTeamMembers([]));
     }
     if (activeTab === 'profile') {
       getRubriques().then(setRubriques);
@@ -225,6 +229,8 @@ export default function Dashboard() {
       rubrique_id: '',
       status: 'draft',
       is_featured: false,
+      reading_time: '',
+      co_author_ids: [],
     });
     setContentBlocks([{ id: blockId(), type: 'text', content: '' }]);
     setSources([]);
@@ -247,6 +253,8 @@ export default function Dashboard() {
         rubrique_id: article.rubrique_id || '',
         status: article.status || 'draft',
         is_featured: article.is_featured || false,
+        reading_time: article.reading_time || article.read_time || '',
+        co_author_ids: article.co_author_ids || [],
       });
       const outSources = {};
       setContentBlocks(parseContentBlocks(article.content || '', outSources));
@@ -371,6 +379,8 @@ export default function Dashboard() {
         rubrique_id: articleForm.rubrique_id || null,
         status: articleForm.status,
         is_featured: articleForm.is_featured,
+        reading_time: articleForm.reading_time ? Number(articleForm.reading_time) : null,
+        co_author_ids: articleForm.co_author_ids || [],
       };
       if (editingArticleId) {
         await updateArticle(editingArticleId, payload);
@@ -485,14 +495,14 @@ export default function Dashboard() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #212E50;
-            color: #F8F8F0;
+            background: #FFF5ED;
+            color: #341E04;
           }
           .spinner {
             width: 48px;
             height: 48px;
-            border: 3px solid rgba(199,161,30,0.2);
-            border-top-color: #C7A11E;
+            border: 3px solid rgba(138,133,94,0.2);
+            border-top-color: #8A855E;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin-bottom: 16px;
@@ -1147,6 +1157,48 @@ export default function Dashboard() {
                     <span>À la une</span>
                   </label>
                 </div>
+                <div className="form-group">
+                  <label>Temps de lecture (minutes)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Ex. 6"
+                    value={articleForm.reading_time}
+                    onChange={(e) => handleArticleFieldChange('reading_time', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="form-group authors-box">
+                <label>Auteurs de l&apos;article</label>
+                <p className="sources-hint">Votre nom est déjà celui de l&apos;auteur principal. Cochez les autres personnes impliquées : elles apparaîtront côte à côte.</p>
+                <div className="author-checks">
+                  {teamMembers
+                    .filter((member) => String(member.id) !== String(user?.id))
+                    .map((member) => {
+                      const checked = (articleForm.co_author_ids || []).some((id) => String(id) === String(member.id));
+                      const label = [member.firstname, member.lastname].filter(Boolean).join(' ') || member.username || 'Membre';
+                      return (
+                        <label key={member.id} className="author-check">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              handleArticleFieldChange(
+                                'co_author_ids',
+                                checked
+                                  ? (articleForm.co_author_ids || []).filter((id) => String(id) !== String(member.id))
+                                  : [...(articleForm.co_author_ids || []), member.id]
+                              );
+                            }}
+                          />
+                          <span>{label}</span>
+                        </label>
+                      );
+                    })}
+                  {teamMembers.filter((member) => String(member.id) !== String(user?.id)).length === 0 && (
+                    <p className="sources-hint">Aucun autre membre d&apos;équipe pour le moment.</p>
+                  )}
+                </div>
               </div>
               <div className="form-actions">
                 <button type="submit" className="btn-primary" disabled={articleSubmitLoading}>
@@ -1167,7 +1219,7 @@ export default function Dashboard() {
       <style jsx>{`
         .dashboard-page {
           min-height: 100vh;
-          background: #212E50;
+          background: #FFF5ED;
           padding-top: 80px;
           position: relative;
         }
@@ -1197,8 +1249,8 @@ export default function Dashboard() {
           transform: translateY(0);
         }
         .sidebar {
-          background: rgba(33,46,80,0.9);
-          border: 1px solid rgba(199,161,30,0.2);
+          background: #FFFFFF;
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 20px;
           padding: 24px;
           height: fit-content;
@@ -1208,7 +1260,7 @@ export default function Dashboard() {
         .sidebar-header {
           text-align: center;
           padding-bottom: 20px;
-          border-bottom: 1px solid rgba(199,161,30,0.2);
+          border-bottom: 1px solid rgba(138,133,94,0.2);
         }
         .avatar-wrap {
           width: 80px;
@@ -1218,11 +1270,11 @@ export default function Dashboard() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          color: #F8F8F0;
+          background: linear-gradient(135deg, #19E7DB, #D7D98A);
+          color: #341E04;
           font-size: 1.5rem;
           font-weight: 700;
-          border: 2px solid rgba(199,161,30,0.3);
+          border: 2px solid rgba(138,133,94,0.3);
           cursor: pointer;
           overflow: hidden;
           position: relative;
@@ -1245,12 +1297,12 @@ export default function Dashboard() {
         .spin { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .sidebar-header h3 {
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1.1rem;
           margin-bottom: 4px;
         }
         .sidebar-header p {
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
           font-size: 0.9rem;
           margin-bottom: 8px;
         }
@@ -1277,7 +1329,7 @@ export default function Dashboard() {
           background: transparent;
           border: none;
           border-radius: 12px;
-          color: rgba(248,248,240,0.8);
+          color: rgba(52,30,4,0.8);
           font-size: 0.95rem;
           font-weight: 500;
           cursor: pointer;
@@ -1287,7 +1339,7 @@ export default function Dashboard() {
         }
         .nav-btn:hover {
           background: rgba(108,129,87,0.15);
-          color: #F8F8F0;
+          color: #341E04;
         }
         .nav-btn.active {
           background: rgba(124,42,60,0.3);
@@ -1302,7 +1354,7 @@ export default function Dashboard() {
         }
         .nav-divider {
           height: 1px;
-          background: rgba(199,161,30,0.2);
+          background: rgba(138,133,94,0.2);
           margin: 8px 0;
         }
         .main {
@@ -1317,30 +1369,30 @@ export default function Dashboard() {
           margin-bottom: 24px;
         }
         .section h1 {
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1.75rem;
           margin-bottom: 24px;
         }
         .section-desc {
-          color: rgba(248,248,240,0.85);
+          color: rgba(52,30,4,0.85);
           font-size: 0.95rem;
           margin-bottom: 24px;
           max-width: 560px;
         }
         .link-inline {
-          color: #C7A11E;
+          color: #8A855E;
           text-decoration: underline;
         }
         .link-inline:hover {
-          color: #F8F8F0;
+          color: #341E04;
         }
         .btn-primary {
           display: inline-flex;
           align-items: center;
           gap: 8px;
           padding: 12px 20px;
-          background: linear-gradient(135deg, #7C2A3C, #C7A11E);
-          color: #F8F8F0;
+          background: linear-gradient(135deg, #19E7DB, #D7D98A);
+          color: #341E04;
           border: none;
           border-radius: 12px;
           font-weight: 600;
@@ -1357,9 +1409,9 @@ export default function Dashboard() {
           align-items: center;
           gap: 8px;
           padding: 10px 18px;
-          background: rgba(248,248,240,0.1);
-          color: #F8F8F0;
-          border: 1px solid rgba(199,161,30,0.3);
+          background: rgba(237,219,206,0.1);
+          color: #341E04;
+          border: 1px solid rgba(138,133,94,0.3);
           border-radius: 12px;
           font-weight: 600;
           cursor: pointer;
@@ -1373,10 +1425,10 @@ export default function Dashboard() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.2);
+          background: rgba(237,219,206,0.08);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           cursor: pointer;
         }
         .btn-icon:hover { background: rgba(108,129,87,0.2); }
@@ -1386,13 +1438,13 @@ export default function Dashboard() {
           display: flex;
           align-items: center;
           gap: 12px;
-          color: rgba(248,248,240,0.8);
+          color: rgba(52,30,4,0.8);
           padding: 40px;
         }
         .empty-state {
           text-align: center;
           padding: 60px 20px;
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
         }
         .empty-state svg { margin-bottom: 16px; opacity: 0.5; }
         .empty-state p { margin-bottom: 20px; }
@@ -1409,14 +1461,14 @@ export default function Dashboard() {
           grid-template-columns: 120px 1fr auto;
           gap: 20px;
           align-items: center;
-          background: rgba(248,248,240,0.05);
-          border: 1px solid rgba(199,161,30,0.2);
+          background: rgba(237,219,206,0.05);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 16px;
           padding: 16px;
           transition: all 0.2s;
         }
         .article-card:hover {
-          border-color: rgba(199,161,30,0.35);
+          border-color: rgba(138,133,94,0.35);
         }
         .article-cover {
           display: flex;
@@ -1439,10 +1491,10 @@ export default function Dashboard() {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: rgba(248,248,240,0.3);
+          color: rgba(52,30,4,0.3);
         }
         .article-body h3 {
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1.1rem;
           margin-bottom: 6px;
         }
@@ -1451,12 +1503,12 @@ export default function Dashboard() {
           gap: 12px;
           flex-wrap: wrap;
           font-size: 0.8rem;
-          color: rgba(248,248,240,0.6);
+          color: rgba(52,30,4,0.6);
           margin-bottom: 4px;
         }
         .excerpt {
           font-size: 0.9rem;
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
           margin: 0;
         }
         .article-actions {
@@ -1472,7 +1524,7 @@ export default function Dashboard() {
         }
         .profile-photo-label {
           display: block;
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
           font-size: 0.9rem;
           font-weight: 600;
           margin-bottom: 12px;
@@ -1488,8 +1540,8 @@ export default function Dashboard() {
           height: 96px;
           border-radius: 50%;
           overflow: hidden;
-          background: rgba(199,161,30,0.2);
-          border: 2px solid rgba(199,161,30,0.4);
+          background: rgba(138,133,94,0.2);
+          border: 2px solid rgba(138,133,94,0.4);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1499,7 +1551,7 @@ export default function Dashboard() {
           flex-shrink: 0;
         }
         .profile-photo-wrap:hover:not(:disabled) {
-          border-color: rgba(199,161,30,0.7);
+          border-color: rgba(138,133,94,0.7);
           transform: scale(1.02);
         }
         .profile-photo-wrap:disabled {
@@ -1514,7 +1566,7 @@ export default function Dashboard() {
         .profile-photo-initials {
           font-size: 1.75rem;
           font-weight: 700;
-          color: rgba(248,248,240,0.9);
+          color: rgba(52,30,4,0.9);
         }
         .profile-photo-loading {
           position: absolute;
@@ -1523,7 +1575,7 @@ export default function Dashboard() {
           align-items: center;
           justify-content: center;
           background: rgba(0,0,0,0.5);
-          color: #F8F8F0;
+          color: #341E04;
         }
         .profile-photo-actions {
           display: flex;
@@ -1532,7 +1584,7 @@ export default function Dashboard() {
         }
         .profile-photo-hint {
           font-size: 0.8rem;
-          color: rgba(248,248,240,0.5);
+          color: rgba(52,30,4,0.5);
           margin: 0;
         }
         .btn-sm {
@@ -1543,11 +1595,11 @@ export default function Dashboard() {
         .catalogue-search-wrap {
           margin-top: 40px;
           padding-top: 32px;
-          border-top: 1px solid rgba(199,161,30,0.25);
+          border-top: 1px solid rgba(138,133,94,0.25);
           max-width: 640px;
         }
         .catalogue-search-title {
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1.15rem;
           font-weight: 600;
           margin-bottom: 16px;
@@ -1574,22 +1626,22 @@ export default function Dashboard() {
         .catalogue-search-input {
           width: 100%;
           padding: 10px 14px 10px 40px;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.3);
+          background: rgba(237,219,206,0.08);
+          border: 1px solid rgba(138,133,94,0.3);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.95rem;
           outline: none;
         }
         .catalogue-search-input::placeholder {
-          color: rgba(248,248,240,0.5);
+          color: rgba(52,30,4,0.5);
         }
         .catalogue-rubrique-select {
           padding: 10px 14px;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.3);
+          background: rgba(237,219,206,0.08);
+          border: 1px solid rgba(138,133,94,0.3);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.95rem;
           min-width: 180px;
           cursor: pointer;
@@ -1602,7 +1654,7 @@ export default function Dashboard() {
           background: rgba(108,129,87,0.4);
           border: 1px solid rgba(108,129,87,0.5);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-weight: 600;
           font-size: 0.95rem;
           text-decoration: none;
@@ -1617,12 +1669,12 @@ export default function Dashboard() {
         }
         .profile-field label {
           display: block;
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
           font-size: 0.85rem;
           margin-bottom: 4px;
         }
         .profile-field span {
-          color: #F8F8F0;
+          color: #341E04;
           font-weight: 500;
         }
         .profile-form .form-group {
@@ -1630,23 +1682,36 @@ export default function Dashboard() {
         }
         .profile-form label {
           display: block;
-          color: rgba(248,248,240,0.9);
+          color: rgba(52,30,4,0.9);
           font-size: 0.9rem;
           margin-bottom: 6px;
         }
         .profile-form input {
           width: 100%;
           padding: 10px 14px;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.25);
+          background: rgba(237,219,206,0.08);
+          border: 1px solid rgba(138,133,94,0.25);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1rem;
         }
         .form-actions {
           display: flex;
           gap: 12px;
           margin-top: 20px;
+        }
+        .authors-box { margin-top: 8px; }
+        .author-checks {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px 18px;
+          margin-top: 8px;
+        }
+        .author-check {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #341E04;
         }
         .modal-overlay {
           position: fixed;
@@ -1660,8 +1725,8 @@ export default function Dashboard() {
           overflow-y: auto;
         }
         .modal {
-          background: #212E50;
-          border: 1px solid rgba(199,161,30,0.25);
+          background: #FFF5ED;
+          border: 1px solid rgba(138,133,94,0.25);
           border-radius: 20px;
           padding: 24px;
           width: 100%;
@@ -1675,7 +1740,7 @@ export default function Dashboard() {
           margin-bottom: 24px;
         }
         .modal-head h2 {
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1.35rem;
         }
         .article-form .form-group {
@@ -1683,7 +1748,7 @@ export default function Dashboard() {
         }
         .article-form label {
           display: block;
-          color: rgba(248,248,240,0.9);
+          color: rgba(52,30,4,0.9);
           font-size: 0.9rem;
           margin-bottom: 6px;
         }
@@ -1692,10 +1757,10 @@ export default function Dashboard() {
         .article-form textarea {
           width: 100%;
           padding: 10px 14px;
-          background: rgba(248,248,240,0.08);
-          border: 1px solid rgba(199,161,30,0.25);
+          background: rgba(237,219,206,0.08);
+          border: 1px solid rgba(138,133,94,0.25);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 1rem;
         }
         .article-form textarea { min-height: 120px; resize: vertical; }
@@ -1708,9 +1773,9 @@ export default function Dashboard() {
           gap: 8px;
           padding: 10px 16px;
           background: rgba(108,129,87,0.2);
-          border: 1px dashed rgba(199,161,30,0.4);
+          border: 1px dashed rgba(138,133,94,0.4);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           cursor: pointer;
           margin-bottom: 12px;
         }
@@ -1727,7 +1792,7 @@ export default function Dashboard() {
         .cover-preview span {
           display: block;
           font-size: 0.85rem;
-          color: rgba(248,248,240,0.6);
+          color: rgba(52,30,4,0.6);
           margin-top: 4px;
         }
         .uploaded-list {
@@ -1760,7 +1825,7 @@ export default function Dashboard() {
         }
         .insert-in-content {
           background: rgba(108,129,87,0.3);
-          color: #C7A11E;
+          color: #8A855E;
         }
         .blocks-toolbar {
           display: flex;
@@ -1776,7 +1841,7 @@ export default function Dashboard() {
           background: rgba(108,129,87,0.25);
           border: 1px solid rgba(108,129,87,0.4);
           border-radius: 10px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.9rem;
           cursor: pointer;
           transition: background 0.2s;
@@ -1794,8 +1859,8 @@ export default function Dashboard() {
           gap: 12px;
           align-items: flex-start;
           padding: 12px;
-          background: rgba(33,46,80,0.5);
-          border: 1px solid rgba(199,161,30,0.2);
+          background: rgba(237,219,206,0.92);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 12px;
         }
         .block-actions {
@@ -1819,15 +1884,15 @@ export default function Dashboard() {
           gap: 6px;
           padding: 6px 12px;
           font-size: 0.85rem;
-          background: rgba(199,161,30,0.25);
-          border: 1px solid rgba(199,161,30,0.5);
+          background: rgba(138,133,94,0.25);
+          border: 1px solid rgba(138,133,94,0.5);
           border-radius: 8px;
-          color: #F8F8F0;
+          color: #341E04;
           cursor: pointer;
           transition: background 0.2s;
         }
         .btn-tool:hover {
-          background: rgba(199,161,30,0.4);
+          background: rgba(138,133,94,0.4);
         }
         .block-text-wrap {
           flex: 1;
@@ -1838,14 +1903,14 @@ export default function Dashboard() {
           min-height: 80px;
           padding: 12px;
           background: rgba(0,0,0,0.2);
-          border: 1px solid rgba(199,161,30,0.2);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 8px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.95rem;
           resize: vertical;
         }
         .block-text::placeholder {
-          color: rgba(248,248,240,0.5);
+          color: rgba(52,30,4,0.5);
         }
         .block-image-wrap {
           flex: 1;
@@ -1862,34 +1927,34 @@ export default function Dashboard() {
         .block-image-alt {
           padding: 8px 12px;
           background: rgba(0,0,0,0.2);
-          border: 1px solid rgba(199,161,30,0.2);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 6px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.9rem;
         }
         .block-image-placeholder {
-          color: rgba(248,248,240,0.5);
+          color: rgba(52,30,4,0.5);
           font-size: 0.9rem;
         }
         .blocks-hint {
-          color: rgba(248,248,240,0.6);
+          color: rgba(52,30,4,0.6);
           font-size: 0.9rem;
           margin-top: 8px;
         }
         .sources-section {
           margin-top: 24px;
           padding-top: 20px;
-          border-top: 1px solid rgba(199,161,30,0.3);
+          border-top: 1px solid rgba(138,133,94,0.3);
         }
         .sources-label {
           display: block;
           font-weight: 600;
-          color: #F8F8F0;
+          color: #341E04;
           margin-bottom: 4px;
         }
         .sources-section .sources-hint {
           font-size: 0.85rem;
-          color: rgba(248,248,240,0.7);
+          color: rgba(52,30,4,0.7);
           margin-bottom: 12px;
         }
         .source-row {
@@ -1901,20 +1966,20 @@ export default function Dashboard() {
         .source-num {
           flex-shrink: 0;
           font-weight: 600;
-          color: #C7A11E;
+          color: #8A855E;
           min-width: 28px;
         }
         .source-input {
           flex: 1;
           padding: 10px 12px;
           background: rgba(0,0,0,0.2);
-          border: 1px solid rgba(199,161,30,0.2);
+          border: 1px solid rgba(138,133,94,0.2);
           border-radius: 8px;
-          color: #F8F8F0;
+          color: #341E04;
           font-size: 0.9rem;
         }
         .source-input::placeholder {
-          color: rgba(248,248,240,0.4);
+          color: rgba(52,30,4,0.4);
         }
         .checkbox-wrap label {
           display: flex;

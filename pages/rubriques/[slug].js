@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight, UserRound } from 'lucide-react';
+import { BookOpen, Scale, TrendingUp, Palette, ArrowLeft, Calendar, User, Sparkles, ArrowRight, UserRound, Newspaper, PenLine, Clock } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { getPublicArticles, fetchSettings } from '../../utils/api';
@@ -19,12 +19,14 @@ const formatDate = (dateStr) =>
 
 // Chemins sans apostrophe dans l’URL pour éviter 404 (marche-art servi via rewrite)
 const RUBRIQUES_IMAGES = {
-  'histoire-arts': '/images/Histoire des arts.png',
-  'fil-oeuvres': '/images/au fil des oeuvres.png',
-  'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': '/images/tribunal des arts.jpeg',
-  'marche-art': '/images/marche.jpeg',
-  portraits: '/images/interview.jpeg',
+  'histoire-arts': '/images/landing/histoire-arts.jpg',
+  'fil-oeuvres': '/images/landing/au-fil.jpg',
+  'art-contemporain': '/images/landing/art-contemporain.jpg',
+  'tribunal-arts': '/images/landing/tribunal.jpg',
+  'marche-art': '/images/landing/marche-art.jpg',
+  portraits: '/images/landing/portrait.jpg',
+  'billets-art': '/images/landing/au-fil.jpg',
+  actualites: '/images/landing/actualites.jpg',
 };
 
 const rubriquesConfig = {
@@ -33,40 +35,40 @@ const rubriquesConfig = {
     description: "Découvrez l'histoire de l'art à travers les siècles, des œuvres majeures aux courants artistiques qui ont façonné notre regard sur le monde.",
     longDescription: "Cette rubrique explore l'évolution de l'art depuis l'Antiquité jusqu'à nos jours. Nous analysons les mouvements artistiques majeurs, les révolutions esthétiques et les figures qui ont marqué l'histoire de l'art.",
     icon: BookOpen,
-    color: '#7C2A3C',
-    hex: '#7C2A3C',
+    color: '#BC4B78',
+    hex: '#BC4B78',
   },
   'fil-oeuvres': {
     title: 'Au fil des œuvres',
     description: "Explorez en profondeur les œuvres qui ont marqué l'histoire de l'art, leurs secrets, leur contexte de création et leur impact culturel.",
     longDescription: "Des analyses détaillées d'œuvres d'art emblématiques. Nous décryptons les techniques, les symboles, les contextes historiques et les histoires fascinantes derrière les chefs-d'œuvre.",
     icon: Palette,
-    color: '#6C8157',
-    hex: '#6C8157',
+    color: '#8A855E',
+    hex: '#8A855E',
   },
   'art-contemporain': {
     title: 'Art contemporain',
     description: "Plongez dans l'art d'aujourd'hui : tendances, artistes émergents et enjeux de la création contemporaine.",
     longDescription: "L'art contemporain interroge notre époque. Nous explorons les courants actuels, les artistes qui font l'actualité et les questions que soulève la création d'aujourd'hui.",
     icon: Sparkles,
-    color: '#C7A11E',
-    hex: '#C7A11E',
+    color: '#8A855E',
+    hex: '#8A855E',
   },
   'tribunal-arts': {
     title: 'Tribunal des arts',
     description: "Analyse des procès et affaires judiciaires qui ont secoué le monde de l'art, entre droit, éthique et patrimoine culturel.",
     longDescription: "Les grandes affaires juridiques du monde de l'art : vols, faux, restitutions, droits d'auteur. Nous analysons les enjeux juridiques et éthiques qui façonnent le marché de l'art.",
     icon: Scale,
-    color: '#212E50',
-    hex: '#212E50',
+    color: '#341E04',
+    hex: '#341E04',
   },
   'marche-art': {
     title: "Marché de l'art",
     description: "Décryptage des dynamiques du marché de l'art : ventes aux enchères, tendances, valorisation et circulation des œuvres contemporaines.",
     longDescription: "Analyses économiques et financières du marché de l'art. Ventes records, tendances de collection, nouveaux acteurs et transformations du secteur artistique.",
     icon: TrendingUp,
-    color: '#7C2A3C',
-    hex: '#7C2A3C',
+    color: '#BC4B78',
+    hex: '#BC4B78',
   },
   portraits: {
     title: 'Portraits',
@@ -75,8 +77,24 @@ const rubriquesConfig = {
     longDescription:
       "Cette rubrique met en avant les personnalités qui font vivre l'art : créateurs, mécènes, historiens et acteurs du marché. Entretiens, profils et regards croisés pour mieux comprendre ceux qui façonnent la scène artistique.",
     icon: UserRound,
-    color: '#8B7355',
-    hex: '#8B7355',
+    color: '#BC4B78',
+    hex: '#BC4B78',
+  },
+  'billets-art': {
+    title: "Billets d'art",
+    description: 'Notes courtes, regards et coups de cœur sur une œuvre, une exposition ou une actualité.',
+    longDescription: "Des billets pour aller à l'essentiel : un regard, une émotion, une lecture rapide du monde de l'art.",
+    icon: PenLine,
+    color: '#8A855E',
+    hex: '#8A855E',
+  },
+  actualites: {
+    title: "Les actualités du monde de l'art",
+    description: "L'actualité artistique, des musées au marché.",
+    longDescription: "Ouvertures, nominations, ventes et débats : ce qui bouge dans le monde de l'art, à Paris, à Lyon et ailleurs.",
+    icon: Newspaper,
+    color: '#19E7DB',
+    hex: '#19E7DB',
   },
 };
 
@@ -151,14 +169,15 @@ export default function RubriquePage() {
 
         <main className="px-0 pb-20 md:pb-32">
           {/* Hero avec image de rubrique - pleine largeur, élégant */}
-          <section className="relative w-full h-[45vh] min-h-[320px] md:h-[55vh] overflow-hidden">
+          <section className="relative w-full h-[45vh] min-h-[320px] md:h-[55vh] overflow-hidden bg-[#EDDBCE]">
             {showHeroImage ? (
               <>
                 <Image
                   src={imageSrc}
                   alt={rubrique.title}
                   fill
-                  className="object-cover"
+                  className="object-contain"
+                  style={{ objectFit: 'contain', backgroundColor: '#EDDBCE' }}
                   priority
                   sizes="100vw"
                   onError={() => setHeroImageError(true)}
@@ -166,7 +185,7 @@ export default function RubriquePage() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: `linear-gradient(180deg, rgba(33, 46, 80, 0.5) 0%, rgba(124, 42, 60, 0.4) 50%, ${rubrique.hex} 100%)`,
+                    background: 'linear-gradient(180deg, transparent 45%, rgba(52, 30, 4, 0.55) 100%)',
                   }}
                 />
               </>
@@ -174,7 +193,7 @@ export default function RubriquePage() {
               <div
                 className="absolute inset-0 flex items-center justify-center"
                 style={{
-                  background: `linear-gradient(135deg, ${rubrique.hex} 0%, #212E50 100%)`,
+                  background: `linear-gradient(135deg, ${rubrique.hex} 0%, #341E04 100%)`,
                 }}
               >
                 <Icon className="h-24 w-24 text-creme/90" />
@@ -256,10 +275,16 @@ export default function RubriquePage() {
                             <p className="card-excerpt">{article.excerpt}</p>
                           )}
                           <div className="card-meta">
-                            {(article.firstname || article.lastname) && (
+                            {(article.author_names || article.firstname || article.lastname) && (
                               <span className="meta-item">
                                 <User size={16} />
-                                {[article.firstname, article.lastname].filter(Boolean).join(' ')}
+                                {article.author_names || [article.firstname, article.lastname].filter(Boolean).join(' ')}
+                              </span>
+                            )}
+                            {(article.reading_time || article.read_time) && (
+                              <span className="meta-item">
+                                <Clock size={16} />
+                                {article.reading_time || article.read_time} min
                               </span>
                             )}
                             <span className="meta-item">
@@ -320,13 +345,13 @@ export default function RubriquePage() {
           .rubrique-feed .feed-loading {
             text-align: center;
             padding: 64px 20px;
-            color: #212E50;
+            color: #341E04;
           }
           .rubrique-feed .spinner {
             width: 48px;
             height: 48px;
             border: 3px solid rgba(108, 129, 87, 0.2);
-            border-top-color: #6C8157;
+            border-top-color: #8A855E;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 16px;
@@ -402,7 +427,7 @@ export default function RubriquePage() {
           .rubrique-feed .card-title {
             font-size: 1.35rem;
             font-weight: 700;
-            color: #212E50;
+            color: #341E04;
             margin-bottom: 10px;
             line-height: 1.35;
             display: -webkit-box;
@@ -411,11 +436,11 @@ export default function RubriquePage() {
             overflow: hidden;
           }
           .rubrique-feed .article-card:hover .card-title {
-            color: #7C2A3C;
+            color: #BC4B78;
           }
           .rubrique-feed .card-excerpt {
             font-size: 1rem;
-            color: #212E50;
+            color: #341E04;
             opacity: 0.85;
             line-height: 1.55;
             margin-bottom: 16px;
@@ -429,7 +454,7 @@ export default function RubriquePage() {
             flex-wrap: wrap;
             gap: 18px;
             font-size: 0.9rem;
-            color: #6C8157;
+            color: #8A855E;
             margin-top: auto;
             margin-bottom: 12px;
           }
@@ -445,30 +470,30 @@ export default function RubriquePage() {
             padding: 12px 0 0;
             font-size: 1rem;
             font-weight: 600;
-            color: #7C2A3C;
+            color: #BC4B78;
             border-top: 1px solid rgba(33, 46, 80, 0.08);
             transition: color 0.2s;
           }
           .rubrique-feed .article-card:hover .card-link-label {
-            color: #212E50;
+            color: #341E04;
           }
           .rubrique-feed .feed-empty {
             text-align: center;
             padding: 64px 20px;
             background: #fff;
             border-radius: 20px;
-            border: 2px solid #212E50;
+            border: 2px solid #341E04;
             box-shadow: 0 4px 24px rgba(33, 46, 80, 0.08);
           }
           .rubrique-feed .empty-icon { margin-bottom: 20px; opacity: 0.8; }
-          .rubrique-feed .feed-empty h2 { font-size: 1.5rem; color: #212E50; margin-bottom: 12px; }
-          .rubrique-feed .feed-empty p { color: #212E50; opacity: 0.85; margin-bottom: 24px; }
+          .rubrique-feed .feed-empty h2 { font-size: 1.5rem; color: #341E04; margin-bottom: 12px; }
+          .rubrique-feed .feed-empty p { color: #341E04; opacity: 0.85; margin-bottom: 24px; }
           .rubrique-feed .btn-primary {
             display: inline-flex;
             align-items: center;
             gap: 10px;
             padding: 14px 28px;
-            background: linear-gradient(135deg, #7C2A3C, #212E50);
+            background: linear-gradient(135deg, #BC4B78, #341E04);
             color: #F8F8F0;
             border-radius: 12px;
             font-weight: 600;

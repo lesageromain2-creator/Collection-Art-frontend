@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Calendar, User, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, User, ArrowRight, BookOpen, Clock } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AssociationLogo from '../components/AssociationLogo';
@@ -131,12 +131,18 @@ export default function ArticlesPage() {
                               <p className="card-excerpt">{article.excerpt}</p>
                             )}
                             <div className="card-meta">
-                              {(article.firstname || article.lastname) && (
-                                <span className="meta-item">
-                                  <User size={16} />
-                                  {[article.firstname, article.lastname].filter(Boolean).join(' ')}
-                                </span>
-                              )}
+                            {(article.author_names || article.firstname || article.lastname) && (
+                              <span className="meta-item">
+                                <User size={16} />
+                                {article.author_names || [article.firstname, article.lastname].filter(Boolean).join(' ')}
+                              </span>
+                            )}
+                            {(article.reading_time || article.read_time) && (
+                              <span className="meta-item">
+                                <Clock size={16} />
+                                {article.reading_time || article.read_time} min
+                              </span>
+                            )}
                               <span className="meta-item">
                                 <Calendar size={16} />
                                 {formatDate(article.published_at || article.created_at)}

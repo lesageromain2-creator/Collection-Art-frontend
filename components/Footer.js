@@ -92,7 +92,7 @@ export default function Footer() {
                     <Instagram className="h-4 w-4" />
                   </a>
                   <a
-                    href="https://www.linkedin.com/company/collection-aurart"
+                    href="https://www.linkedin.com/company/collection-aur-art/home/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex h-9 w-9 items-center justify-center rounded-full bg-navy/5 text-navy hover:bg-burgundy hover:text-creme transition-all"

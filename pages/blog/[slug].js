@@ -166,14 +166,18 @@ export default function BlogPostPage() {
                   <Calendar size={16} />
                   {formatDate(post.published_at || post.created_at)}
                 </span>
+                {(post.author_names || post.author_name) && (
                 <span className="meta-item">
                   <User size={16} />
-                  {post.author_name || 'Admin'}
+                  {post.author_names || post.author_name}
                 </span>
+                )}
+                {(post.reading_time || post.read_time) && (
                 <span className="meta-item">
                   <Clock size={16} />
-                  {post.read_time || 5} min de lecture
+                  {post.reading_time || post.read_time} min de lecture
                 </span>
+                )}
                 <button onClick={sharePost} className="share-btn">
                   <Share2 size={16} />
                   Partager

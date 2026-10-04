@@ -139,7 +139,7 @@ export default function BlogPage() {
                       </span>
                       <span className="meta-item">
                         <Clock size={14} />
-                        {post.read_time || 5} min
+                        {(post.reading_time || post.read_time) ? `${post.reading_time || post.read_time} min` : ''}
                       </span>
                     </div>
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Sue+Ellen+Francisco&family=Yeseva+One&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -10,29 +10,33 @@
    ============================================ */
 :root {
   /* Palette principale - fond logo final #F9F6F0 */
-  --creme: #F9F6F0;           /* Beige clair logo - fonds, zones claires */
-  --olive: #6C8157;          /* Vert olive - nature, sérénité */
-  --burgundy: #7C2A3C;       /* Bordeaux / Bourgogne - profondeur, art */
-  --gold: #C7A11E;           /* Or / Moutarde - accent, prestige */
-  --pink: #F1B2C8;           /* Rose pastel - douceur, lien */
-  --navy: #212E50;           /* Bleu marine - texte, structure, header */
+  --creme: #FFF5ED;
+  --olive: #8A855E;
+  --burgundy: #BC4B78;
+  --gold: #D7D98A;
+  --pink: #F7CFDF;
+  --navy: #341E04;
+  --turquoise: #19E7DB;
+  --beige: #EDDBCE;
+  --cyan: #D9FDFC;
+  --ink: #341E04;
 
   /* Alias sémantiques */
-  --primary: #7C2A3C;
-  --secondary: #6C8157;
-  --accent: #C7A11E;
-  --accent-soft: #F1B2C8;
-  --light: #F9F6F0;
-  --dark: #212E50;
-  --anthracite: #212E50;
-  --gris: #5A5A5A;
+  --primary: #19E7DB;
+  --secondary: #8A855E;
+  --accent: #BC4B78;
+  --accent-soft: #F7CFDF;
+  --light: #FFF5ED;
+  --dark: #341E04;
+  --anthracite: #341E04;
+  --gris: #5c4a3a;
   --gris-chaud: #6C6C6C;
 
   /* Gradients palette association */
-  --gradient-main: linear-gradient(135deg, #7C2A3C 0%, #212E50 100%);
-  --gradient-warm: linear-gradient(135deg, #C7A11E 0%, #7C2A3C 100%);
-  --gradient-soft: linear-gradient(135deg, #F1B2C8 0%, #6C8157 50%, #C7A11E 100%);
-  --gradient-hero: linear-gradient(180deg, rgba(33, 46, 80, 0.4) 0%, rgba(124, 42, 60, 0.3) 50%, transparent 100%);
+  --gradient-main: linear-gradient(135deg, #19E7DB 0%, #8A855E 100%);
+  --gradient-warm: linear-gradient(135deg, #D7D98A 0%, #BC4B78 100%);
+  --gradient-soft: linear-gradient(135deg, #F7CFDF 0%, #D9FDFC 50%, #D7D98A 100%);
+  --gradient-hero: linear-gradient(180deg, rgba(52, 30, 4, 0.28) 0%, rgba(188, 75, 120, 0.22) 50%, transparent 100%);
 }
 
 * {
@@ -46,7 +50,7 @@ html {
 }
 
 body {
-  font-family: 'Montserrat', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'TS Tarek', 'Nunito Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--creme);
@@ -55,7 +59,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Yeseva One', Georgia, serif;
   font-weight: 600;
   line-height: 1.3;
 }

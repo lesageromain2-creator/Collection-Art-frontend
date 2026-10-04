@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
-import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles, UserRound } from 'lucide-react';
+import { BookOpen, Scale, TrendingUp, Palette, ArrowRight, Sparkles, UserRound, Newspaper, PenLine } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import AssociationLogo from '../../components/AssociationLogo';
@@ -13,12 +13,14 @@ const demoSettings = {
 };
 
 const RUBRIQUES_IMAGES = {
-  'histoire-arts': '/images/Histoire des arts.png',
-  'fil-oeuvres': '/images/au fil des oeuvres.png',
-  'art-contemporain': '/images/art contempo.jpg.jpeg',
-  'tribunal-arts': '/images/tribunal des arts.jpeg',
-  'marche-art': '/images/marche.jpeg',
-  portraits: '/images/interview.jpeg',
+  'histoire-arts': '/images/landing/histoire-arts.jpg',
+  'fil-oeuvres': '/images/landing/au-fil.jpg',
+  'art-contemporain': '/images/landing/art-contemporain.jpg',
+  'tribunal-arts': '/images/landing/tribunal.jpg',
+  'marche-art': '/images/landing/marche-art.jpg',
+  portraits: '/images/landing/portrait.jpg',
+  'billets-art': '/images/landing/au-fil.jpg',
+  actualites: '/images/landing/actualites.jpg',
 };
 
 const rubriques = [
@@ -29,8 +31,8 @@ const rubriques = [
     description: "Découvrez l'histoire de l'art à travers les siècles, des œuvres majeures aux courants artistiques qui ont façonné notre regard sur le monde.",
     longDescription: "Cette rubrique explore l'évolution de l'art depuis l'Antiquité jusqu'à nos jours. Nous analysons les mouvements artistiques majeurs, les révolutions esthétiques et les figures qui ont marqué l'histoire de l'art.",
     icon: BookOpen,
-    color: '#7C2A3C',
-    hex: '#7C2A3C',
+    color: '#BC4B78',
+    hex: '#BC4B78',
     articleCount: 0,
   },
   {
@@ -40,8 +42,8 @@ const rubriques = [
     description: "Explorez en profondeur les œuvres qui ont marqué l'histoire de l'art, leurs secrets, leur contexte de création et leur impact culturel.",
     longDescription: "Des analyses détaillées d'œuvres d'art emblématiques. Nous décryptons les techniques, les symboles, les contextes historiques et les histoires fascinantes derrière les chefs-d'œuvre.",
     icon: Palette,
-    color: '#6C8157',
-    hex: '#6C8157',
+    color: '#8A855E',
+    hex: '#8A855E',
     articleCount: 0,
   },
   {
@@ -51,8 +53,8 @@ const rubriques = [
     description: "Plongez dans l'art d'aujourd'hui : tendances, artistes émergents et enjeux de la création contemporaine.",
     longDescription: "L'art contemporain interroge notre époque. Nous explorons les courants actuels, les artistes qui font l'actualité et les questions que soulève la création d'aujourd'hui.",
     icon: Sparkles,
-    color: '#C7A11E',
-    hex: '#C7A11E',
+    color: '#8A855E',
+    hex: '#8A855E',
     articleCount: 0,
   },
   {
@@ -62,8 +64,8 @@ const rubriques = [
     description: "Analyse des procès et affaires judiciaires qui ont secoué le monde de l'art, entre droit, éthique et patrimoine culturel.",
     longDescription: "Les grandes affaires juridiques du monde de l'art : vols, faux, restitutions, droits d'auteur. Nous analysons les enjeux juridiques et éthiques qui façonnent le marché de l'art.",
     icon: Scale,
-    color: '#212E50',
-    hex: '#212E50',
+    color: '#341E04',
+    hex: '#341E04',
     articleCount: 0,
   },
   {
@@ -73,8 +75,8 @@ const rubriques = [
     description: "Décryptage des dynamiques du marché de l'art : ventes aux enchères, tendances, valorisation et circulation des œuvres contemporaines.",
     longDescription: "Analyses économiques et financières du marché de l'art. Ventes records, tendances de collection, nouveaux acteurs et transformations du secteur artistique.",
     icon: TrendingUp,
-    color: '#7C2A3C',
-    hex: '#7C2A3C',
+    color: '#BC4B78',
+    hex: '#BC4B78',
     articleCount: 0,
   },
   {
@@ -86,8 +88,30 @@ const rubriques = [
     longDescription:
       "Cette rubrique met en avant les personnalités qui font vivre l'art : créateurs, mécènes, historiens et acteurs du marché. Entretiens, profils et regards croisés pour mieux comprendre ceux qui façonnent la scène artistique.",
     icon: UserRound,
-    color: '#8B7355',
-    hex: '#8B7355',
+    color: '#BC4B78',
+    hex: '#BC4B78',
+    articleCount: 0,
+  },
+  {
+    id: 'billets-art',
+    title: "Billets d'art",
+    slug: 'billets-art',
+    description: 'Notes courtes, regards et coups de cœur sur une œuvre, une exposition ou une actualité.',
+    longDescription: "Des billets pour aller à l'essentiel : un regard, une émotion, une lecture rapide du monde de l'art.",
+    icon: PenLine,
+    color: '#8A855E',
+    hex: '#8A855E',
+    articleCount: 0,
+  },
+  {
+    id: 'actualites',
+    title: "Les actualités du monde de l'art",
+    slug: 'actualites',
+    description: "L'actualité artistique, des musées au marché.",
+    longDescription: "Ouvertures, nominations, ventes et débats : ce qui bouge dans le monde de l'art, à Paris, à Lyon et ailleurs.",
+    icon: Newspaper,
+    color: '#19E7DB',
+    hex: '#19E7DB',
     articleCount: 0,
   },
 ];
@@ -134,14 +158,15 @@ export default function RubriquesPage() {
                     href={`/rubriques/${rubrique.slug}`}
                     className="group block bg-white rounded-2xl overflow-hidden shadow-sm border border-navy/5 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                   >
-                    <div className="relative h-56 md:h-64 overflow-hidden">
+                    <div className="relative h-56 md:h-64 overflow-hidden bg-[#EDDBCE]">
                       {imageSrc ? (
                         <>
                           <Image
                             src={imageSrc}
                             alt={rubrique.title}
                             fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            className="object-contain"
+                            style={{ objectFit: 'contain' }}
                             sizes="(max-width: 768px) 100vw, 50vw"
                           />
                           <div
@@ -155,7 +180,7 @@ export default function RubriquesPage() {
                         <div
                           className="absolute inset-0 flex items-center justify-center"
                           style={{
-                            background: `linear-gradient(135deg, ${rubrique.hex} 0%, #212E50 100%)`,
+                            background: `linear-gradient(135deg, ${rubrique.hex} 0%, #341E04 100%)`,
                           }}
                         >
                           <Icon className="h-20 w-20 text-creme/90" />
