@@ -1,18 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { ArrowRight, Search, User } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { getPublicArticles } from '../../utils/api';
+import Header from '../Header';
 import styles from '../../styles/landing.module.css';
-
-const NAV = [
-  { href: '/', label: 'Accueil' },
-  { href: '/rubriques', label: 'Rubriques' },
-  { href: '/articles', label: 'Articles' },
-  { href: '/about', label: 'Notre équipe' },
-  { href: '/contact', label: 'Nous contacter' },
-];
 
 const FALLBACK_ARTICLES = [
   {
@@ -120,18 +112,10 @@ const STAINS = [
 ];
 
 export default function HomeLanding() {
-  const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [query, setQuery] = useState('');
   const [city, setCity] = useState('all');
   const [selectedDay, setSelectedDay] = useState(null);
   const [articles, setArticles] = useState(FALLBACK_ARTICLES);
   const [portraits, setPortraits] = useState([]);
-
-  useEffect(() => {
-    setLoggedIn(Boolean(localStorage.getItem('authToken')));
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,12 +166,6 @@ export default function HomeLanding() {
     [city, selectedDay]
   );
 
-  const onSearch = (event) => {
-    event.preventDefault();
-    const value = query.trim();
-    router.push(value ? `/articles?search=${encodeURIComponent(value)}` : '/articles');
-  };
-
   const pickCity = (next) => {
     setSelectedDay(null);
     setCity((current) => (current === next ? 'all' : next));
@@ -223,67 +201,9 @@ export default function HomeLanding() {
         ))}
       </div>
 
-      <header className={styles.layer}>
-        <p className={styles.magBand}>Magazine hebdomadaire d&apos;art</p>
-        <div className={styles.greenBar}>
-          <button
-            type="button"
-            className={styles.burger}
-            aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <nav className={styles.nav} aria-label="Navigation principale">
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className={`${styles.pill} ${item.href === '/' ? styles.pillActive : ''}`}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-          <div className={styles.tools}>
-            <form className={styles.search} onSubmit={onSearch}>
-              <Search size={15} aria-hidden />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Rechercher un article..."
-                aria-label="Rechercher un article"
-              />
-            </form>
-            <Link href={loggedIn ? '/dashboard' : '/login'} className={styles.login}>
-              <User size={15} aria-hidden />
-              {loggedIn ? 'Mon espace' : 'Se connecter'}
-            </Link>
-          </div>
-        </div>
-        {menuOpen && (
-          <div className={styles.drawer}>
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className={styles.pill} onClick={() => setMenuOpen(false)}>
-                {item.label}
-              </Link>
-            ))}
-            <form className={styles.search} onSubmit={onSearch}>
-              <Search size={15} aria-hidden />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Rechercher un article..."
-                aria-label="Rechercher un article"
-              />
-            </form>
-          </div>
-        )}
-        <div className={styles.brand}>
-          <img src={LOGO} alt="Collection Aur'art" className={styles.logo} />
-          <p className={styles.script}>Collection Aur&apos;art</p>
-          <p className={styles.tag}>Esquisses de l&apos;art & son marché</p>
-        </div>
-      </header>
+      <div className={styles.siteHeader}>
+        <Header />
+      </div>
 
       <main className={`${styles.wrap} ${styles.layer}`}>
         <section className={styles.hero}>
@@ -481,7 +401,6 @@ export default function HomeLanding() {
             <article className={styles.join}>
               <img src="/images/landing/marche-art.jpg" alt="" />
               <div className={styles.joinShade} />
-              <p className={styles.sticker}>Time, passe par là</p>
               <div className={styles.joinBody}>
                 <h3>Rejoignez-nous</h3>
                 <p>

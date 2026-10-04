@@ -1,3 +1,10 @@
+.siteHeader {
+  position: relative;
+  z-index: 30;
+}
+.siteHeader :global(.hdr-full) {
+  margin-bottom: 0;
+}
 .page {
   --ink: #2b2926;
   --muted: #6a645c;
@@ -156,6 +163,7 @@
   margin-top: -62px;
   text-align: center;
   padding: 0 16px 8px;
+  pointer-events: none;
 }
 
 .logo {
