@@ -249,11 +249,11 @@ export default function Contact() {
         }
 
         .hero-content h1 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 3em;
           color: #2C2C2C;
           margin-bottom: 15px;
-          font-weight: 600;
+          font-weight: 400;
         }
 
         .hero-content p {
@@ -303,7 +303,7 @@ export default function Contact() {
         }
 
         .info-content-main h3 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Monterchi', Georgia, serif;
           font-size: 1.4em;
           color: #2C2C2C;
           margin-bottom: 15px;
@@ -354,7 +354,7 @@ export default function Contact() {
         }
 
         .form-card h2 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 2em;
           color: #2C2C2C;
           margin-bottom: 10px;

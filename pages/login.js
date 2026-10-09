@@ -533,7 +533,7 @@ export default function Login() {
         }
 
         .auth-header h1 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 2em;
           color: #212E50;
           margin-bottom: 8px;

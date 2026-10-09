@@ -348,6 +348,7 @@ export default function BlogPostPage() {
         .post-lead {
           color: #212E50;
           opacity: 0.85;
+          font-family: 'Monterchi', Georgia, serif;
           font-size: 1.2em;
           line-height: 1.6;
           margin-bottom: 24px;

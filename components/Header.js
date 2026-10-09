@@ -31,7 +31,6 @@ const SITE_NAME = "Collection Aur'art";
 const BANDEAU_COLOR = '#D7D98A';
 const HEADER_COLOR = '#19E7DB';
 const INK = '#341E04';
-const LOGO_IMG = '/new images/Logo final (1).png';
 
 export default function Header({ settings = {} }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -82,25 +81,30 @@ export default function Header({ settings = {} }) {
           Magazine hebdomadaire d&apos;art
         </div>
         <header className="hdr" role="banner">
-          <Link href="/" className="hdr-brand" aria-label="Accueil Collection Aur'art">
-
-          
-            <span className="hdr-logo-wrap">
-              <img src={LOGO_IMG} alt="" className="hdr-logo-img" />
-            </span>
-            
-          </Link>
           <nav className="hdr-nav">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="hdr-actions">
+            <div className="hdr-nav-side">
+              {NAV_ITEMS.slice(0, 3).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <span className="hdr-nav-gap" aria-hidden="true" />
+            <div className="hdr-nav-side hdr-nav-side--right">
+              {NAV_ITEMS.slice(3).map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`hdr-link ${isActive(item.href) ? 'hdr-link--active' : ''}`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="hdr-actions">
               <Link href="/articles" className="hdr-icon-link" aria-label="Rechercher / Articles">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               </Link>
@@ -119,8 +123,16 @@ export default function Header({ settings = {} }) {
                   Se connecter
                 </Link>
               )}
+              </div>
             </div>
           </nav>
+          <div className="hdr-lockup">
+            <Link href="/" aria-label="Accueil Collection Aur'art">
+              <img src="/images/logo-aa-chrome.png?v=rose" alt="" className="hdr-lockup-logo" />
+              <span className="hdr-lockup-title">Collection Aur’art</span>
+              <span className="hdr-lockup-tag">Esquisses de l&apos;art & son marché</span>
+            </Link>
+          </div>
           <button
             type="button"
             aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
@@ -221,7 +233,7 @@ export default function Header({ settings = {} }) {
         .hdr .hdr-nav a.hdr-link {
           color: #341E04 !important;
           -webkit-text-fill-color: #341E04 !important;
-          font-family: 'TS Tarek', 'Nunito Sans', sans-serif !important;
+          font-family: 'Monterchi Serif', Georgia, serif !important;
           font-weight: 700 !important;
           text-transform: uppercase !important;
           letter-spacing: 0.18em !important;
@@ -230,8 +242,11 @@ export default function Header({ settings = {} }) {
       <style jsx>{`
         .hdr-full {
           width: 100%;
-          margin-bottom: 1.5rem;
+          margin-bottom: 8rem;
           box-shadow: 0 4px 14px rgba(74, 107, 58, 0.08);
+          position: relative;
+          z-index: 20;
+          overflow: visible;
         }
         .hdr-bandeau {
           width: 100%;
@@ -259,6 +274,8 @@ export default function Header({ settings = {} }) {
           background: ${HEADER_COLOR};
           color: #2d1f2d;
           box-shadow: 0 2px 12px rgba(45,31,45,0.1);
+          position: relative;
+          overflow: visible;
         }
         @media (min-width: 768px) {
           .hdr {
@@ -321,7 +338,7 @@ export default function Header({ settings = {} }) {
         }
         .hdr-site-name {
           flex-shrink: 0;
-          font-family: 'Times New Roman', Times, Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 1.35rem;
           font-weight: 700;
           color: ${BANDEAU_COLOR};
@@ -334,6 +351,98 @@ export default function Header({ settings = {} }) {
           }
         }
 
+        .hdr-nav-side {
+          flex: 1 1 0;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 1.15rem;
+          min-width: 0;
+        }
+        .hdr-nav-side--right {
+          justify-content: flex-start;
+        }
+        .hdr-nav-gap {
+          width: 248px;
+          flex: 0 0 248px;
+        }
+        .hdr-lockup {
+          position: absolute;
+          left: 50%;
+          top: 100%;
+          transform: translateX(-50%);
+          z-index: 4;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: max-content;
+          pointer-events: none;
+          color: #341E04;
+        }
+        .hdr-lockup a {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          pointer-events: none;
+          text-decoration: none;
+          color: #341E04;
+        }
+        .hdr-lockup-logo {
+          height: 118px;
+          width: auto;
+          margin-top: -64px;
+          display: block;
+          pointer-events: auto;
+          filter: drop-shadow(0 8px 12px rgba(52, 30, 4, 0.14));
+        }
+        .hdr-lockup-title {
+          pointer-events: auto;
+          display: block;
+          margin-top: -4px;
+          text-align: center;
+          white-space: nowrap;
+          font-family: 'Yeseva One', Georgia, serif;
+          font-size: clamp(1.7rem, 3.2vw, 2.55rem);
+          line-height: 0.95;
+          font-weight: 400;
+          letter-spacing: -0.02em;
+          color: #341E04;
+        }
+        .hdr-lockup-tag {
+          pointer-events: auto;
+          display: block;
+          margin-top: 6px;
+          max-width: 92vw;
+          text-align: center;
+          white-space: nowrap;
+          font-family: 'Monterchi', Georgia, serif;
+          font-size: 0.68rem;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: #341E04;
+        }
+        @media (max-width: 1100px) {
+          .hdr-nav-gap { width: 200px; flex-basis: 200px; }
+          .hdr-lockup-logo { height: 100px; margin-top: -54px; }
+          .hdr-lockup-title { margin-top: -2px; }
+        }
+        @media (max-width: 767px) {
+          .hdr-lockup-logo { height: 84px; margin-top: -44px; }
+          .hdr-lockup-title {
+            margin-top: 0;
+            font-size: 1.45rem;
+            white-space: normal;
+            max-width: 78vw;
+          }
+          .hdr-lockup-tag {
+            font-size: 0.58rem;
+            letter-spacing: 0.08em;
+            white-space: normal;
+            line-height: 1.25;
+          }
+          .hdr-full { margin-bottom: 7.25rem; }
+        }
+
         .hdr-nav {
           display: none;
         }
@@ -343,7 +452,7 @@ export default function Header({ settings = {} }) {
           }
         }
         .hdr-link {
-          font-family: 'Times New Roman', Times, Georgia, serif !important;
+          font-family: 'Monterchi Serif', Georgia, serif !important;
           font-size: 1rem !important;
           text-transform: uppercase !important;
           letter-spacing: 0.18em;
@@ -355,8 +464,10 @@ export default function Header({ settings = {} }) {
                       letter-spacing 0.35s cubic-bezier(0.4, 0, 0.2, 1),
                       background 0.35s ease,
                       opacity 0.35s ease;
-          font-weight: 700;
+          white-space: nowrap;
+          flex-shrink: 0;
           position: relative;
+          font-weight: 700;
         }
         .hdr-link,
         .hdr-link:visited,
@@ -437,6 +548,8 @@ export default function Header({ settings = {} }) {
           background: rgba(249,246,240,0.08);
           color: #F9F6F0;
           cursor: pointer;
+          position: relative;
+          z-index: 6;
           transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .hdr-burger:hover {
@@ -520,7 +633,7 @@ export default function Header({ settings = {} }) {
           align-items: center;
         }
         .hdr-drawer-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 1.35rem;
           font-weight: 600;
           color: #212E50;

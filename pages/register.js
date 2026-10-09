@@ -566,7 +566,7 @@ export default function Register() {
         }
 
         .card-header h1 {
-          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-family: 'Yeseva One', Georgia, serif;
           font-size: 1.65rem;
           font-weight: 700;
           color: #212E50;

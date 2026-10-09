@@ -3,7 +3,12 @@
   z-index: 30;
 }
 .siteHeader :global(.hdr-full) {
-  margin-bottom: 0;
+  margin-bottom: 8rem;
+}
+@media (max-width: 767px) {
+  .siteHeader :global(.hdr-full) {
+    margin-bottom: 7.25rem;
+  }
 }
 .page {
   --ink: #2b2926;
@@ -1230,7 +1235,7 @@
 .search,
 .search input {
   color: #341E04;
-  font-family: 'TS Tarek', 'Nunito Sans', sans-serif;
+  font-family: 'Monterchi Serif', Georgia, serif;
 }
 .pill:hover,
 .login:hover {
@@ -1256,22 +1261,34 @@
   --sage-deep: #8A855E;
   background: #FFF5ED;
   color: #341E04;
-  font-family: 'TS Tarek', 'Nunito Sans', sans-serif;
+  font-family: 'Monterchi Serif', Georgia, serif;
 }
 .heroTitle,
 .sectionTitle,
 .agenda h2,
 .cardTitle,
-.script,
 .portraits h2,
-.join h3 {
+.join h3,
+.rub span,
+.brandMini strong {
   font-family: 'Yeseva One', Georgia, serif;
   color: #341E04;
+}
+.calTitle,
+.quote {
+  font-family: 'Monterchi', Georgia, serif;
+}
+.note,
+.script,
+.sticker {
+  font-family: 'Sue Ellen Francisco', cursive;
+  font-style: normal;
 }
 .kicker,
 .tag,
 .cities,
-.badge {
+.badge,
+.magBand {
   font-family: 'Sue Ellen Francisco', cursive;
 }
 .agenda {

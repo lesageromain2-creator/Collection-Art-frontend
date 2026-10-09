@@ -40,9 +40,12 @@ module.exports = {
       },
       fontFamily: {
         heading: ['Yeseva One', 'Georgia', 'serif'],
-        body: ['TS Tarek', 'Nunito Sans', 'system-ui', 'sans-serif'],
-        serif: ['Yeseva One', 'Georgia', 'serif'],
-        sans: ['TS Tarek', 'Nunito Sans', 'system-ui', 'sans-serif'],
+        subtitle: ['Monterchi', 'Georgia', 'serif'],
+        body: ['Monterchi Serif', 'Georgia', 'serif'],
+        serif: ['Monterchi Serif', 'Georgia', 'serif'],
+        sans: ['Monterchi Serif', 'Georgia', 'serif'],
+        photo: ['Sue Ellen Francisco', 'cursive'],
+        site: ['Sue Ellen Francisco', 'cursive'],
       },
       animation: {
         'bounce': 'bounce 1s infinite',

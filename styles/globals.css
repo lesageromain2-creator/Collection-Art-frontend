@@ -1,4 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Sue+Ellen+Francisco&family=Yeseva+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sue+Ellen+Francisco&family=Yeseva+One&display=swap');
+
+/* Monterchi et Monterchi Serif (Zetafonts) : déposer les fichiers licenciés dans public/fonts/ */
+@font-face {
+  font-family: 'Monterchi';
+  src: local('Monterchi Regular'), local('Monterchi'),
+       url('/fonts/Monterchi-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Monterchi';
+  src: local('Monterchi Italic'),
+       url('/fonts/Monterchi-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Monterchi Serif';
+  src: local('Monterchi Serif Regular'), local('Monterchi Serif'),
+       url('/fonts/MonterchiSerif-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Monterchi Serif';
+  src: local('Monterchi Serif Italic'),
+       url('/fonts/MonterchiSerif-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -50,7 +84,7 @@ html {
 }
 
 body {
-  font-family: 'TS Tarek', 'Nunito Sans', system-ui, sans-serif;
+  font-family: 'Monterchi Serif', Georgia, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--creme);
@@ -58,10 +92,21 @@ body {
   line-height: 1.7;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2 {
   font-family: 'Yeseva One', Georgia, serif;
-  font-weight: 600;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+h3, h4, h5, h6 {
+  font-family: 'Monterchi', Georgia, serif;
+  font-weight: 400;
   line-height: 1.3;
+}
+
+figcaption,
+.photo-script {
+  font-family: 'Sue Ellen Francisco', cursive;
 }
 
 .text-justify {
